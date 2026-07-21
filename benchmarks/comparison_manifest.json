@@ -1,0 +1,17 @@
+{
+  "model": "/data1/models/Qwen3-0.6B",
+  "prompt": "Explain how a transformer decodes text.",
+  "max_model_len": 2048,
+  "output_tokens": 128,
+  "throughput_batch": 16,
+  "warmup_runs": 1,
+  "measured_runs": 20,
+  "usable_kv_tokens": 14464,
+  "kv_block_size": 16,
+  "kv_cache_memory_bytes": 1658847232,
+  "async_scheduling": false,
+  "async_batches": 2,
+  "dtype": "bfloat16",
+  "temperature": 0.0,
+  "seed": 0
+}

@@ -1,0 +1,17 @@
+{
+  "model": "/data2/models/Moonlight-16B-A3B-Instruct",
+  "prompt": "Explain why the sky appears blue during the day.",
+  "max_model_len": 512,
+  "output_tokens": 32,
+  "throughput_batch": 4,
+  "warmup_runs": 1,
+  "measured_runs": 5,
+  "usable_kv_tokens": 4096,
+  "kv_block_size": 16,
+  "kv_cache_memory_bytes": 268435456,
+  "async_scheduling": false,
+  "async_batches": 2,
+  "dtype": "bfloat16",
+  "temperature": 0.0,
+  "seed": 0
+}

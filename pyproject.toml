@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "auto-infer"
+version = "0.0.1"
+requires-python = ">=3.11"
+# Pure-Python deps only. torch + torch_npu are PROVIDED BY the Ascend CANN
+# container (image ascend/vllm-ascend) and are intentionally NOT pinned here —
+# pip must not try to resolve/replace the vendor NPU torch build.
+dependencies = [
+    "fastapi",
+    "numpy",
+    "prometheus-client",
+    "safetensors",
+    "transformers",
+    "uvicorn",
+]
+
+[project.optional-dependencies]
+benchmark = ["httpx"]
+test = ["httpx", "pytest"]
+
+[project.scripts]
+auto-infer = "auto_infer.entrypoints.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["auto_infer*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
