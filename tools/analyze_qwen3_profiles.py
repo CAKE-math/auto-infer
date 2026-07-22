@@ -3,6 +3,7 @@
 import argparse
 import json
 import math
+import shutil
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -151,11 +152,22 @@ def _locate_trace(metadata_path: Path, output_dir: Path, framework: str,
     raise FileNotFoundError(f"trace not found for {framework}: {candidates}")
 
 
+def _publish_trace(source: Path, output_dir: Path, framework: str) -> Path:
+    destination = output_dir / "raw" / f"{framework}.trace.json"
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if source.resolve() != destination.resolve():
+        temporary = destination.with_suffix(".json.tmp")
+        shutil.copyfile(source, temporary)
+        temporary.replace(destination)
+    return destination
+
+
 def build_evidence(metadata_paths: list[Path], benchmark_paths: list[Path],
                    output_dir: Path,
-                   capture_source_revision: str | None = None) -> tuple[dict, dict]:
+                   provenance: dict | None = None,
+                   benchmark_schema: str | None = None) -> tuple[dict, dict]:
     results = load_comparable_results(
-        benchmark_paths, allow_missing_cold=True)
+        benchmark_paths, legacy_schema=benchmark_schema)
     result_by_framework = {result["framework"]: result for result in results}
     metadata_by_framework = {}
     for path in metadata_paths:
@@ -175,17 +187,23 @@ def build_evidence(metadata_paths: list[Path], benchmark_paths: list[Path],
         metadata_path, metadata = metadata_by_framework[framework]
         workload = _without_framework(metadata["workload"])
         environment = dict(metadata["environment"])
-        if environment.get("source_revision") == "unknown":
-            if not capture_source_revision:
+        captured_revision = environment.pop("source_revision", "unknown")
+        environment.pop("source_revision_origin", None)
+        if captured_revision == "unknown":
+            if not provenance:
                 raise ValueError(
-                    "capture source revision is unknown; provide a verified "
-                    "deployment revision")
-            environment["source_revision"] = capture_source_revision
-            environment["source_revision_origin"] = (
-                "content_hash_verified_deployment")
+                    "capture harness revision is unknown; provide verified "
+                    "capture provenance")
+            captured_revision = provenance["capture_harness_revision"]
+            revision_origin = "content_hash_verified_deployment"
         else:
-            environment.setdefault(
-                "source_revision_origin", "capture_environment")
+            revision_origin = "capture_environment"
+        environment["capture_harness_revision"] = captured_revision
+        environment["capture_harness_revision_origin"] = revision_origin
+        if provenance:
+            environment["framework_source_revisions"] = provenance[
+                "framework_sources"][framework]
+            environment["driver"] = provenance["driver"]
         metadata = {**metadata, "workload": {
             **metadata["workload"],
             "capture_phases": workload["capture_phases"],
@@ -196,8 +214,9 @@ def build_evidence(metadata_paths: list[Path], benchmark_paths: list[Path],
             raise ValueError("profile workloads differ across frameworks")
         if metadata["output_length"] != metadata["workload"]["output_tokens"]:
             raise ValueError(f"profile output length mismatch for {framework}")
-        trace_path = _locate_trace(
+        source_trace = _locate_trace(
             metadata_path, output_dir, framework, metadata)
+        trace_path = _publish_trace(source_trace, output_dir, framework)
         trace_contract = validate_chrome_trace(trace_path)
         digest = sha256_file(trace_path)
         if digest != metadata["trace"]["sha256"]:
@@ -229,6 +248,7 @@ def build_evidence(metadata_paths: list[Path], benchmark_paths: list[Path],
         }
     manifest = {
         "schema_version": 1,
+        "benchmark_schema": benchmark_schema or "current",
         "workload": canonical_workload,
         "artifacts": artifacts,
         "benchmark_sources": {
@@ -239,6 +259,19 @@ def build_evidence(metadata_paths: list[Path], benchmark_paths: list[Path],
             "Summed complete-event duration; concurrent streams overlap and "
             "values are not request wall-clock time."),
     }
+    if provenance:
+        capacities = {
+            framework: evidence["usable_tokens"]
+            for framework, evidence in provenance["runtime_kv_capacity"].items()
+        }
+        if len(set(capacities.values())) != 1:
+            raise ValueError(f"profile runtime KV capacities differ: {capacities}")
+        if next(iter(capacities.values())) != canonical_workload[
+                "usable_kv_tokens"]:
+            raise ValueError("profile runtime KV capacity differs from workload")
+        if provenance["model"]["path"] != canonical_workload["model"]:
+            raise ValueError("profile model provenance differs from workload")
+        manifest["provenance"] = provenance
     summary = {
         "schema_version": 1,
         "headline_benchmarks": result_by_framework,
@@ -267,17 +300,26 @@ def _parse_args(argv=None):
     parser.add_argument("--metadata", nargs=3, required=True, type=Path)
     parser.add_argument("--benchmarks", nargs=3, required=True, type=Path)
     parser.add_argument("--output-dir", required=True, type=Path)
-    parser.add_argument("--capture-source-revision")
+    parser.add_argument("--capture-provenance", type=Path)
+    parser.add_argument(
+        "--benchmark-schema", choices=("current", "pre-cold-ttft-v0"),
+        default="current")
     return parser.parse_args(argv)
 
 
 def main(argv=None) -> None:
     args = _parse_args(argv)
+    provenance = (json.loads(args.capture_provenance.read_text())
+                  if args.capture_provenance else None)
+    legacy_schema = (None if args.benchmark_schema == "current"
+                     else args.benchmark_schema)
     manifest, summary = build_evidence(
-        args.metadata, args.benchmarks, args.output_dir,
-        args.capture_source_revision)
+        args.metadata, args.benchmarks, args.output_dir, provenance,
+        legacy_schema)
     _write_json(args.output_dir / "manifest.json", manifest)
     _write_json(args.output_dir / "summary.json", summary)
+    if provenance:
+        _write_json(args.output_dir / "provenance.json", provenance)
 
 
 if __name__ == "__main__":

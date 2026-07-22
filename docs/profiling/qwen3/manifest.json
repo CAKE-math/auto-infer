@@ -8,14 +8,23 @@
           "started_at_utc": "2026-07-22T09:10:17.141742+00:00"
         },
         "environment": {
+          "capture_harness_revision": "74899b6f092b4d6f3227cd375f031555abbc55a0",
+          "capture_harness_revision_origin": "content_hash_verified_deployment",
           "captured_at_utc": "2026-07-22T09:10:24.803132+00:00",
           "device": "Ascend910B1",
+          "driver": {
+            "ascendhal_version": "7.35.23",
+            "package_version": "25.5.0",
+            "physical_npu": 1,
+            "soc": "Ascend 910B1"
+          },
+          "framework_source_revisions": {
+            "auto_infer": "74899b6f092b4d6f3227cd375f031555abbc55a0"
+          },
           "hostname": "cd40b23e4602",
           "omni_plugin": "",
           "platform": "Linux-5.10.0-136.12.0.86.r1526_92.hce2.aarch64-aarch64-with-glibc2.35",
           "python": "3.11.15",
-          "source_revision": "74899b6f092b4d6f3227cd375f031555abbc55a0",
-          "source_revision_origin": "content_hash_verified_deployment",
           "torch": "2.10.0+cpu",
           "torch_npu": "2.10.0",
           "vllm": "0.20.2+empty"
@@ -82,14 +91,25 @@
           "started_at_utc": "2026-07-22T09:17:34.252984+00:00"
         },
         "environment": {
+          "capture_harness_revision": "74899b6f092b4d6f3227cd375f031555abbc55a0",
+          "capture_harness_revision_origin": "content_hash_verified_deployment",
           "captured_at_utc": "2026-07-22T09:17:44.287845+00:00",
           "device": "Ascend910B1",
+          "driver": {
+            "ascendhal_version": "7.35.23",
+            "package_version": "25.5.0",
+            "physical_npu": 1,
+            "soc": "Ascend 910B1"
+          },
+          "framework_source_revisions": {
+            "omni_npu": "6fc4c538e99839988e5b0dce3fadb9b1e801decb",
+            "omniinfer": "181f5d4119e7098df937faaa9529c0722c3f1208",
+            "vllm": "b17039bccc17b94a2ea107272ad7bc93508708df"
+          },
           "hostname": "748ca4b8533b",
           "omni_plugin": "omni-npu,omni_npu_patches",
           "platform": "Linux-5.10.0-136.12.0.86.r1526_92.hce2.aarch64-aarch64-with-glibc2.34",
           "python": "3.11.12",
-          "source_revision": "74899b6f092b4d6f3227cd375f031555abbc55a0",
-          "source_revision_origin": "content_hash_verified_deployment",
           "torch": "2.9.0+cpu",
           "torch_npu": "2.9.0",
           "vllm": "0.14.0+empty"
@@ -156,14 +176,24 @@
           "started_at_utc": "2026-07-22T09:12:15.105480+00:00"
         },
         "environment": {
+          "capture_harness_revision": "74899b6f092b4d6f3227cd375f031555abbc55a0",
+          "capture_harness_revision_origin": "content_hash_verified_deployment",
           "captured_at_utc": "2026-07-22T09:12:22.698658+00:00",
           "device": "Ascend910B1",
+          "driver": {
+            "ascendhal_version": "7.35.23",
+            "package_version": "25.5.0",
+            "physical_npu": 1,
+            "soc": "Ascend 910B1"
+          },
+          "framework_source_revisions": {
+            "vllm": "bc150f50299199599673614f80d12a196f377655",
+            "vllm_ascend": "367b8e62da799870a7476ce34f5f7658589a8aad"
+          },
           "hostname": "cd40b23e4602",
           "omni_plugin": "",
           "platform": "Linux-5.10.0-136.12.0.86.r1526_92.hce2.aarch64-aarch64-with-glibc2.35",
           "python": "3.11.15",
-          "source_revision": "74899b6f092b4d6f3227cd375f031555abbc55a0",
-          "source_revision_origin": "content_hash_verified_deployment",
           "torch": "2.10.0+cpu",
           "torch_npu": "2.10.0",
           "vllm": "0.20.2+empty"
@@ -223,12 +253,75 @@
       "size_bytes": 9758924
     }
   },
+  "benchmark_schema": "pre-cold-ttft-v0",
   "benchmark_sources": {
     "auto-infer": "/tmp/qwen3-profile-evidence.KDrNO4/auto-infer.json",
     "omni-npu": "/tmp/qwen3-profile-evidence.KDrNO4/omni-npu.json",
     "vllm-ascend": "/tmp/qwen3-profile-evidence.KDrNO4/vllm-ascend.json"
   },
   "profile_timing_semantics": "Summed complete-event duration; concurrent streams overlap and values are not request wall-clock time.",
+  "provenance": {
+    "capture_harness_revision": "74899b6f092b4d6f3227cd375f031555abbc55a0",
+    "capture_harness_verification": {
+      "benchmarks/profile_qwen3.py": "e205d0b631056073373d9e6cd57f2965eb35ce809fd3cf3e0b197dbbaca1879a",
+      "benchmarks/qwen3_profile_common.py": "5c7b205c7a6bbaf213d44fb4267683e47867d4271e7f236598adf361a144579c",
+      "method": "remote deployed files matched git object content by SHA-256"
+    },
+    "driver": {
+      "ascendhal_version": "7.35.23",
+      "package_version": "25.5.0",
+      "physical_npu": 1,
+      "soc": "Ascend 910B1"
+    },
+    "framework_sources": {
+      "auto-infer": {
+        "auto_infer": "74899b6f092b4d6f3227cd375f031555abbc55a0"
+      },
+      "omni-npu": {
+        "omni_npu": "6fc4c538e99839988e5b0dce3fadb9b1e801decb",
+        "omniinfer": "181f5d4119e7098df937faaa9529c0722c3f1208",
+        "vllm": "b17039bccc17b94a2ea107272ad7bc93508708df"
+      },
+      "vllm-ascend": {
+        "vllm": "bc150f50299199599673614f80d12a196f377655",
+        "vllm_ascend": "367b8e62da799870a7476ce34f5f7658589a8aad"
+      }
+    },
+    "model": {
+      "checkpoint_sha256": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b",
+      "config_sha256": "660db3b73d788119c04535e48cf9be5f55bc3100841a718637ae695b442f27dd",
+      "path": "/data1/models/Qwen3-0.6B",
+      "prompt_token_count": 9,
+      "prompt_token_ids": [
+        840,
+        20772,
+        1246,
+        264,
+        42578,
+        1622,
+        2539,
+        1467,
+        13
+      ]
+    },
+    "runtime_kv_capacity": {
+      "auto-infer": {
+        "evidence": "EngineConfig CacheConfig plus matched runtime kv_capacity readback",
+        "usable_tokens": 14464
+      },
+      "omni-npu": {
+        "evidence": "profile log line 184 runtime readback",
+        "log_sha256": "fb26592cfc1fa454eddc1658461f92cc7c608d10cded498ac60e69e7c28e7db7",
+        "usable_tokens": 14464
+      },
+      "vllm-ascend": {
+        "evidence": "profile log line 61 runtime readback",
+        "log_sha256": "eac48327fb85b75eeddcb1e1664666e2f83d0b7bcda3085e3755c5624e3e473c",
+        "usable_tokens": 14464
+      }
+    },
+    "schema_version": 1
+  },
   "schema_version": 1,
   "workload": {
     "batch_size": 16,

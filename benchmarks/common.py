@@ -52,8 +52,14 @@ def token_digest(token_ids: list[int]) -> str:
     return hashlib.sha256(payload).hexdigest()[:16]
 
 
+LEGACY_PRE_COLD_SCHEMA = "pre-cold-ttft-v0"
+
+
 def validate_comparison_result(
-        result: dict, *, allow_missing_cold: bool = False) -> None:
+        result: dict, *, legacy_schema: str | None = None) -> None:
+    if legacy_schema not in {None, LEGACY_PRE_COLD_SCHEMA}:
+        raise ValueError(f"unsupported legacy benchmark schema: {legacy_schema}")
+    allow_missing_cold = legacy_schema == LEGACY_PRE_COLD_SCHEMA
     required_fields = REQUIRED_RESULT_FIELDS
     if allow_missing_cold:
         required_fields = required_fields - {"cold_ttft_seconds"}

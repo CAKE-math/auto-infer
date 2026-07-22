@@ -102,6 +102,9 @@ def test_aggregate_comparison_can_validate_archived_pre_cold_schema(tmp_path):
     with pytest.raises(ValueError, match="cold_ttft_seconds"):
         load_comparable_results(paths)
 
-    results = load_comparable_results(paths, allow_missing_cold=True)
+    results = load_comparable_results(paths, legacy_schema="pre-cold-ttft-v0")
 
     assert all("cold_ttft_seconds" not in result for result in results)
+
+    with pytest.raises(ValueError, match="unsupported legacy"):
+        load_comparable_results(paths, legacy_schema="unknown-v0")

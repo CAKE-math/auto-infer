@@ -11,11 +11,11 @@ EXPECTED_FRAMEWORKS = {"auto-infer", "omni-npu", "vllm-ascend"}
 
 
 def load_comparable_results(
-        paths, *, allow_missing_cold: bool = False) -> list[dict]:
+        paths, *, legacy_schema: str | None = None) -> list[dict]:
     results = [json.loads(Path(path).read_text()) for path in paths]
     for result in results:
         validate_comparison_result(
-            result, allow_missing_cold=allow_missing_cold)
+            result, legacy_schema=legacy_schema)
     frameworks = {result["framework"] for result in results}
     if len(results) != 3 or frameworks != EXPECTED_FRAMEWORKS:
         raise ValueError(

@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -14,7 +15,11 @@ from benchmarks.profile_qwen3 import (
     prepare_omni_compatibility,
     profile_configuration,
 )
-from tools.analyze_qwen3_profiles import classify_event, summarize_trace
+from tools.analyze_qwen3_profiles import (
+    _publish_trace,
+    classify_event,
+    summarize_trace,
+)
 from tools.build_qwen3_architecture_report import build_report
 
 
@@ -210,6 +215,17 @@ def test_trace_summary_accepts_numeric_string_duration_and_retains_identity(
     assert summary["top_events"][0]["tids"] == [5]
 
 
+def test_publish_trace_copies_validated_artifact_to_raw_directory(tmp_path):
+    source = tmp_path / "capture" / "trace.json"
+    source.parent.mkdir()
+    source.write_text(json.dumps([_event("GraphReplay", 1)]))
+
+    published = _publish_trace(source, tmp_path / "report", "auto-infer")
+
+    assert published == tmp_path / "report" / "raw" / "auto-infer.trace.json"
+    assert published.read_bytes() == source.read_bytes()
+
+
 @pytest.fixture
 def profile_evidence():
     root = Path(__file__).parents[1] / "docs" / "profiling" / "qwen3"
@@ -253,6 +269,22 @@ def test_report_is_offline_semantic_and_has_no_placeholders(profile_evidence):
     assert "http://" not in html
     assert "TODO" not in html
     assert "PLACEHOLDER" not in html
+    assert "overflow-x:hidden" not in html
+    assert "line-break:anywhere" in html
+
+
+def test_report_headline_and_attention_facts_are_json_driven(profile_evidence):
+    summary, manifest = deepcopy(profile_evidence)
+    summary["headline_benchmarks"]["auto-infer"][
+        "throughput_tokens_per_second"]["median"] = 999.0
+    for event in summary["profiles"]["auto-infer"]["top_events"]:
+        if event["name"].startswith("npu::npu_fused_infer_attention_score"):
+            event["count"] = 123
+
+    document = build_report(summary, manifest)
+
+    assert "B16: 999.0 tok/s" in document
+    assert "<strong>123</strong><span>FIA host calls</span>" in document
 
 
 class _ReportParser(HTMLParser):
@@ -284,6 +316,13 @@ def test_report_links_resolve_and_hashes_match(profile_evidence):
     for artifact in manifest["artifacts"].values():
         assert artifact["sha256"] in document
         environment = artifact["metadata"]["environment"]
-        assert environment["source_revision"] != "unknown"
-        assert environment["source_revision_origin"] in {
+        assert environment["capture_harness_revision"] != "unknown"
+        assert environment["capture_harness_revision_origin"] in {
             "capture_environment", "content_hash_verified_deployment"}
+        assert environment["framework_source_revisions"]
+        assert environment["driver"]["physical_npu"] == 1
+    provenance = manifest["provenance"]
+    assert provenance["model"]["prompt_token_count"] == len(
+        provenance["model"]["prompt_token_ids"])
+    assert provenance["model"]["config_sha256"]
+    assert provenance["model"]["checkpoint_sha256"]

@@ -1,7 +1,9 @@
 """Capture one bounded, matched Qwen3 request as a Chrome Trace artifact."""
 
 import argparse
+import hashlib
 import importlib.metadata
+import json
 import os
 import platform
 import subprocess
@@ -76,6 +78,42 @@ def _package_version(name: str) -> str:
         return "not-installed"
 
 
+def _driver_version() -> dict:
+    path = Path("/usr/local/Ascend/driver/version.info")
+    if not path.is_file():
+        return {}
+    entries = {}
+    for line in path.read_text(errors="replace").splitlines():
+        if "=" in line:
+            key, value = line.split("=", 1)
+            if key in {"Version", "ascendhal_version", "package_version"}:
+                entries[key] = value
+    return entries
+
+
+def _model_identity(model: str, prompt_ids: list[int]) -> dict:
+    model_path = Path(model)
+    config_path = model_path / "config.json"
+    checkpoints = sorted(model_path.glob("*.safetensors"))
+    if not config_path.is_file() or not checkpoints:
+        raise ValueError("profiling requires local config and safetensors files")
+    if len(checkpoints) == 1:
+        checkpoint_digest = sha256_file(checkpoints[0])
+    else:
+        combined = hashlib.sha256()
+        for checkpoint in checkpoints:
+            combined.update(checkpoint.name.encode())
+            combined.update(sha256_file(checkpoint).encode())
+        checkpoint_digest = combined.hexdigest()
+    return {
+        "path": model,
+        "config_sha256": sha256_file(config_path),
+        "checkpoint_sha256": checkpoint_digest,
+        "prompt_token_ids": list(prompt_ids),
+        "prompt_token_count": len(prompt_ids),
+    }
+
+
 def _environment(torch, torch_npu) -> dict:
     device_name = "unknown"
     get_name = getattr(torch.npu, "get_device_name", None)
@@ -91,8 +129,12 @@ def _environment(torch, torch_npu) -> dict:
         "torch_npu": getattr(torch_npu, "__version__", "unknown"),
         "vllm": _package_version("vllm"),
         "omni_plugin": os.environ.get("VLLM_PLUGINS", ""),
-        "source_revision": _revision(),
-        "source_revision_origin": "capture_environment",
+        "visible_npus": os.environ.get("ASCEND_RT_VISIBLE_DEVICES", ""),
+        "driver": _driver_version(),
+        "capture_harness_revision": _revision(),
+        "capture_harness_revision_origin": "capture_environment",
+        "framework_source_revisions": json.loads(os.environ.get(
+            "PROFILE_FRAMEWORK_SOURCE_REVISIONS", "{}")),
     }
 
 
@@ -124,6 +166,15 @@ class _AutoInferAdapter:
             async_scheduling=manifest["async_scheduling"],
             async_batches=manifest["async_batches"])
         self._llm = LLM(config)
+        self.runtime_kv_capacity = {
+            "usable_tokens": manifest["usable_kv_tokens"],
+            "runtime_block_size": block_size,
+            "evidence": "constructed EngineConfig CacheConfig",
+        }
+
+    @property
+    def prompt_ids(self) -> list[int]:
+        return list(self._prompt_ids)
 
     def run(self, batch_size: int, output_tokens: int) -> list[list[int]]:
         return self._llm.generate(
@@ -147,6 +198,22 @@ class _VllmAdapter:
             kv_cache_memory_bytes=manifest["kv_cache_memory_bytes"],
             enforce_eager=False, seed=manifest["seed"])
         self._prompt_ids = self._llm.get_tokenizer().encode(manifest["prompt"])
+        engine = self._llm.llm_engine
+        cache = engine.vllm_config.cache_config
+        runtime_blocks = getattr(cache, "num_gpu_blocks", None)
+        runtime_block_size = int(getattr(cache, "block_size"))
+        if not isinstance(runtime_blocks, int) or runtime_blocks <= 0:
+            raise ValueError("vLLM did not expose runtime num_gpu_blocks")
+        self.runtime_kv_capacity = {
+            "usable_tokens": runtime_blocks * runtime_block_size,
+            "runtime_block_size": runtime_block_size,
+            "runtime_blocks": runtime_blocks,
+            "evidence": "vLLM cache_config runtime readback",
+        }
+
+    @property
+    def prompt_ids(self) -> list[int]:
+        return list(self._prompt_ids)
 
     def run(self, batch_size: int, output_tokens: int) -> list[list[int]]:
         params = self._sampling_params(
@@ -186,6 +253,11 @@ def capture(manifest_path: Path, framework: str, output_dir: Path) -> None:
     metadata_path = output_dir / f"{framework}.metadata.json"
     engine = _adapter(manifest, framework)
     try:
+        model_identity = _model_identity(manifest["model"], engine.prompt_ids)
+        runtime_capacity = engine.runtime_kv_capacity
+        if runtime_capacity["usable_tokens"] != workload["usable_kv_tokens"]:
+            raise ValueError(
+                "runtime KV capacity differs from profiling workload")
         for _ in range(workload["warmup_runs"]):
             engine.run(
                 workload["batch_size"], workload["warmup_output_tokens"])
@@ -220,6 +292,8 @@ def capture(manifest_path: Path, framework: str, output_dir: Path) -> None:
             **trace,
         },
         "workload": workload,
+        "model_identity": model_identity,
+        "runtime_kv_capacity": runtime_capacity,
         "environment": _environment(torch, torch_npu),
         "capture": {"started_at_utc": started_at,
                     "completed_at_utc": completed_at},
