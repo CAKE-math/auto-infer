@@ -127,7 +127,16 @@ def summarize_trace(path: Path) -> dict:
 
 
 def _without_framework(workload: dict) -> dict:
-    return {key: value for key, value in workload.items() if key != "framework"}
+    normalized = {
+        key: value for key, value in workload.items() if key != "framework"}
+    output_tokens = normalized["output_tokens"]
+    normalized.setdefault("capture_phases", {
+        "prefill_passes": 1,
+        "decode_passes": max(output_tokens - 1, 0),
+        "continuous_decode": output_tokens > 1,
+        "speculative_mtp": False,
+    })
+    return normalized
 
 
 def _locate_trace(metadata_path: Path, output_dir: Path, framework: str,
@@ -164,6 +173,10 @@ def build_evidence(metadata_paths: list[Path], benchmark_paths: list[Path],
     for framework in sorted(EXPECTED_FRAMEWORKS):
         metadata_path, metadata = metadata_by_framework[framework]
         workload = _without_framework(metadata["workload"])
+        metadata = {**metadata, "workload": {
+            **metadata["workload"],
+            "capture_phases": workload["capture_phases"],
+        }}
         if canonical_workload is None:
             canonical_workload = workload
         elif workload != canonical_workload:

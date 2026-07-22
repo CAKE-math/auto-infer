@@ -1,4 +1,6 @@
 import json
+from html.parser import HTMLParser
+from pathlib import Path
 
 import pytest
 
@@ -12,6 +14,7 @@ from benchmarks.profile_qwen3 import (
     profile_configuration,
 )
 from tools.analyze_qwen3_profiles import classify_event, summarize_trace
+from tools.build_qwen3_architecture_report import build_report
 
 
 def _manifest():
@@ -41,6 +44,12 @@ def test_profile_configuration_is_bounded_and_matched():
     assert config["output_tokens"] == 16
     assert config["warmup_runs"] == 1
     assert config["usable_kv_tokens"] == 14464
+    assert config["capture_phases"] == {
+        "prefill_passes": 1,
+        "decode_passes": 15,
+        "continuous_decode": True,
+        "speculative_mtp": False,
+    }
 
 
 @pytest.mark.parametrize(
@@ -192,3 +201,78 @@ def test_trace_summary_accepts_numeric_string_duration_and_retains_identity(
     assert summary["top_events"][0]["categories"] == ["cpu_op"]
     assert summary["top_events"][0]["pids"] == [4]
     assert summary["top_events"][0]["tids"] == [5]
+
+
+@pytest.fixture
+def profile_evidence():
+    root = Path(__file__).parents[1] / "docs" / "profiling" / "qwen3"
+    return (
+        json.loads((root / "summary.json").read_text()),
+        json.loads((root / "manifest.json").read_text()),
+    )
+
+
+def test_report_contains_executive_and_engineering_sections(profile_evidence):
+    html = build_report(*profile_evidence)
+
+    for anchor in (
+        "executive-summary", "matched-benchmark", "profiling-deep-dive",
+        "why-faster", "architecture-comparison", "invariants",
+        "per-model-artifacts", "acceptance-workflow", "evidence-appendix",
+    ):
+        assert f'id="{anchor}"' in html
+
+
+def test_report_links_every_raw_trace_and_labels_evidence(profile_evidence):
+    html = build_report(*profile_evidence)
+
+    for framework in ("auto-infer", "omni-npu", "vllm-ascend"):
+        assert f'profiling/qwen3/raw/{framework}.trace.json' in html
+    assert "实测" in html
+    assert "源码观察" in html
+    assert "因果推断" in html
+    assert "1 次 prefill" in html
+    assert "15 次连续 decode" in html
+    assert "不是投机 MTP" in html
+
+
+def test_report_is_offline_semantic_and_has_no_placeholders(profile_evidence):
+    html = build_report(*profile_evidence)
+
+    assert html.count("<title>") == 1
+    assert html.count("<h1") == 1
+    assert "<script" not in html
+    assert "https://" not in html
+    assert "http://" not in html
+    assert "TODO" not in html
+    assert "PLACEHOLDER" not in html
+
+
+class _ReportParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.ids = set()
+        self.hrefs = []
+
+    def handle_starttag(self, tag, attrs):
+        attributes = dict(attrs)
+        if "id" in attributes:
+            self.ids.add(attributes["id"])
+        if tag == "a" and "href" in attributes:
+            self.hrefs.append(attributes["href"])
+
+
+def test_report_links_resolve_and_hashes_match(profile_evidence):
+    summary, manifest = profile_evidence
+    document = build_report(summary, manifest)
+    parser = _ReportParser()
+    parser.feed(document)
+    docs = Path(__file__).parents[1] / "docs"
+
+    for href in parser.hrefs:
+        if href.startswith("#"):
+            assert href[1:] in parser.ids
+        else:
+            assert (docs / href).is_file(), href
+    for artifact in manifest["artifacts"].values():
+        assert artifact["sha256"] in document

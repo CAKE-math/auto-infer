@@ -43,6 +43,12 @@ def profile_configuration(manifest: dict, framework: str) -> dict:
         "dtype": manifest["dtype"],
         "temperature": manifest["temperature"],
         "seed": manifest["seed"],
+        "capture_phases": {
+            "prefill_passes": 1,
+            "decode_passes": max(PROFILE_OUTPUT_TOKENS - 1, 0),
+            "continuous_decode": PROFILE_OUTPUT_TOKENS > 1,
+            "speculative_mtp": False,
+        },
     }
 
 

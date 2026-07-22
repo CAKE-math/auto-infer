@@ -48,6 +48,12 @@
         },
         "workload": {
           "batch_size": 16,
+          "capture_phases": {
+            "continuous_decode": true,
+            "decode_passes": 15,
+            "prefill_passes": 1,
+            "speculative_mtp": false
+          },
           "dtype": "bfloat16",
           "framework": "auto-infer",
           "kv_block_size": 16,
@@ -115,6 +121,12 @@
         },
         "workload": {
           "batch_size": 16,
+          "capture_phases": {
+            "continuous_decode": true,
+            "decode_passes": 15,
+            "prefill_passes": 1,
+            "speculative_mtp": false
+          },
           "dtype": "bfloat16",
           "framework": "omni-npu",
           "kv_block_size": 16,
@@ -182,6 +194,12 @@
         },
         "workload": {
           "batch_size": 16,
+          "capture_phases": {
+            "continuous_decode": true,
+            "decode_passes": 15,
+            "prefill_passes": 1,
+            "speculative_mtp": false
+          },
           "dtype": "bfloat16",
           "framework": "vllm-ascend",
           "kv_block_size": 16,
@@ -211,6 +229,12 @@
   "schema_version": 1,
   "workload": {
     "batch_size": 16,
+    "capture_phases": {
+      "continuous_decode": true,
+      "decode_passes": 15,
+      "prefill_passes": 1,
+      "speculative_mtp": false
+    },
     "dtype": "bfloat16",
     "kv_block_size": 16,
     "kv_cache_memory_bytes": 1658847232,
