@@ -771,18 +771,136 @@
   },
   "profiles": {
     "auto-infer": {
-      "complete_event_count": 54383,
-      "event_count": 74744,
+      "complete_event_count": 64947,
+      "event_count": 85343,
+      "execution_phases": {
+        "lane": "QWEN3 PHASES",
+        "schema_version": 1,
+        "steps": [
+          {
+            "duration_us": 51144.14,
+            "label": "PREFILL",
+            "phase": "prefill",
+            "step": 0,
+            "timestamp_us": 1784731947682755.8
+          },
+          {
+            "duration_us": 9364.74,
+            "label": "DECODE 001",
+            "phase": "decode",
+            "step": 1,
+            "timestamp_us": 1784731947733949.0
+          },
+          {
+            "duration_us": 8921.26,
+            "label": "DECODE 002",
+            "phase": "decode",
+            "step": 2,
+            "timestamp_us": 1784731947743346.0
+          },
+          {
+            "duration_us": 8903.24,
+            "label": "DECODE 003",
+            "phase": "decode",
+            "step": 3,
+            "timestamp_us": 1784731947752298.5
+          },
+          {
+            "duration_us": 8903.16,
+            "label": "DECODE 004",
+            "phase": "decode",
+            "step": 4,
+            "timestamp_us": 1784731947761236.0
+          },
+          {
+            "duration_us": 8882.09,
+            "label": "DECODE 005",
+            "phase": "decode",
+            "step": 5,
+            "timestamp_us": 1784731947770170.2
+          },
+          {
+            "duration_us": 8947.47,
+            "label": "DECODE 006",
+            "phase": "decode",
+            "step": 6,
+            "timestamp_us": 1784731947779082.5
+          },
+          {
+            "duration_us": 9058.19,
+            "label": "DECODE 007",
+            "phase": "decode",
+            "step": 7,
+            "timestamp_us": 1784731947788061.8
+          },
+          {
+            "duration_us": 9318.49,
+            "label": "DECODE 008",
+            "phase": "decode",
+            "step": 8,
+            "timestamp_us": 1784731947797150.2
+          },
+          {
+            "duration_us": 9177.08,
+            "label": "DECODE 009",
+            "phase": "decode",
+            "step": 9,
+            "timestamp_us": 1784731947806499.2
+          },
+          {
+            "duration_us": 9144.46,
+            "label": "DECODE 010",
+            "phase": "decode",
+            "step": 10,
+            "timestamp_us": 1784731947815706.5
+          },
+          {
+            "duration_us": 9246.75,
+            "label": "DECODE 011",
+            "phase": "decode",
+            "step": 11,
+            "timestamp_us": 1784731947824880.2
+          },
+          {
+            "duration_us": 9068.11,
+            "label": "DECODE 012",
+            "phase": "decode",
+            "step": 12,
+            "timestamp_us": 1784731947834157.5
+          },
+          {
+            "duration_us": 9182.63,
+            "label": "DECODE 013",
+            "phase": "decode",
+            "step": 13,
+            "timestamp_us": 1784731947843254.8
+          },
+          {
+            "duration_us": 9191.2,
+            "label": "DECODE 014",
+            "phase": "decode",
+            "step": 14,
+            "timestamp_us": 1784731947852466.2
+          },
+          {
+            "duration_us": 9216.66,
+            "label": "DECODE 015",
+            "phase": "decode",
+            "step": 15,
+            "timestamp_us": 1784731947861687.5
+          }
+        ]
+      },
       "phases": {
         "attention_kv": {
           "count": 2268,
-          "duration_us": 68766.1799999999,
-          "share": 0.07385342154348987
+          "duration_us": 88779.38000000022,
+          "share": 0.07540608579942608
         },
         "communication_memory": {
           "count": 1208,
-          "duration_us": 14438.230000000027,
-          "share": 0.015506353363410112
+          "duration_us": 12069.459999999935,
+          "share": 0.010251375221506773
         },
         "graph_replay": {
           "count": 0,
@@ -791,23 +909,23 @@
         },
         "lm_head_sampling": {
           "count": 37,
-          "duration_us": 544.24,
-          "share": 0.000584502238467063
+          "duration_us": 578.6800000000001,
+          "share": 0.0004915104580637056
         },
         "projection_mlp_norm": {
           "count": 5080,
-          "duration_us": 61179.38999999999,
-          "share": 0.06570536969544584
+          "duration_us": 67310.05999999998,
+          "share": 0.05717079979072284
         },
         "runtime_scheduling": {
           "count": 1701,
-          "duration_us": 463191.6999999998,
-          "share": 0.4974580800554244
+          "duration_us": 587258.0099999992,
+          "share": 0.4987963183394618
         },
         "unclassified": {
-          "count": 44089,
-          "duration_us": 322997.3099999281,
-          "share": 0.3468922731034063
+          "count": 54653,
+          "duration_us": 421354.7399999319,
+          "share": 0.35788391039033673
         }
       },
       "top_events": [
@@ -816,13 +934,13 @@
             "cpu_op"
           ],
           "count": 1,
-          "duration_us": 149671.51,
+          "duration_us": 188624.44,
           "name": "qwen3/profiled_request",
           "pids": [
-            195872
+            198941
           ],
           "tids": [
-            195872
+            198941
           ]
         },
         {
@@ -830,13 +948,13 @@
             "cpu_op"
           ],
           "count": 1,
-          "duration_us": 149582.21,
+          "duration_us": 188498.7,
           "name": "auto-infer",
           "pids": [
-            195872
+            198941
           ],
           "tids": [
-            195872
+            198941
           ]
         },
         {
@@ -844,34 +962,22 @@
             "cpu_op"
           ],
           "count": 1,
-          "duration_us": 149525.04,
+          "duration_us": 188441.31,
           "name": "qwen3/prefill_and_decode",
           "pids": [
-            195872
+            198941
           ],
           "tids": [
-            195872
-          ]
-        },
-        {
-          "categories": [],
-          "count": 12818,
-          "duration_us": 92497.36000000019,
-          "name": "Computing",
-          "pids": [
-            200573889
-          ],
-          "tids": [
-            2
+            198941
           ]
         },
         {
           "categories": [],
           "count": 15,
-          "duration_us": 90584.50000000001,
+          "duration_us": 121663.94000000002,
           "name": "NOTIFY_WAIT",
           "pids": [
-            200573345
+            203716001
           ],
           "tids": [
             46
@@ -880,13 +986,25 @@
         {
           "categories": [],
           "count": 12818,
-          "duration_us": 55525.55999997301,
+          "duration_us": 93767.29999999939,
           "name": "Free",
           "pids": [
-            200573889
+            203716545
           ],
           "tids": [
             3
+          ]
+        },
+        {
+          "categories": [],
+          "count": 12818,
+          "duration_us": 92802.02000000051,
+          "name": "Computing",
+          "pids": [
+            203716545
+          ],
+          "tids": [
+            2
           ]
         },
         {
@@ -894,22 +1012,48 @@
             "cpu_op"
           ],
           "count": 448,
-          "duration_us": 28900.15999999998,
+          "duration_us": 37028.80999999997,
           "name": "npu::npu_fused_infer_attention_score_v2",
           "pids": [
-            195872
+            198941
           ],
           "tids": [
-            195872
+            198941
+          ]
+        },
+        {
+          "categories": [],
+          "count": 13426,
+          "duration_us": 35484.819999998435,
+          "name": "MEM_WAIT_VALUE",
+          "pids": [
+            203716001
+          ],
+          "tids": [
+            5
+          ]
+        },
+        {
+          "categories": [
+            "dequeue"
+          ],
+          "count": 448,
+          "duration_us": 22856.570000000007,
+          "name": "Dequeue@aclnnFusedInferAttentionScoreV4",
+          "pids": [
+            198941
+          ],
+          "tids": [
+            199167
           ]
         },
         {
           "categories": [],
           "count": 448,
-          "duration_us": 19138.599999999977,
+          "duration_us": 19105.480000000007,
           "name": "FusedInferAttentionScore",
           "pids": [
-            200573345
+            203716001
           ],
           "tids": [
             46,
@@ -919,10 +1063,10 @@
         {
           "categories": [],
           "count": 1793,
-          "duration_us": 18656.780000000002,
+          "duration_us": 18567.26000000002,
           "name": "aclnnMatmul_MatMulCommon_MatMulV2",
           "pids": [
-            200573345
+            203716001
           ],
           "tids": [
             46,
@@ -930,40 +1074,12 @@
           ]
         },
         {
-          "categories": [
-            "dequeue"
-          ],
-          "count": 448,
-          "duration_us": 13428.189999999995,
-          "name": "Dequeue@aclnnFusedInferAttentionScoreV4",
-          "pids": [
-            195872
-          ],
-          "tids": [
-            196090
-          ]
-        },
-        {
-          "categories": [
-            "cpu_op"
-          ],
-          "count": 152,
-          "duration_us": 12033.380000000001,
-          "name": "aten::copy_",
-          "pids": [
-            195872
-          ],
-          "tids": [
-            195872
-          ]
-        },
-        {
           "categories": [],
           "count": 912,
-          "duration_us": 11746.459999999974,
+          "duration_us": 11626.639999999998,
           "name": "RmsNorm",
           "pids": [
-            200573345
+            203716001
           ],
           "tids": [
             46,
@@ -973,10 +1089,10 @@
         {
           "categories": [],
           "count": 1808,
-          "duration_us": 10828.199999999992,
+          "duration_us": 10832.26,
           "name": "aclnnMul_MulAiCore_Mul",
           "pids": [
-            200573345
+            203716001
           ],
           "tids": [
             46,
@@ -987,67 +1103,28 @@
           "categories": [
             "cpu_op"
           ],
+          "count": 152,
+          "duration_us": 9506.060000000001,
+          "name": "aten::copy_",
+          "pids": [
+            198941
+          ],
+          "tids": [
+            198941
+          ]
+        },
+        {
+          "categories": [
+            "cpu_op"
+          ],
           "count": 46,
-          "duration_us": 10398.06,
+          "duration_us": 7361.129999999999,
           "name": "aten::to",
           "pids": [
-            195872
+            198941
           ],
           "tids": [
-            195872
-          ]
-        },
-        {
-          "categories": [
-            "cpu_op"
-          ],
-          "count": 46,
-          "duration_us": 10316.03,
-          "name": "aten::_to_copy",
-          "pids": [
-            195872
-          ],
-          "tids": [
-            195872
-          ]
-        },
-        {
-          "categories": [
-            "cpu_op"
-          ],
-          "count": 57,
-          "duration_us": 5282.660000000001,
-          "name": "npu::npu_rms_norm",
-          "pids": [
-            195872
-          ],
-          "tids": [
-            195872
-          ]
-        },
-        {
-          "categories": [],
-          "count": 2862,
-          "duration_us": 5211.119999999939,
-          "name": "MEM_WAIT_VALUE",
-          "pids": [
-            200573345
-          ],
-          "tids": [
-            5
-          ]
-        },
-        {
-          "categories": [],
-          "count": 896,
-          "duration_us": 4820.259999999993,
-          "name": "aclnnAddRmsNorm_AddRmsNorm_AddRmsNorm",
-          "pids": [
-            200573345
-          ],
-          "tids": [
-            46,
-            5
+            198941
           ]
         },
         {
@@ -1055,22 +1132,50 @@
             "dequeue"
           ],
           "count": 420,
-          "duration_us": 4582.679999999997,
+          "duration_us": 7286.060000000003,
           "name": "Dequeue@record_event",
           "pids": [
-            195872
+            198941
           ],
           "tids": [
-            196090
+            199167
+          ]
+        },
+        {
+          "categories": [
+            "cpu_op"
+          ],
+          "count": 46,
+          "duration_us": 7239.4400000000005,
+          "name": "aten::_to_copy",
+          "pids": [
+            198941
+          ],
+          "tids": [
+            198941
+          ]
+        },
+        {
+          "categories": [
+            "cpu_op"
+          ],
+          "count": 57,
+          "duration_us": 6344.7800000000025,
+          "name": "npu::npu_rms_norm",
+          "pids": [
+            198941
+          ],
+          "tids": [
+            198941
           ]
         },
         {
           "categories": [],
           "count": 896,
-          "duration_us": 4244.619999999991,
-          "name": "aclnnAdd_AddAiCore_Add",
+          "duration_us": 4824.8,
+          "name": "aclnnAddRmsNorm_AddRmsNorm_AddRmsNorm",
           "pids": [
-            200573345
+            203716001
           ],
           "tids": [
             46,
@@ -1081,23 +1186,106 @@
           "categories": [
             "cpu_op"
           ],
-          "count": 831,
-          "duration_us": 3875.160000000003,
-          "name": "empty_tensor",
+          "count": 420,
+          "duration_us": 4748.1799999999985,
+          "name": "record_event",
           "pids": [
-            195872
+            198941
           ],
           "tids": [
-            195872
+            198941
+          ]
+        },
+        {
+          "categories": [
+            "cpu_op"
+          ],
+          "count": 448,
+          "duration_us": 4430.5199999999995,
+          "name": "aclnnFusedInferAttentionScoreV4",
+          "pids": [
+            198941
+          ],
+          "tids": [
+            198941
+          ]
+        },
+        {
+          "categories": [
+            "dequeue"
+          ],
+          "count": 57,
+          "duration_us": 4424.51,
+          "name": "Dequeue@aclnnRmsNorm",
+          "pids": [
+            198941
+          ],
+          "tids": [
+            199167
+          ]
+        },
+        {
+          "categories": [],
+          "count": 896,
+          "duration_us": 4243.959999999986,
+          "name": "aclnnAdd_AddAiCore_Add",
+          "pids": [
+            203716001
+          ],
+          "tids": [
+            46,
+            5
+          ]
+        },
+        {
+          "categories": [
+            "enqueue"
+          ],
+          "count": 420,
+          "duration_us": 4021.0900000000024,
+          "name": "Enqueue@record_event",
+          "pids": [
+            198941
+          ],
+          "tids": [
+            198941
+          ]
+        },
+        {
+          "categories": [
+            "cpu_op"
+          ],
+          "count": 831,
+          "duration_us": 3984.190000000002,
+          "name": "empty_tensor",
+          "pids": [
+            198941
+          ],
+          "tids": [
+            198941
+          ]
+        },
+        {
+          "categories": [
+            "enqueue"
+          ],
+          "count": 448,
+          "duration_us": 3755.5999999999976,
+          "name": "Enqueue@aclnnFusedInferAttentionScoreV4",
+          "pids": [
+            198941
+          ],
+          "tids": [
+            198941
           ]
         },
         {
           "categories": [],
           "count": 912,
-          "duration_us": 3749.3800000000383,
+          "duration_us": 3749.3200000000384,
           "name": "aclnnCat_ConcatD_ConcatD",
           "pids": [
-            200573345
+            203716001
           ],
           "tids": [
             46,
@@ -1107,68 +1295,13 @@
         {
           "categories": [],
           "count": 15,
-          "duration_us": 3595.1600000000003,
+          "duration_us": 3615.9,
           "name": "aclnnMm_MatMulCommon_MatMulV2",
           "pids": [
-            200573345
+            203716001
           ],
           "tids": [
             5
-          ]
-        },
-        {
-          "categories": [
-            "cpu_op"
-          ],
-          "count": 420,
-          "duration_us": 3455.290000000002,
-          "name": "record_event",
-          "pids": [
-            195872
-          ],
-          "tids": [
-            195872
-          ]
-        },
-        {
-          "categories": [
-            "cpu_op"
-          ],
-          "count": 448,
-          "duration_us": 3331.79,
-          "name": "aclnnFusedInferAttentionScoreV4",
-          "pids": [
-            195872
-          ],
-          "tids": [
-            195872
-          ]
-        },
-        {
-          "categories": [],
-          "count": 448,
-          "duration_us": 2923.820000000001,
-          "name": "SwiGlu",
-          "pids": [
-            200573345
-          ],
-          "tids": [
-            46,
-            5
-          ]
-        },
-        {
-          "categories": [
-            "enqueue"
-          ],
-          "count": 420,
-          "duration_us": 2825.160000000001,
-          "name": "Enqueue@record_event",
-          "pids": [
-            195872
-          ],
-          "tids": [
-            195872
           ]
         },
         {
@@ -1176,45 +1309,30 @@
             "cpu_op"
           ],
           "count": 113,
-          "duration_us": 2820.4500000000007,
+          "duration_us": 3285.6099999999983,
           "name": "aten::matmul",
           "pids": [
-            195872
+            198941
           ],
           "tids": [
-            195872
+            198941
           ]
         },
         {
-          "categories": [
-            "enqueue"
-          ],
-          "count": 448,
-          "duration_us": 2694.9900000000002,
-          "name": "Enqueue@aclnnFusedInferAttentionScoreV4",
+          "categories": [],
+          "count": 896,
+          "duration_us": 2928.699999999995,
+          "name": "aclnnNeg_NegAiCore_Neg",
           "pids": [
-            195872
+            203716001
           ],
           "tids": [
-            195872
-          ]
-        },
-        {
-          "categories": [
-            "dequeue"
-          ],
-          "count": 57,
-          "duration_us": 2659.4099999999994,
-          "name": "Dequeue@aclnnRmsNorm",
-          "pids": [
-            195872
-          ],
-          "tids": [
-            196090
+            46,
+            5
           ]
         }
       ],
-      "total_event_duration_us": 931117.0500002597,
+      "total_event_duration_us": 1177350.3300004988,
       "unclassified_names": [
         "Computing",
         "Free",
@@ -1304,18 +1422,136 @@
       ]
     },
     "omni-npu": {
-      "complete_event_count": 41301,
-      "event_count": 59728,
+      "complete_event_count": 41302,
+      "event_count": 59764,
+      "execution_phases": {
+        "lane": "QWEN3 PHASES",
+        "schema_version": 1,
+        "steps": [
+          {
+            "duration_us": 58324.37,
+            "label": "PREFILL",
+            "phase": "prefill",
+            "step": 0,
+            "timestamp_us": 1784731887505309.8
+          },
+          {
+            "duration_us": 9141.61,
+            "label": "DECODE 001",
+            "phase": "decode",
+            "step": 1,
+            "timestamp_us": 1784731887563688.2
+          },
+          {
+            "duration_us": 8663.94,
+            "label": "DECODE 002",
+            "phase": "decode",
+            "step": 2,
+            "timestamp_us": 1784731887572876.2
+          },
+          {
+            "duration_us": 8614.56,
+            "label": "DECODE 003",
+            "phase": "decode",
+            "step": 3,
+            "timestamp_us": 1784731887581583.5
+          },
+          {
+            "duration_us": 8587.69,
+            "label": "DECODE 004",
+            "phase": "decode",
+            "step": 4,
+            "timestamp_us": 1784731887590244.2
+          },
+          {
+            "duration_us": 8595.39,
+            "label": "DECODE 005",
+            "phase": "decode",
+            "step": 5,
+            "timestamp_us": 1784731887598874.8
+          },
+          {
+            "duration_us": 9649.79,
+            "label": "DECODE 006",
+            "phase": "decode",
+            "step": 6,
+            "timestamp_us": 1784731887607516.0
+          },
+          {
+            "duration_us": 8726.74,
+            "label": "DECODE 007",
+            "phase": "decode",
+            "step": 7,
+            "timestamp_us": 1784731887617212.8
+          },
+          {
+            "duration_us": 8804.34,
+            "label": "DECODE 008",
+            "phase": "decode",
+            "step": 8,
+            "timestamp_us": 1784731887626009.2
+          },
+          {
+            "duration_us": 8728.74,
+            "label": "DECODE 009",
+            "phase": "decode",
+            "step": 9,
+            "timestamp_us": 1784731887634861.0
+          },
+          {
+            "duration_us": 8773.01,
+            "label": "DECODE 010",
+            "phase": "decode",
+            "step": 10,
+            "timestamp_us": 1784731887643635.0
+          },
+          {
+            "duration_us": 8705.33,
+            "label": "DECODE 011",
+            "phase": "decode",
+            "step": 11,
+            "timestamp_us": 1784731887652455.0
+          },
+          {
+            "duration_us": 8695.59,
+            "label": "DECODE 012",
+            "phase": "decode",
+            "step": 12,
+            "timestamp_us": 1784731887661204.5
+          },
+          {
+            "duration_us": 8700.01,
+            "label": "DECODE 013",
+            "phase": "decode",
+            "step": 13,
+            "timestamp_us": 1784731887669945.2
+          },
+          {
+            "duration_us": 8651.7,
+            "label": "DECODE 014",
+            "phase": "decode",
+            "step": 14,
+            "timestamp_us": 1784731887678690.0
+          },
+          {
+            "duration_us": 8806.34,
+            "label": "DECODE 015",
+            "phase": "decode",
+            "step": 15,
+            "timestamp_us": 1784731887687386.2
+          }
+        ]
+      },
       "phases": {
         "attention_kv": {
           "count": 2856,
-          "duration_us": 77789.63000000009,
-          "share": 0.0713402129323242
+          "duration_us": 79670.09000000003,
+          "share": 0.07080449869964053
         },
         "communication_memory": {
           "count": 1313,
-          "duration_us": 8327.140000000083,
-          "share": 0.007636749791936012
+          "duration_us": 8016.790000000073,
+          "share": 0.007124691300465409
         },
         "graph_replay": {
           "count": 0,
@@ -1324,23 +1560,23 @@
         },
         "lm_head_sampling": {
           "count": 112,
-          "duration_us": 3843.1699999999996,
-          "share": 0.003524538760952071
+          "duration_us": 3810.800000000001,
+          "share": 0.0033867387829559395
         },
         "projection_mlp_norm": {
           "count": 5268,
-          "duration_us": 70936.23999999983,
-          "share": 0.06505502682322098
+          "duration_us": 71569.84999999979,
+          "share": 0.06360564361429052
         },
         "runtime_scheduling": {
           "count": 1907,
-          "duration_us": 586553.5399999991,
-          "share": 0.5379232995427338
+          "duration_us": 606163.3200000002,
+          "share": 0.538710198553934
         },
         "unclassified": {
-          "count": 29845,
-          "duration_us": 342953.9499999755,
-          "share": 0.3145201721486513
+          "count": 29846,
+          "duration_us": 355981.4099999757,
+          "share": 0.3163682290485611
         }
       },
       "top_events": [
@@ -1349,13 +1585,13 @@
             "cpu_op"
           ],
           "count": 1,
-          "duration_us": 190019.06,
+          "duration_us": 196164.33,
           "name": "qwen3/profiled_request",
           "pids": [
-            3096306
+            126
           ],
           "tids": [
-            3096306
+            126
           ]
         },
         {
@@ -1363,13 +1599,13 @@
             "cpu_op"
           ],
           "count": 1,
-          "duration_us": 189916.18,
+          "duration_us": 196067.28,
           "name": "omni-npu",
           "pids": [
-            3096306
+            126
           ],
           "tids": [
-            3096306
+            126
           ]
         },
         {
@@ -1377,22 +1613,22 @@
             "cpu_op"
           ],
           "count": 1,
-          "duration_us": 189866.32,
+          "duration_us": 196023.7,
           "name": "qwen3/prefill_and_decode",
           "pids": [
-            3096306
+            126
           ],
           "tids": [
-            3096306
+            126
           ]
         },
         {
           "categories": [],
           "count": 8304,
-          "duration_us": 107527.06000000545,
+          "duration_us": 112737.12000000622,
           "name": "Free",
           "pids": [
-            3170618273
+            129953
           ],
           "tids": [
             3
@@ -1401,10 +1637,10 @@
         {
           "categories": [],
           "count": 15,
-          "duration_us": 81010.15999999999,
+          "duration_us": 84962.20000000003,
           "name": "NOTIFY_WAIT",
           "pids": [
-            3170617761
+            129441
           ],
           "tids": [
             47
@@ -1413,10 +1649,10 @@
         {
           "categories": [],
           "count": 8303,
-          "duration_us": 77133.56000000008,
+          "duration_us": 77088.95999999989,
           "name": "Computing",
           "pids": [
-            3170618273
+            129953
           ],
           "tids": [
             2
@@ -1427,22 +1663,22 @@
             "cpu_op"
           ],
           "count": 448,
-          "duration_us": 24575.539999999994,
+          "duration_us": 25893.790000000008,
           "name": "npu::npu_fused_infer_attention_score_v2",
           "pids": [
-            3096306
+            126
           ],
           "tids": [
-            3096306
+            126
           ]
         },
         {
           "categories": [],
           "count": 436,
-          "duration_us": 16726.840000000004,
+          "duration_us": 20495.980000000018,
           "name": "EVENT_WAIT",
           "pids": [
-            3170617761
+            129441
           ],
           "tids": [
             44,
@@ -1450,29 +1686,29 @@
           ]
         },
         {
-          "categories": [],
-          "count": 420,
-          "duration_us": 14959.460000000006,
-          "name": "FusedInferAttentionScore_3b093497fc536d61a77a7a3293a524da_5000000000010200203",
-          "pids": [
-            3170617761
-          ],
-          "tids": [
-            83
-          ]
-        },
-        {
           "categories": [
             "dequeue"
           ],
           "count": 448,
-          "duration_us": 13483.51,
+          "duration_us": 14490.88999999999,
           "name": "Dequeue@aclnnFusedInferAttentionScoreV4",
           "pids": [
-            3096306
+            126
           ],
           "tids": [
-            3096611
+            467
+          ]
+        },
+        {
+          "categories": [],
+          "count": 420,
+          "duration_us": 14172.020000000006,
+          "name": "FusedInferAttentionScore_3b093497fc536d61a77a7a3293a524da_5000000000010200203",
+          "pids": [
+            129441
+          ],
+          "tids": [
+            83
           ]
         },
         {
@@ -1480,22 +1716,22 @@
             "cpu_op"
           ],
           "count": 28,
-          "duration_us": 11255.29,
+          "duration_us": 10848.68,
           "name": "vllm::unified_attention_with_output",
           "pids": [
-            3096306
+            126
           ],
           "tids": [
-            3096306
+            126
           ]
         },
         {
           "categories": [],
           "count": 855,
-          "duration_us": 9805.459999999988,
+          "duration_us": 10621.300000000016,
           "name": "RmsNorm_normal_all_bf16_high_performance_2",
           "pids": [
-            3170617761
+            129441
           ],
           "tids": [
             83
@@ -1504,10 +1740,10 @@
         {
           "categories": [],
           "count": 840,
-          "duration_us": 9622.959999999992,
+          "duration_us": 9607.199999999999,
           "name": "MatMulV2_ND_ND_FP16_FP16_false_true_all_99011",
           "pids": [
-            3170617761
+            129441
           ],
           "tids": [
             83
@@ -1516,10 +1752,22 @@
         {
           "categories": [],
           "count": 840,
-          "duration_us": 6564.8800000000065,
+          "duration_us": 6499.900000000001,
           "name": "MatMulV2_ND_ND_FP16_FP16_false_true_all_98883",
           "pids": [
-            3170617761
+            129441
+          ],
+          "tids": [
+            83
+          ]
+        },
+        {
+          "categories": [],
+          "count": 840,
+          "duration_us": 6154.119999999989,
+          "name": "ScatterNdUpdate_b76de82d4a34fe3d866b08ea6317d495_high_precision_880015000",
+          "pids": [
+            129441
           ],
           "tids": [
             83
@@ -1530,25 +1778,27 @@
             "cpu_op"
           ],
           "count": 57,
-          "duration_us": 6297.630000000003,
+          "duration_us": 5902.62,
           "name": "npu::npu_rms_norm",
           "pids": [
-            3096306
+            126
           ],
           "tids": [
-            3096306
+            126
           ]
         },
         {
-          "categories": [],
-          "count": 840,
-          "duration_us": 6217.540000000005,
-          "name": "ScatterNdUpdate_b76de82d4a34fe3d866b08ea6317d495_high_precision_880015000",
+          "categories": [
+            "dequeue"
+          ],
+          "count": 485,
+          "duration_us": 5795.540000000002,
+          "name": "Dequeue@record_event",
           "pids": [
-            3170617761
+            126
           ],
           "tids": [
-            83
+            467
           ]
         },
         {
@@ -1556,13 +1806,13 @@
             "cpu_op"
           ],
           "count": 202,
-          "duration_us": 5712.7800000000025,
+          "duration_us": 5503.159999999999,
           "name": "aten::copy_",
           "pids": [
-            3096306
+            126
           ],
           "tids": [
-            3096306
+            126
           ]
         },
         {
@@ -1570,39 +1820,49 @@
             "cpu_op"
           ],
           "count": 128,
-          "duration_us": 5516.280000000001,
+          "duration_us": 5417.649999999997,
           "name": "aten::linear",
           "pids": [
-            3096306
+            126
           ],
           "tids": [
-            3096306
+            126
           ]
         },
         {
           "categories": [],
           "count": 128,
-          "duration_us": 5356.46,
+          "duration_us": 5335.739999999999,
           "name": "aclnnMatmul_MatMulCommon_MatMulV2",
           "pids": [
-            3170617761
+            129441
           ],
           "tids": [
             47
           ]
         },
         {
-          "categories": [
-            "dequeue"
-          ],
-          "count": 485,
-          "duration_us": 4816.610000000003,
-          "name": "Dequeue@record_event",
+          "categories": [],
+          "count": 840,
+          "duration_us": 4799.100000000001,
+          "name": "AddRmsNorm_3_high_performance_33",
           "pids": [
-            3096306
+            129441
           ],
           "tids": [
-            3096611
+            83
+          ]
+        },
+        {
+          "categories": [],
+          "count": 840,
+          "duration_us": 4502.899999999988,
+          "name": "GatherV3_7869a97190b9b4d296d9414a005b954b_optional_10330",
+          "pids": [
+            129441
+          ],
+          "tids": [
+            83
           ]
         },
         {
@@ -1610,25 +1870,13 @@
             "cpu_op"
           ],
           "count": 112,
-          "duration_us": 4545.799999999998,
+          "duration_us": 4254.85,
           "name": "aten::to",
           "pids": [
-            3096306
+            126
           ],
           "tids": [
-            3096306
-          ]
-        },
-        {
-          "categories": [],
-          "count": 840,
-          "duration_us": 4443.34000000002,
-          "name": "AddRmsNorm_3_high_performance_33",
-          "pids": [
-            3170617761
-          ],
-          "tids": [
-            83
+            126
           ]
         },
         {
@@ -1636,68 +1884,13 @@
             "cpu_op"
           ],
           "count": 867,
-          "duration_us": 4233.520000000006,
+          "duration_us": 4141.099999999999,
           "name": "empty_tensor",
           "pids": [
-            3096306
+            126
           ],
           "tids": [
-            3096306
-          ]
-        },
-        {
-          "categories": [],
-          "count": 840,
-          "duration_us": 4181.4199999999755,
-          "name": "GatherV3_7869a97190b9b4d296d9414a005b954b_optional_10330",
-          "pids": [
-            3170617761
-          ],
-          "tids": [
-            83
-          ]
-        },
-        {
-          "categories": [
-            "cpu_op"
-          ],
-          "count": 469,
-          "duration_us": 4131.580000000001,
-          "name": "record_event",
-          "pids": [
-            3096306
-          ],
-          "tids": [
-            3096306
-          ]
-        },
-        {
-          "categories": [
-            "cpu_op"
-          ],
-          "count": 128,
-          "duration_us": 3610.1199999999994,
-          "name": "aten::matmul",
-          "pids": [
-            3096306
-          ],
-          "tids": [
-            3096306
-          ]
-        },
-        {
-          "categories": [
-            "enqueue"
-          ],
-          "count": 485,
-          "duration_us": 3545.2500000000023,
-          "name": "Enqueue@record_event",
-          "pids": [
-            3096306
-          ],
-          "tids": [
-            3096306,
-            3097027
+            126
           ]
         },
         {
@@ -1705,13 +1898,13 @@
             "dequeue"
           ],
           "count": 57,
-          "duration_us": 3522.96,
+          "duration_us": 3975.31,
           "name": "Dequeue@aclnnRmsNorm",
           "pids": [
-            3096306
+            126
           ],
           "tids": [
-            3096611
+            467
           ]
         },
         {
@@ -1719,13 +1912,55 @@
             "cpu_op"
           ],
           "count": 448,
-          "duration_us": 3401.4399999999937,
+          "duration_us": 3971.629999999998,
           "name": "aclnnFusedInferAttentionScoreV4",
           "pids": [
-            3096306
+            126
           ],
           "tids": [
-            3096306
+            126
+          ]
+        },
+        {
+          "categories": [
+            "cpu_op"
+          ],
+          "count": 469,
+          "duration_us": 3601.719999999999,
+          "name": "record_event",
+          "pids": [
+            126
+          ],
+          "tids": [
+            126
+          ]
+        },
+        {
+          "categories": [
+            "enqueue"
+          ],
+          "count": 448,
+          "duration_us": 3472.4200000000033,
+          "name": "Enqueue@aclnnFusedInferAttentionScoreV4",
+          "pids": [
+            126
+          ],
+          "tids": [
+            126
+          ]
+        },
+        {
+          "categories": [
+            "cpu_op"
+          ],
+          "count": 128,
+          "duration_us": 3375.1200000000013,
+          "name": "aten::matmul",
+          "pids": [
+            126
+          ],
+          "tids": [
+            126
           ]
         },
         {
@@ -1733,17 +1968,17 @@
             "cpu_op"
           ],
           "count": 56,
-          "duration_us": 3383.409999999999,
+          "duration_us": 3170.16,
           "name": "npu::npu_add_rms_norm",
           "pids": [
-            3096306
+            126
           ],
           "tids": [
-            3096306
+            126
           ]
         }
       ],
-      "total_event_duration_us": 1090403.6700001727,
+      "total_event_duration_us": 1125212.2600001474,
       "unclassified_names": [
         "Cast_e87590d11ccda8b259ab6b1ea7212319_high_performance_210000000",
         "Computing",
@@ -1854,23 +2089,142 @@
         "empty_tensor",
         "npu::_npu_dtype_cast",
         "npu::npu_scatter_nd_update_",
+        "qwen3/runtime/drain/001",
         "record_event",
         "wait_event"
       ]
     },
     "vllm-ascend": {
-      "complete_event_count": 38838,
-      "event_count": 55352,
+      "complete_event_count": 38839,
+      "event_count": 55388,
+      "execution_phases": {
+        "lane": "QWEN3 PHASES",
+        "schema_version": 1,
+        "steps": [
+          {
+            "duration_us": 22576.13,
+            "label": "PREFILL",
+            "phase": "prefill",
+            "step": 0,
+            "timestamp_us": 1784731340017035.5
+          },
+          {
+            "duration_us": 22569.59,
+            "label": "DECODE 001",
+            "phase": "decode",
+            "step": 1,
+            "timestamp_us": 1784731340039756.0
+          },
+          {
+            "duration_us": 22031.07,
+            "label": "DECODE 002",
+            "phase": "decode",
+            "step": 2,
+            "timestamp_us": 1784731340062447.5
+          },
+          {
+            "duration_us": 21811.26,
+            "label": "DECODE 003",
+            "phase": "decode",
+            "step": 3,
+            "timestamp_us": 1784731340084589.8
+          },
+          {
+            "duration_us": 21845.61,
+            "label": "DECODE 004",
+            "phase": "decode",
+            "step": 4,
+            "timestamp_us": 1784731340106515.2
+          },
+          {
+            "duration_us": 21752.3,
+            "label": "DECODE 005",
+            "phase": "decode",
+            "step": 5,
+            "timestamp_us": 1784731340128473.0
+          },
+          {
+            "duration_us": 22724.07,
+            "label": "DECODE 006",
+            "phase": "decode",
+            "step": 6,
+            "timestamp_us": 1784731340150331.2
+          },
+          {
+            "duration_us": 22544.81,
+            "label": "DECODE 007",
+            "phase": "decode",
+            "step": 7,
+            "timestamp_us": 1784731340173178.2
+          },
+          {
+            "duration_us": 22006.14,
+            "label": "DECODE 008",
+            "phase": "decode",
+            "step": 8,
+            "timestamp_us": 1784731340195838.8
+          },
+          {
+            "duration_us": 21979.13,
+            "label": "DECODE 009",
+            "phase": "decode",
+            "step": 9,
+            "timestamp_us": 1784731340217956.0
+          },
+          {
+            "duration_us": 22002.67,
+            "label": "DECODE 010",
+            "phase": "decode",
+            "step": 10,
+            "timestamp_us": 1784731340240041.5
+          },
+          {
+            "duration_us": 22117.21,
+            "label": "DECODE 011",
+            "phase": "decode",
+            "step": 11,
+            "timestamp_us": 1784731340262150.0
+          },
+          {
+            "duration_us": 23177.2,
+            "label": "DECODE 012",
+            "phase": "decode",
+            "step": 12,
+            "timestamp_us": 1784731340284372.8
+          },
+          {
+            "duration_us": 22220.83,
+            "label": "DECODE 013",
+            "phase": "decode",
+            "step": 13,
+            "timestamp_us": 1784731340307661.2
+          },
+          {
+            "duration_us": 22114.14,
+            "label": "DECODE 014",
+            "phase": "decode",
+            "step": 14,
+            "timestamp_us": 1784731340329987.5
+          },
+          {
+            "duration_us": 22153.08,
+            "label": "DECODE 015",
+            "phase": "decode",
+            "step": 15,
+            "timestamp_us": 1784731340352205.5
+          }
+        ]
+      },
       "phases": {
         "attention_kv": {
           "count": 3136,
-          "duration_us": 314793.0199999996,
-          "share": 0.16069300404789083
+          "duration_us": 329654.5900000006,
+          "share": 0.16088474592508278
         },
         "communication_memory": {
           "count": 2063,
-          "duration_us": 47031.06000000031,
-          "share": 0.024008036502704718
+          "duration_us": 49575.48000000033,
+          "share": 0.024194835278689923
         },
         "graph_replay": {
           "count": 0,
@@ -1879,23 +2233,23 @@
         },
         "lm_head_sampling": {
           "count": 113,
-          "duration_us": 1993.060000000001,
-          "share": 0.0010174012074590786
+          "duration_us": 2105.6100000000006,
+          "share": 0.001027622669738386
         },
         "projection_mlp_norm": {
           "count": 3696,
-          "duration_us": 39152.10999999997,
-          "share": 0.019986053600278275
+          "duration_us": 38499.480000000076,
+          "share": 0.018789300212831275
         },
         "runtime_scheduling": {
           "count": 3909,
-          "duration_us": 1089480.7700000003,
-          "share": 0.5561493637429111
+          "duration_us": 1139520.5700000008,
+          "share": 0.5561320331710088
         },
         "unclassified": {
-          "count": 25921,
-          "duration_us": 466521.5100000187,
-          "share": 0.23814614089874434
+          "count": 25922,
+          "duration_us": 489655.12000002194,
+          "share": 0.23897146274262193
         }
       },
       "top_events": [
@@ -1904,13 +2258,13 @@
             "cpu_op"
           ],
           "count": 1,
-          "duration_us": 346751.11,
+          "duration_us": 362674.11,
           "name": "qwen3/profiled_request",
           "pids": [
-            196492
+            198457
           ],
           "tids": [
-            196492
+            198457
           ]
         },
         {
@@ -1918,13 +2272,13 @@
             "cpu_op"
           ],
           "count": 1,
-          "duration_us": 346662.75,
+          "duration_us": 362555.7,
           "name": "vllm-ascend",
           "pids": [
-            196492
+            198457
           ],
           "tids": [
-            196492
+            198457
           ]
         },
         {
@@ -1932,22 +2286,22 @@
             "cpu_op"
           ],
           "count": 1,
-          "duration_us": 346605.53,
+          "duration_us": 362503.55,
           "name": "qwen3/prefill_and_decode",
           "pids": [
-            196492
+            198457
           ],
           "tids": [
-            196492
+            198457
           ]
         },
         {
           "categories": [],
           "count": 4921,
-          "duration_us": 270612.3399999913,
+          "duration_us": 287653.71999999427,
           "name": "Free",
           "pids": [
-            201208769
+            203220929
           ],
           "tids": [
             3
@@ -1958,22 +2312,22 @@
             "cpu_op"
           ],
           "count": 448,
-          "duration_us": 201298.3300000001,
+          "duration_us": 211801.14000000007,
           "name": "vllm::unified_attention_with_output",
           "pids": [
-            196492
+            198457
           ],
           "tids": [
-            196492
+            198457
           ]
         },
         {
           "categories": [],
           "count": 4920,
-          "duration_us": 69647.12000000002,
+          "duration_us": 68272.85999999983,
           "name": "Computing",
           "pids": [
-            201208769
+            203220929
           ],
           "tids": [
             2
@@ -1984,13 +2338,13 @@
             "cpu_op"
           ],
           "count": 448,
-          "duration_us": 46732.64000000001,
+          "duration_us": 48960.83000000003,
           "name": "npu::npu_fused_infer_attention_score",
           "pids": [
-            196492
+            198457
           ],
           "tids": [
-            196492
+            198457
           ]
         },
         {
@@ -1998,22 +2352,22 @@
             "cpu_op"
           ],
           "count": 1186,
-          "duration_us": 44754.42999999997,
+          "duration_us": 47041.600000000006,
           "name": "aten::copy_",
           "pids": [
-            196492
+            198457
           ],
           "tids": [
-            196492
+            198457
           ]
         },
         {
           "categories": [],
           "count": 464,
-          "duration_us": 30909.11999999998,
+          "duration_us": 29907.99999999999,
           "name": "NOTIFY_WAIT",
           "pids": [
-            201208225
+            203220385
           ],
           "tids": [
             46
@@ -2022,10 +2376,10 @@
         {
           "categories": [],
           "count": 448,
-          "duration_us": 26505.46,
+          "duration_us": 26005.56000000004,
           "name": "FusedInferAttentionScore",
           "pids": [
-            201208225
+            203220385
           ],
           "tids": [
             46
@@ -2034,71 +2388,71 @@
         {
           "categories": [],
           "count": 1808,
-          "duration_us": 24301.94000000002,
+          "duration_us": 23550.44000000001,
           "name": "aclnnMatmul_MatMulCommon_MatMulV2",
           "pids": [
-            201208225
+            203220385
           ],
           "tids": [
-            400,
-            401,
-            402,
-            403,
-            404,
-            405,
-            406,
+            450,
+            451,
+            452,
+            453,
+            454,
+            455,
+            456,
+            457,
+            458,
+            459,
             46,
-            478,
-            479,
-            480,
-            481,
-            482,
-            483,
-            484,
-            485,
-            486,
-            487,
-            488,
-            489,
-            490,
-            491,
-            492,
-            493,
-            494,
-            495,
-            496,
-            497,
-            498,
-            499,
-            914,
-            915,
-            916,
-            917,
-            918,
-            919,
-            920,
-            921,
-            922,
-            923,
-            924,
-            925,
-            926,
-            927,
-            928,
-            929,
-            930,
-            931,
-            932,
-            933,
-            934,
-            935,
-            936,
-            937,
-            938,
-            939,
-            940,
-            941,
-            942
+            460,
+            461,
+            462,
+            463,
+            464,
+            465,
+            466,
+            467,
+            468,
+            469,
+            470,
+            542,
+            543,
+            544,
+            545,
+            546,
+            547,
+            548,
+            549,
+            900,
+            901,
+            902,
+            903,
+            904,
+            905,
+            906,
+            978,
+            979,
+            980,
+            981,
+            982,
+            983,
+            984,
+            985,
+            986,
+            987,
+            988,
+            989,
+            990,
+            991,
+            992,
+            993,
+            994,
+            995,
+            996,
+            997,
+            998,
+            999
           ]
         },
         {
@@ -2106,13 +2460,13 @@
             "cpu_op"
           ],
           "count": 3665,
-          "duration_us": 18653.869999999977,
+          "duration_us": 20833.54000000002,
           "name": "aten::slice",
           "pids": [
-            196492
+            198457
           ],
           "tids": [
-            196492
+            198457
           ]
         },
         {
@@ -2120,13 +2474,13 @@
             "cpu_op"
           ],
           "count": 448,
-          "duration_us": 17841.25000000003,
+          "duration_us": 19290.489999999998,
           "name": "atb::_npu_reshape_and_cache",
           "pids": [
-            196492
+            198457
           ],
           "tids": [
-            196492
+            198457
           ]
         },
         {
@@ -2134,13 +2488,13 @@
             "dequeue"
           ],
           "count": 448,
-          "duration_us": 17833.28000000001,
+          "duration_us": 17588.11,
           "name": "Dequeue@ReshapeCacheOperation",
           "pids": [
-            196492
+            198457
           ],
           "tids": [
-            196525
+            198495
           ]
         },
         {
@@ -2148,13 +2502,13 @@
             "dequeue"
           ],
           "count": 448,
-          "duration_us": 14459.760000000002,
+          "duration_us": 14318.489999999998,
           "name": "Dequeue@aclnnFusedInferAttentionScoreV3",
           "pids": [
-            196492
+            198457
           ],
           "tids": [
-            196525
+            198495
           ]
         },
         {
@@ -2162,13 +2516,27 @@
             "dequeue"
           ],
           "count": 1023,
-          "duration_us": 11849.519999999984,
+          "duration_us": 11919.619999999995,
           "name": "Dequeue@aclnnInplaceCopy",
           "pids": [
-            196492
+            198457
           ],
           "tids": [
-            196525
+            198495
+          ]
+        },
+        {
+          "categories": [
+            "cpu_op"
+          ],
+          "count": 1023,
+          "duration_us": 10278.830000000002,
+          "name": "aclnnInplaceCopy",
+          "pids": [
+            198457
+          ],
+          "tids": [
+            198457
           ]
         },
         {
@@ -2176,27 +2544,13 @@
             "cpu_op"
           ],
           "count": 2064,
-          "duration_us": 9344.779999999982,
+          "duration_us": 10072.569999999994,
           "name": "empty_tensor",
           "pids": [
-            196492
+            198457
           ],
           "tids": [
-            196492
-          ]
-        },
-        {
-          "categories": [
-            "cpu_op"
-          ],
-          "count": 1023,
-          "duration_us": 8926.889999999998,
-          "name": "aclnnInplaceCopy",
-          "pids": [
-            196492
-          ],
-          "tids": [
-            196492
+            198457
           ]
         },
         {
@@ -2204,13 +2558,13 @@
             "cpu_op"
           ],
           "count": 3747,
-          "duration_us": 8744.970000000001,
+          "duration_us": 9286.219999999983,
           "name": "aten::as_strided",
           "pids": [
-            196492
+            198457
           ],
           "tids": [
-            196492
+            198457
           ]
         },
         {
@@ -2218,13 +2572,13 @@
             "enqueue"
           ],
           "count": 1023,
-          "duration_us": 7160.8900000000085,
+          "duration_us": 8412.26,
           "name": "Enqueue@aclnnInplaceCopy",
           "pids": [
-            196492
+            198457
           ],
           "tids": [
-            196492
+            198457
           ]
         },
         {
@@ -2232,13 +2586,13 @@
             "cpu_op"
           ],
           "count": 1400,
-          "duration_us": 6280.310000000007,
+          "duration_us": 6487.839999999999,
           "name": "aten::view",
           "pids": [
-            196492
+            198457
           ],
           "tids": [
-            196492
+            198457
           ]
         },
         {
@@ -2246,80 +2600,80 @@
             "cpu_op"
           ],
           "count": 49,
-          "duration_us": 5842.070000000001,
+          "duration_us": 6134.180000000001,
           "name": "Event::record",
           "pids": [
-            196492
+            198457
           ],
           "tids": [
-            196492
+            198457
           ]
         },
         {
           "categories": [],
           "count": 448,
-          "duration_us": 5693.319999999996,
+          "duration_us": 5795.880000000002,
           "name": "split_qkv_rmsnorm_rope_kernel_0",
           "pids": [
-            201208225
+            203220385
           ],
           "tids": [
-            400,
-            401,
-            402,
-            403,
-            404,
-            405,
-            406,
-            479,
-            480,
-            481,
-            482,
-            483,
-            484,
-            485,
-            486,
-            487,
-            488,
-            489,
-            490,
-            491,
-            492,
-            493,
-            494,
-            495,
-            496,
-            497,
-            498,
-            499,
-            915,
-            916,
-            917,
-            918,
-            919,
-            920,
-            921,
-            922,
-            923,
-            924,
-            925,
-            926,
-            927,
-            928,
-            929,
-            930,
-            931,
-            932,
-            933,
-            934,
-            935,
-            936,
-            937,
-            938,
-            939,
-            940,
-            941,
-            942
+            450,
+            451,
+            452,
+            453,
+            454,
+            455,
+            456,
+            457,
+            458,
+            459,
+            460,
+            461,
+            462,
+            463,
+            464,
+            465,
+            466,
+            467,
+            468,
+            469,
+            470,
+            543,
+            544,
+            545,
+            546,
+            547,
+            548,
+            549,
+            900,
+            901,
+            902,
+            903,
+            904,
+            905,
+            906,
+            979,
+            980,
+            981,
+            982,
+            983,
+            984,
+            985,
+            986,
+            987,
+            988,
+            989,
+            990,
+            991,
+            992,
+            993,
+            994,
+            995,
+            996,
+            997,
+            998,
+            999
           ]
         },
         {
@@ -2327,94 +2681,108 @@
             "cpu_op"
           ],
           "count": 448,
-          "duration_us": 4667.709999999999,
+          "duration_us": 5519.660000000005,
           "name": "ReshapeCacheOperation",
           "pids": [
-            196492
+            198457
           ],
           "tids": [
-            196492
+            198457
+          ]
+        },
+        {
+          "categories": [
+            "cpu_op"
+          ],
+          "count": 448,
+          "duration_us": 4961.660000000002,
+          "name": "aclnnFusedInferAttentionScoreV3",
+          "pids": [
+            198457
+          ],
+          "tids": [
+            198457
+          ]
+        },
+        {
+          "categories": [
+            "enqueue"
+          ],
+          "count": 448,
+          "duration_us": 4817.2400000000025,
+          "name": "Enqueue@ReshapeCacheOperation",
+          "pids": [
+            198457
+          ],
+          "tids": [
+            198457
           ]
         },
         {
           "categories": [],
           "count": 896,
-          "duration_us": 4432.959999999996,
+          "duration_us": 4354.619999999988,
           "name": "AddRmsNormBias",
           "pids": [
-            201208225
+            203220385
           ],
           "tids": [
-            400,
-            401,
-            402,
-            403,
-            404,
-            405,
-            478,
-            479,
-            480,
-            481,
-            482,
-            483,
-            484,
-            485,
-            486,
-            487,
-            488,
-            489,
-            490,
-            491,
-            492,
-            493,
-            494,
-            495,
-            496,
-            497,
-            498,
-            499,
-            914,
-            915,
-            916,
-            917,
-            918,
-            919,
-            920,
-            921,
-            922,
-            923,
-            924,
-            925,
-            926,
-            927,
-            928,
-            929,
-            930,
-            931,
-            932,
-            933,
-            934,
-            935,
-            936,
-            937,
-            938,
-            939,
-            940,
-            941
-          ]
-        },
-        {
-          "categories": [
-            "cpu_op"
-          ],
-          "count": 448,
-          "duration_us": 4288.410000000001,
-          "name": "aclnnFusedInferAttentionScoreV3",
-          "pids": [
-            196492
-          ],
-          "tids": [
-            196492
+            450,
+            451,
+            452,
+            453,
+            454,
+            455,
+            456,
+            457,
+            458,
+            459,
+            460,
+            461,
+            462,
+            463,
+            464,
+            465,
+            466,
+            467,
+            468,
+            469,
+            542,
+            543,
+            544,
+            545,
+            546,
+            547,
+            548,
+            549,
+            900,
+            901,
+            902,
+            903,
+            904,
+            905,
+            978,
+            979,
+            980,
+            981,
+            982,
+            983,
+            984,
+            985,
+            986,
+            987,
+            988,
+            989,
+            990,
+            991,
+            992,
+            993,
+            994,
+            995,
+            996,
+            997,
+            998,
+            999
           ]
         },
         {
@@ -2422,27 +2790,13 @@
             "enqueue"
           ],
           "count": 448,
-          "duration_us": 4036.3400000000033,
-          "name": "Enqueue@ReshapeCacheOperation",
-          "pids": [
-            196492
-          ],
-          "tids": [
-            196492
-          ]
-        },
-        {
-          "categories": [
-            "enqueue"
-          ],
-          "count": 448,
-          "duration_us": 3667.170000000001,
+          "duration_us": 4316.419999999998,
           "name": "Enqueue@aclnnFusedInferAttentionScoreV3",
           "pids": [
-            196492
+            198457
           ],
           "tids": [
-            196492
+            198457
           ]
         },
         {
@@ -2450,31 +2804,31 @@
             "cpu_op"
           ],
           "count": 130,
-          "duration_us": 3371.4699999999993,
+          "duration_us": 3604.8699999999994,
           "name": "aten::to",
           "pids": [
-            196492
+            198457
           ],
           "tids": [
-            196492
+            198457
           ]
         },
         {
           "categories": [
             "cpu_op"
           ],
-          "count": 17,
-          "duration_us": 3321.11,
-          "name": "Event::synchronize",
+          "count": 82,
+          "duration_us": 3332.5600000000004,
+          "name": "aten::_to_copy",
           "pids": [
-            196492
+            198457
           ],
           "tids": [
-            196492
+            198457
           ]
         }
       ],
-      "total_event_duration_us": 1958971.5300000417,
+      "total_event_duration_us": 2049010.8500000788,
       "unclassified_names": [
         "Computing",
         "EVENT_RECORD",
@@ -2541,6 +2895,7 @@
         "aten::view",
         "destroy_event",
         "empty_tensor",
+        "qwen3/runtime/drain/001",
         "record_event",
         "wait_event"
       ]

@@ -1,16 +1,139 @@
 {
   "artifacts": {
     "auto-infer": {
-      "event_count": 74744,
+      "event_count": 85343,
       "metadata": {
         "capture": {
-          "completed_at_utc": "2026-07-22T09:10:17.933410+00:00",
-          "started_at_utc": "2026-07-22T09:10:17.141742+00:00"
+          "completed_at_utc": "2026-07-22T14:52:28.476093+00:00",
+          "phase_counts": {
+            "decode_passes": 15,
+            "prefill_passes": 1,
+            "runtime_drains": 0
+          },
+          "phase_index": {
+            "lane": "QWEN3 PHASES",
+            "schema_version": 1,
+            "steps": [
+              {
+                "duration_us": 51144.14,
+                "label": "PREFILL",
+                "phase": "prefill",
+                "step": 0,
+                "timestamp_us": 1784731947682755.8
+              },
+              {
+                "duration_us": 9364.74,
+                "label": "DECODE 001",
+                "phase": "decode",
+                "step": 1,
+                "timestamp_us": 1784731947733949.0
+              },
+              {
+                "duration_us": 8921.26,
+                "label": "DECODE 002",
+                "phase": "decode",
+                "step": 2,
+                "timestamp_us": 1784731947743346.0
+              },
+              {
+                "duration_us": 8903.24,
+                "label": "DECODE 003",
+                "phase": "decode",
+                "step": 3,
+                "timestamp_us": 1784731947752298.5
+              },
+              {
+                "duration_us": 8903.16,
+                "label": "DECODE 004",
+                "phase": "decode",
+                "step": 4,
+                "timestamp_us": 1784731947761236.0
+              },
+              {
+                "duration_us": 8882.09,
+                "label": "DECODE 005",
+                "phase": "decode",
+                "step": 5,
+                "timestamp_us": 1784731947770170.2
+              },
+              {
+                "duration_us": 8947.47,
+                "label": "DECODE 006",
+                "phase": "decode",
+                "step": 6,
+                "timestamp_us": 1784731947779082.5
+              },
+              {
+                "duration_us": 9058.19,
+                "label": "DECODE 007",
+                "phase": "decode",
+                "step": 7,
+                "timestamp_us": 1784731947788061.8
+              },
+              {
+                "duration_us": 9318.49,
+                "label": "DECODE 008",
+                "phase": "decode",
+                "step": 8,
+                "timestamp_us": 1784731947797150.2
+              },
+              {
+                "duration_us": 9177.08,
+                "label": "DECODE 009",
+                "phase": "decode",
+                "step": 9,
+                "timestamp_us": 1784731947806499.2
+              },
+              {
+                "duration_us": 9144.46,
+                "label": "DECODE 010",
+                "phase": "decode",
+                "step": 10,
+                "timestamp_us": 1784731947815706.5
+              },
+              {
+                "duration_us": 9246.75,
+                "label": "DECODE 011",
+                "phase": "decode",
+                "step": 11,
+                "timestamp_us": 1784731947824880.2
+              },
+              {
+                "duration_us": 9068.11,
+                "label": "DECODE 012",
+                "phase": "decode",
+                "step": 12,
+                "timestamp_us": 1784731947834157.5
+              },
+              {
+                "duration_us": 9182.63,
+                "label": "DECODE 013",
+                "phase": "decode",
+                "step": 13,
+                "timestamp_us": 1784731947843254.8
+              },
+              {
+                "duration_us": 9191.2,
+                "label": "DECODE 014",
+                "phase": "decode",
+                "step": 14,
+                "timestamp_us": 1784731947852466.2
+              },
+              {
+                "duration_us": 9216.66,
+                "label": "DECODE 015",
+                "phase": "decode",
+                "step": 15,
+                "timestamp_us": 1784731947861687.5
+              }
+            ]
+          },
+          "started_at_utc": "2026-07-22T14:52:27.570209+00:00"
         },
         "environment": {
-          "capture_harness_revision": "74899b6f092b4d6f3227cd375f031555abbc55a0",
+          "capture_harness_revision": "1507a19ed2db3abe7cf5145c1ea0e66f9ad2cb34",
           "capture_harness_revision_origin": "content_hash_verified_deployment",
-          "captured_at_utc": "2026-07-22T09:10:24.803132+00:00",
+          "captured_at_utc": "2026-07-22T14:52:38.608636+00:00",
           "device": "Ascend910B1",
           "driver": {
             "ascendhal_version": "7.35.23",
@@ -19,7 +142,7 @@
             "soc": "Ascend 910B1"
           },
           "framework_source_revisions": {
-            "auto_infer": "74899b6f092b4d6f3227cd375f031555abbc55a0"
+            "auto_infer": "1507a19ed2db3abe7cf5145c1ea0e66f9ad2cb34"
           },
           "hostname": "cd40b23e4602",
           "omni_plugin": "",
@@ -27,9 +150,27 @@
           "python": "3.11.15",
           "torch": "2.10.0+cpu",
           "torch_npu": "2.10.0",
+          "visible_npus": "1",
           "vllm": "0.20.2+empty"
         },
         "framework": "auto-infer",
+        "model_identity": {
+          "checkpoint_sha256": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b",
+          "config_sha256": "660db3b73d788119c04535e48cf9be5f55bc3100841a718637ae695b442f27dd",
+          "path": "/data1/models/Qwen3-0.6B",
+          "prompt_token_count": 9,
+          "prompt_token_ids": [
+            840,
+            20772,
+            1246,
+            264,
+            42578,
+            1622,
+            2539,
+            1467,
+            13
+          ]
+        },
         "output_batch_digests": [
           "9b45cd033542b04b",
           "9b45cd033542b04b",
@@ -50,11 +191,16 @@
         ],
         "output_digest": "9b45cd033542b04b",
         "output_length": 16,
+        "runtime_kv_capacity": {
+          "evidence": "constructed EngineConfig CacheConfig",
+          "runtime_block_size": 16,
+          "usable_tokens": 14464
+        },
         "trace": {
-          "event_count": 74744,
+          "event_count": 85343,
           "file": "auto-infer.trace.json",
-          "sha256": "cf12511ee17180ca3e09ebe6d8831c0f5f65f59cc0ccb28998cbe79027b89440",
-          "size_bytes": 13347639
+          "sha256": "deabff830ba6cc30be105e40b2874bcdc7f389b4dbe406afb59aafa7f4a0bd8a",
+          "size_bytes": 14546003
         },
         "workload": {
           "batch_size": 16,
@@ -80,20 +226,143 @@
         }
       },
       "path": "raw/auto-infer.trace.json",
-      "sha256": "cf12511ee17180ca3e09ebe6d8831c0f5f65f59cc0ccb28998cbe79027b89440",
-      "size_bytes": 13347639
+      "sha256": "deabff830ba6cc30be105e40b2874bcdc7f389b4dbe406afb59aafa7f4a0bd8a",
+      "size_bytes": 14546003
     },
     "omni-npu": {
-      "event_count": 59728,
+      "event_count": 59764,
       "metadata": {
         "capture": {
-          "completed_at_utc": "2026-07-22T09:17:34.840210+00:00",
-          "started_at_utc": "2026-07-22T09:17:34.252984+00:00"
+          "completed_at_utc": "2026-07-22T14:51:27.973232+00:00",
+          "phase_counts": {
+            "decode_passes": 15,
+            "prefill_passes": 1,
+            "runtime_drains": 1
+          },
+          "phase_index": {
+            "lane": "QWEN3 PHASES",
+            "schema_version": 1,
+            "steps": [
+              {
+                "duration_us": 58324.37,
+                "label": "PREFILL",
+                "phase": "prefill",
+                "step": 0,
+                "timestamp_us": 1784731887505309.8
+              },
+              {
+                "duration_us": 9141.61,
+                "label": "DECODE 001",
+                "phase": "decode",
+                "step": 1,
+                "timestamp_us": 1784731887563688.2
+              },
+              {
+                "duration_us": 8663.94,
+                "label": "DECODE 002",
+                "phase": "decode",
+                "step": 2,
+                "timestamp_us": 1784731887572876.2
+              },
+              {
+                "duration_us": 8614.56,
+                "label": "DECODE 003",
+                "phase": "decode",
+                "step": 3,
+                "timestamp_us": 1784731887581583.5
+              },
+              {
+                "duration_us": 8587.69,
+                "label": "DECODE 004",
+                "phase": "decode",
+                "step": 4,
+                "timestamp_us": 1784731887590244.2
+              },
+              {
+                "duration_us": 8595.39,
+                "label": "DECODE 005",
+                "phase": "decode",
+                "step": 5,
+                "timestamp_us": 1784731887598874.8
+              },
+              {
+                "duration_us": 9649.79,
+                "label": "DECODE 006",
+                "phase": "decode",
+                "step": 6,
+                "timestamp_us": 1784731887607516.0
+              },
+              {
+                "duration_us": 8726.74,
+                "label": "DECODE 007",
+                "phase": "decode",
+                "step": 7,
+                "timestamp_us": 1784731887617212.8
+              },
+              {
+                "duration_us": 8804.34,
+                "label": "DECODE 008",
+                "phase": "decode",
+                "step": 8,
+                "timestamp_us": 1784731887626009.2
+              },
+              {
+                "duration_us": 8728.74,
+                "label": "DECODE 009",
+                "phase": "decode",
+                "step": 9,
+                "timestamp_us": 1784731887634861.0
+              },
+              {
+                "duration_us": 8773.01,
+                "label": "DECODE 010",
+                "phase": "decode",
+                "step": 10,
+                "timestamp_us": 1784731887643635.0
+              },
+              {
+                "duration_us": 8705.33,
+                "label": "DECODE 011",
+                "phase": "decode",
+                "step": 11,
+                "timestamp_us": 1784731887652455.0
+              },
+              {
+                "duration_us": 8695.59,
+                "label": "DECODE 012",
+                "phase": "decode",
+                "step": 12,
+                "timestamp_us": 1784731887661204.5
+              },
+              {
+                "duration_us": 8700.01,
+                "label": "DECODE 013",
+                "phase": "decode",
+                "step": 13,
+                "timestamp_us": 1784731887669945.2
+              },
+              {
+                "duration_us": 8651.7,
+                "label": "DECODE 014",
+                "phase": "decode",
+                "step": 14,
+                "timestamp_us": 1784731887678690.0
+              },
+              {
+                "duration_us": 8806.34,
+                "label": "DECODE 015",
+                "phase": "decode",
+                "step": 15,
+                "timestamp_us": 1784731887687386.2
+              }
+            ]
+          },
+          "started_at_utc": "2026-07-22T14:51:27.384344+00:00"
         },
         "environment": {
-          "capture_harness_revision": "74899b6f092b4d6f3227cd375f031555abbc55a0",
+          "capture_harness_revision": "1507a19ed2db3abe7cf5145c1ea0e66f9ad2cb34",
           "capture_harness_revision_origin": "content_hash_verified_deployment",
-          "captured_at_utc": "2026-07-22T09:17:44.287845+00:00",
+          "captured_at_utc": "2026-07-22T14:51:39.032023+00:00",
           "device": "Ascend910B1",
           "driver": {
             "ascendhal_version": "7.35.23",
@@ -106,15 +375,33 @@
             "omniinfer": "181f5d4119e7098df937faaa9529c0722c3f1208",
             "vllm": "b17039bccc17b94a2ea107272ad7bc93508708df"
           },
-          "hostname": "748ca4b8533b",
+          "hostname": "59086a8590ed",
           "omni_plugin": "omni-npu,omni_npu_patches",
           "platform": "Linux-5.10.0-136.12.0.86.r1526_92.hce2.aarch64-aarch64-with-glibc2.34",
           "python": "3.11.12",
           "torch": "2.9.0+cpu",
           "torch_npu": "2.9.0",
+          "visible_npus": "1",
           "vllm": "0.14.0+empty"
         },
         "framework": "omni-npu",
+        "model_identity": {
+          "checkpoint_sha256": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b",
+          "config_sha256": "660db3b73d788119c04535e48cf9be5f55bc3100841a718637ae695b442f27dd",
+          "path": "/data1/models/Qwen3-0.6B",
+          "prompt_token_count": 9,
+          "prompt_token_ids": [
+            840,
+            20772,
+            1246,
+            264,
+            42578,
+            1622,
+            2539,
+            1467,
+            13
+          ]
+        },
         "output_batch_digests": [
           "9b45cd033542b04b",
           "9b45cd033542b04b",
@@ -135,11 +422,17 @@
         ],
         "output_digest": "9b45cd033542b04b",
         "output_length": 16,
+        "runtime_kv_capacity": {
+          "evidence": "vLLM cache_config runtime readback",
+          "runtime_block_size": 128,
+          "runtime_blocks": 113,
+          "usable_tokens": 14464
+        },
         "trace": {
-          "event_count": 59728,
+          "event_count": 59764,
           "file": "omni-npu.trace.json",
-          "sha256": "bdd9b8ebea22c69cc46def34dcb976130ee1ca217d8dd726b78c0b6ec47641a3",
-          "size_bytes": 10998102
+          "sha256": "ccfef4c9f66ce5177bb3f1f480be0e2d52d333cd1ed022edc76f65f519b6fd2f",
+          "size_bytes": 9597326
         },
         "workload": {
           "batch_size": 16,
@@ -165,20 +458,143 @@
         }
       },
       "path": "raw/omni-npu.trace.json",
-      "sha256": "bdd9b8ebea22c69cc46def34dcb976130ee1ca217d8dd726b78c0b6ec47641a3",
-      "size_bytes": 10998102
+      "sha256": "ccfef4c9f66ce5177bb3f1f480be0e2d52d333cd1ed022edc76f65f519b6fd2f",
+      "size_bytes": 9597326
     },
     "vllm-ascend": {
-      "event_count": 55352,
+      "event_count": 55388,
       "metadata": {
         "capture": {
-          "completed_at_utc": "2026-07-22T09:12:16.113203+00:00",
-          "started_at_utc": "2026-07-22T09:12:15.105480+00:00"
+          "completed_at_utc": "2026-07-22T14:42:20.923636+00:00",
+          "phase_counts": {
+            "decode_passes": 15,
+            "prefill_passes": 1,
+            "runtime_drains": 1
+          },
+          "phase_index": {
+            "lane": "QWEN3 PHASES",
+            "schema_version": 1,
+            "steps": [
+              {
+                "duration_us": 22576.13,
+                "label": "PREFILL",
+                "phase": "prefill",
+                "step": 0,
+                "timestamp_us": 1784731340017035.5
+              },
+              {
+                "duration_us": 22569.59,
+                "label": "DECODE 001",
+                "phase": "decode",
+                "step": 1,
+                "timestamp_us": 1784731340039756.0
+              },
+              {
+                "duration_us": 22031.07,
+                "label": "DECODE 002",
+                "phase": "decode",
+                "step": 2,
+                "timestamp_us": 1784731340062447.5
+              },
+              {
+                "duration_us": 21811.26,
+                "label": "DECODE 003",
+                "phase": "decode",
+                "step": 3,
+                "timestamp_us": 1784731340084589.8
+              },
+              {
+                "duration_us": 21845.61,
+                "label": "DECODE 004",
+                "phase": "decode",
+                "step": 4,
+                "timestamp_us": 1784731340106515.2
+              },
+              {
+                "duration_us": 21752.3,
+                "label": "DECODE 005",
+                "phase": "decode",
+                "step": 5,
+                "timestamp_us": 1784731340128473.0
+              },
+              {
+                "duration_us": 22724.07,
+                "label": "DECODE 006",
+                "phase": "decode",
+                "step": 6,
+                "timestamp_us": 1784731340150331.2
+              },
+              {
+                "duration_us": 22544.81,
+                "label": "DECODE 007",
+                "phase": "decode",
+                "step": 7,
+                "timestamp_us": 1784731340173178.2
+              },
+              {
+                "duration_us": 22006.14,
+                "label": "DECODE 008",
+                "phase": "decode",
+                "step": 8,
+                "timestamp_us": 1784731340195838.8
+              },
+              {
+                "duration_us": 21979.13,
+                "label": "DECODE 009",
+                "phase": "decode",
+                "step": 9,
+                "timestamp_us": 1784731340217956.0
+              },
+              {
+                "duration_us": 22002.67,
+                "label": "DECODE 010",
+                "phase": "decode",
+                "step": 10,
+                "timestamp_us": 1784731340240041.5
+              },
+              {
+                "duration_us": 22117.21,
+                "label": "DECODE 011",
+                "phase": "decode",
+                "step": 11,
+                "timestamp_us": 1784731340262150.0
+              },
+              {
+                "duration_us": 23177.2,
+                "label": "DECODE 012",
+                "phase": "decode",
+                "step": 12,
+                "timestamp_us": 1784731340284372.8
+              },
+              {
+                "duration_us": 22220.83,
+                "label": "DECODE 013",
+                "phase": "decode",
+                "step": 13,
+                "timestamp_us": 1784731340307661.2
+              },
+              {
+                "duration_us": 22114.14,
+                "label": "DECODE 014",
+                "phase": "decode",
+                "step": 14,
+                "timestamp_us": 1784731340329987.5
+              },
+              {
+                "duration_us": 22153.08,
+                "label": "DECODE 015",
+                "phase": "decode",
+                "step": 15,
+                "timestamp_us": 1784731340352205.5
+              }
+            ]
+          },
+          "started_at_utc": "2026-07-22T14:42:19.907471+00:00"
         },
         "environment": {
-          "capture_harness_revision": "74899b6f092b4d6f3227cd375f031555abbc55a0",
+          "capture_harness_revision": "1507a19ed2db3abe7cf5145c1ea0e66f9ad2cb34",
           "capture_harness_revision_origin": "content_hash_verified_deployment",
-          "captured_at_utc": "2026-07-22T09:12:22.698658+00:00",
+          "captured_at_utc": "2026-07-22T14:42:28.186722+00:00",
           "device": "Ascend910B1",
           "driver": {
             "ascendhal_version": "7.35.23",
@@ -196,9 +612,27 @@
           "python": "3.11.15",
           "torch": "2.10.0+cpu",
           "torch_npu": "2.10.0",
+          "visible_npus": "1",
           "vllm": "0.20.2+empty"
         },
         "framework": "vllm-ascend",
+        "model_identity": {
+          "checkpoint_sha256": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b",
+          "config_sha256": "660db3b73d788119c04535e48cf9be5f55bc3100841a718637ae695b442f27dd",
+          "path": "/data1/models/Qwen3-0.6B",
+          "prompt_token_count": 9,
+          "prompt_token_ids": [
+            840,
+            20772,
+            1246,
+            264,
+            42578,
+            1622,
+            2539,
+            1467,
+            13
+          ]
+        },
         "output_batch_digests": [
           "9b45cd033542b04b",
           "9b45cd033542b04b",
@@ -219,11 +653,17 @@
         ],
         "output_digest": "9b45cd033542b04b",
         "output_length": 16,
+        "runtime_kv_capacity": {
+          "evidence": "vLLM cache_config runtime readback",
+          "runtime_block_size": 128,
+          "runtime_blocks": 113,
+          "usable_tokens": 14464
+        },
         "trace": {
-          "event_count": 55352,
+          "event_count": 55388,
           "file": "vllm-ascend.trace.json",
-          "sha256": "e36833fd2c603195c9db5bf92b72ddd6bead284e434cbb5cb0a5bb5c407d8e7d",
-          "size_bytes": 9758924
+          "sha256": "2aca519e0e23a212033369b1a86de731a3c215f479f0be594ff52d7e7ae65f7d",
+          "size_bytes": 8773122
         },
         "workload": {
           "batch_size": 16,
@@ -249,22 +689,22 @@
         }
       },
       "path": "raw/vllm-ascend.trace.json",
-      "sha256": "e36833fd2c603195c9db5bf92b72ddd6bead284e434cbb5cb0a5bb5c407d8e7d",
-      "size_bytes": 9758924
+      "sha256": "2aca519e0e23a212033369b1a86de731a3c215f479f0be594ff52d7e7ae65f7d",
+      "size_bytes": 8773122
     }
   },
   "benchmark_schema": "pre-cold-ttft-v0",
   "benchmark_sources": {
-    "auto-infer": "/tmp/qwen3-profile-evidence.KDrNO4/auto-infer.json",
-    "omni-npu": "/tmp/qwen3-profile-evidence.KDrNO4/omni-npu.json",
-    "vllm-ascend": "/tmp/qwen3-profile-evidence.KDrNO4/vllm-ascend.json"
+    "auto-infer": "/tmp/qwen3-phase-evidence.tbkUPd/benchmarks/auto-infer.json",
+    "omni-npu": "/tmp/qwen3-phase-evidence.tbkUPd/benchmarks/omni-npu.json",
+    "vllm-ascend": "/tmp/qwen3-phase-evidence.tbkUPd/benchmarks/vllm-ascend.json"
   },
   "profile_timing_semantics": "Summed complete-event duration; concurrent streams overlap and values are not request wall-clock time.",
   "provenance": {
-    "capture_harness_revision": "74899b6f092b4d6f3227cd375f031555abbc55a0",
+    "capture_harness_revision": "1507a19ed2db3abe7cf5145c1ea0e66f9ad2cb34",
     "capture_harness_verification": {
-      "benchmarks/profile_qwen3.py": "e205d0b631056073373d9e6cd57f2965eb35ce809fd3cf3e0b197dbbaca1879a",
-      "benchmarks/qwen3_profile_common.py": "5c7b205c7a6bbaf213d44fb4267683e47867d4271e7f236598adf361a144579c",
+      "benchmarks/profile_qwen3.py": "098a01fba3af3fc0e28509cbaba1f6267ef2cd790788e26c7ad78276757c2486",
+      "benchmarks/qwen3_profile_common.py": "ea302908c48d9d6efeb6f34af039912e458a31ffc91a5b095ef8cacf007dee1b",
       "method": "remote deployed files matched git object content by SHA-256"
     },
     "driver": {
@@ -275,7 +715,7 @@
     },
     "framework_sources": {
       "auto-infer": {
-        "auto_infer": "74899b6f092b4d6f3227cd375f031555abbc55a0"
+        "auto_infer": "1507a19ed2db3abe7cf5145c1ea0e66f9ad2cb34"
       },
       "omni-npu": {
         "omni_npu": "6fc4c538e99839988e5b0dce3fadb9b1e801decb",
@@ -304,19 +744,44 @@
         13
       ]
     },
+    "phase_annotation": {
+      "decode_marker": "qwen3/phase/decode/NNN",
+      "lane": "QWEN3 PHASES",
+      "prefill_marker": "qwen3/phase/prefill",
+      "runtime_drain_marker": "qwen3/runtime/drain/NNN",
+      "semantics": "Host engine-step ranges. Native framework and device events remain unchanged; terminal async drains are visible but excluded from decode.",
+      "validated_counts": {
+        "auto-infer": {
+          "decode": 15,
+          "prefill": 1,
+          "runtime_drains": 0
+        },
+        "omni-npu": {
+          "decode": 15,
+          "prefill": 1,
+          "runtime_drains": 1
+        },
+        "vllm-ascend": {
+          "decode": 15,
+          "prefill": 1,
+          "runtime_drains": 1
+        }
+      }
+    },
     "runtime_kv_capacity": {
       "auto-infer": {
         "evidence": "EngineConfig CacheConfig plus matched runtime kv_capacity readback",
+        "log_sha256": "1ee853fdd37af3c2786a681340d7050e7a151bc9b3c99f7936ef461802db1697",
         "usable_tokens": 14464
       },
       "omni-npu": {
-        "evidence": "profile log line 184 runtime readback",
-        "log_sha256": "fb26592cfc1fa454eddc1658461f92cc7c608d10cded498ac60e69e7c28e7db7",
+        "evidence": "profile metadata runtime readback plus retained capture log",
+        "log_sha256": "5e2836432b5628f13a46a436300041144f293e3e5065862b18175b05a210c0e2",
         "usable_tokens": 14464
       },
       "vllm-ascend": {
-        "evidence": "profile log line 61 runtime readback",
-        "log_sha256": "eac48327fb85b75eeddcb1e1664666e2f83d0b7bcda3085e3755c5624e3e473c",
+        "evidence": "profile metadata runtime readback plus retained capture log",
+        "log_sha256": "4e1e17e4f5a854a898d374c734d1c166e6cf7e7f1eaa87b344d83de4817733ba",
         "usable_tokens": 14464
       }
     },

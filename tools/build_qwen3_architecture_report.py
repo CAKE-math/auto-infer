@@ -209,6 +209,53 @@ def _architecture_data() -> list[tuple[str, str, str, str]]:
     ]
 
 
+def _call_stack_data() -> list[tuple[str, str, str, str]]:
+    return [
+        (
+            "auto-infer",
+            "LLM.generate → EngineCore.step → Scheduler.schedule → "
+            "BatchPlan.from_scheduler → "
+            "GraphPagedNpuExecutor[RunnerExecutor.execute] → "
+            "GraphPagedRunner.execute → "
+            "GraphPagedRunner.submit → Model.forward(ctx) → "
+            "AttentionBackend",
+            "EngineCore owns request、scheduler、KV 与 completion；执行层只交换短协议对象。",
+            "auto_infer/entrypoints/llm.py · engine/engine_core.py · "
+            "engine/execution.py · worker/graph_decode_runner.py",
+        ),
+        (
+            "omni-npu",
+            "vLLM LLM.generate → LLMEngine.step → vLLM EngineCore → "
+            "Scheduler.schedule → ModelExecutor.execute_model → "
+            "omni_npu.NPUWorker.execute_model → "
+            "omni_npu.NPUModelRunner.execute_model → model / graph patches → "
+            "Model.forward",
+            "上游 vLLM 生命周期、Omni plugin/patch、worker 与模型优化共同决定实际路径。",
+            "vllm/entrypoints/llm.py · omni_npu/worker/npu_worker.py · "
+            "omni_npu/worker/npu_model_runner.py",
+        ),
+        (
+            "vllm-ascend",
+            "vLLM LLM.generate → LLMEngine.step → "
+            "InprocClient.get_output → vLLM EngineCore.step_fn → "
+            "Scheduler.schedule → ModelExecutor.execute_model → "
+            "vllm_ascend.NPUWorker.execute_model → "
+            "vllm_ascend.NPUModelRunner.execute_model → Model.forward",
+            "vLLM V1 保持通用 engine；Ascend plugin 在 platform、worker、runner、compiler 与 custom-op 层专化。",
+            "vllm/v1/engine/llm_engine.py · vllm/v1/engine/core_client.py · "
+            "vllm_ascend/worker/worker.py · worker/model_runner_v1.py",
+        ),
+    ]
+
+
+def _call_stack_rows() -> str:
+    return "".join(
+        f'<tr><th scope="row">{_e(framework)}</th>'
+        f'<td><code>{_e(stack)}</code></td><td>{_e(boundary)}</td>'
+        f'<td><code>{_e(sources)}</code></td></tr>'
+        for framework, stack, boundary, sources in _call_stack_data())
+
+
 def _architecture_rows() -> str:
     return "".join(
         f'<tr><th scope="row">{_e(area)}</th><td>{_e(auto)}</td>'
@@ -350,11 +397,17 @@ def build_report(summary: dict, manifest: dict) -> str:
 :root{{--ink:#122033;--muted:#5b6878;--paper:#f4f7fa;--panel:#fff;--navy:#163a5f;--cyan:#087e8b;--cyan-soft:#dff2f3;--amber:#b56a00;--amber-soft:#fff0d5;--green:#177252;--green-soft:#def3e9;--red:#a33d3d;--line:#ced8e3;--shadow:0 16px 42px rgba(18,32,51,.08);--display:"Arial Narrow","Roboto Condensed","PingFang SC",sans-serif;--body:"Avenir Next","PingFang SC","Microsoft YaHei",sans-serif;--mono:"SFMono-Regular",Consolas,monospace}}
 *{{box-sizing:border-box}}html{{scroll-behavior:smooth}}body{{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.65}}a{{color:var(--navy);text-underline-offset:3px}}a:focus-visible,summary:focus-visible{{outline:3px solid #ffbf47;outline-offset:3px}}code,.num{{font-family:var(--mono);font-variant-numeric:tabular-nums}}code{{font-size:.84em;overflow-wrap:anywhere}}.shell{{width:100%;max-width:1440px;margin:auto;display:grid;grid-template-columns:250px minmax(0,1fr)}}nav{{position:sticky;top:0;height:100vh;padding:34px 24px;border-right:1px solid var(--line);background:rgba(244,247,250,.96)}}.brand{{font:800 22px/1 var(--display);letter-spacing:.04em}}.brand small{{display:block;margin-top:8px;font:600 11px/1.4 var(--mono);color:var(--cyan)}}nav ul{{list-style:none;padding:24px 0;margin:0}}nav li{{margin:7px 0}}nav a{{display:block;padding:5px 0;color:var(--muted);font-size:13px;text-decoration:none}}nav a:hover{{color:var(--cyan)}}main{{min-width:0;max-width:100%}}section,.hero{{max-width:100%;overflow-wrap:anywhere;padding:72px clamp(28px,6vw,92px);border-bottom:1px solid var(--line)}}.hero{{min-height:86vh;display:grid;align-content:center;background:linear-gradient(135deg,#f8fbfd 0%,#eaf2f7 100%)}}.hero>*{{min-width:0;max-width:100%}}.eyebrow{{font:700 11px/1.2 var(--mono);letter-spacing:.12em;color:var(--cyan)}}h1,h2,h3{{font-family:var(--display);line-height:1.08;margin-top:0}}h1{{max-width:990px;line-break:anywhere;overflow-wrap:anywhere;font-size:clamp(46px,7vw,94px);letter-spacing:-.045em;margin:20px 0 28px}}h2{{font-size:clamp(34px,4vw,56px);letter-spacing:-.025em;margin-bottom:16px}}h3{{font-size:22px}}.lede{{max-width:850px;font-size:clamp(18px,2vw,24px);color:var(--muted)}}.thesis-chain{{min-width:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:52px;border:1px solid var(--navy);background:var(--panel);box-shadow:var(--shadow)}}.thesis-chain div{{min-width:0;padding:22px;border-right:1px solid var(--navy)}}.thesis-chain div:last-child{{border:0}}.thesis-chain span{{display:block;font:700 11px var(--mono);color:var(--cyan)}}.thesis-chain strong{{display:block;margin-top:8px}}.section-head{{max-width:920px;margin-bottom:38px}}.section-head p{{font-size:18px;color:var(--muted)}}.evidence{{display:inline-block;padding:4px 8px;border-radius:2px;font:700 10px var(--mono);white-space:nowrap}}.measured{{color:var(--green);background:var(--green-soft)}}.observed{{color:var(--navy);background:#e1ebf5}}.inferred{{color:var(--amber);background:var(--amber-soft)}}.decision-grid{{display:grid;grid-template-columns:1.25fr .75fr;gap:20px}}.decision,.risk{{padding:30px;background:var(--panel);border-top:5px solid var(--green);box-shadow:var(--shadow)}}.risk{{border-color:var(--amber)}}.decision strong.big{{display:block;font:800 clamp(32px,5vw,60px)/1 var(--display);margin:16px 0;color:var(--green)}}.decision ul,.risk ul{{padding-left:20px}}.callout{{margin:30px 0;padding:20px 24px;border-left:5px solid var(--cyan);background:var(--cyan-soft)}}.callout.warning{{border-color:var(--amber);background:var(--amber-soft)}}.charts{{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0}}.chart{{padding:24px;background:var(--panel);border:1px solid var(--line)}}.bar-row{{display:grid;grid-template-columns:90px 1fr auto;gap:10px;align-items:center;margin:13px 0;font-size:12px}}.track{{height:9px;background:#e2e9ef}}.track i{{display:block;height:100%;background:#8ba0b3}}.bar-row.best .track i{{background:var(--cyan)}}.bar-row.best b{{color:var(--cyan)}}table{{width:100%;border-collapse:collapse;background:var(--panel)}}th,td{{padding:15px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}}thead th{{font:700 11px var(--mono);letter-spacing:.05em;color:var(--muted);background:#edf2f6}}tbody th{{font-weight:700}}th small{{display:block;font-weight:400;color:var(--muted)}}td.winner{{color:var(--green);font-weight:800;background:var(--green-soft)}}.unit{{font-family:var(--body);font-size:.82em;color:var(--muted)}}.table-scroll{{max-width:100%;overflow-x:auto}}.profile-grid{{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}}.profile-card{{min-width:0;padding:24px;background:var(--panel);box-shadow:var(--shadow);border-top:5px solid var(--cyan)}}.profile-card header{{display:flex;justify-content:space-between;gap:14px;align-items:start}}.trace-link{{font-size:12px;font-weight:700;white-space:nowrap}}.profile-kpis{{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);margin:18px 0}}.profile-kpis div{{padding:14px;background:var(--paper)}}.profile-kpis strong,.profile-kpis span{{display:block}}.profile-kpis strong{{font:800 20px var(--mono)}}.profile-kpis span{{font-size:10px;color:var(--muted)}}details{{border-top:1px solid var(--line)}}summary{{cursor:pointer;padding:14px 0;font-weight:700}}.compact th,.compact td{{padding:8px;font-size:11px}}.hash span,.hash code{{display:block}}.hash span{{font:700 10px var(--mono);color:var(--muted)}}.hash code{{font-size:9px}}.evidence-table td:first-child{{width:110px}}.evidence-table th{{width:180px}}.architecture-table{{min-width:1050px}}.architecture-table th:first-child{{width:150px}}.architecture-table td{{width:30%}}.split{{display:grid;grid-template-columns:1fr 1fr;gap:20px}}.contract{{padding:30px;background:var(--panel);box-shadow:var(--shadow)}}.contract.invariant{{border-top:6px solid var(--navy)}}.contract.generated{{border-top:6px solid var(--amber)}}.contract li{{margin:10px 0}}.flow{{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;border:1px solid var(--navy)}}.flow div{{min-width:0;position:relative;padding:24px 18px;border-right:1px solid var(--navy);background:var(--panel)}}.flow div:last-child{{border:0}}.flow b{{display:block;color:var(--cyan);font:800 22px var(--mono)}}.flow span{{font-size:13px}}.appendix-grid{{display:grid;grid-template-columns:1fr 1fr;gap:20px}}.appendix-card{{padding:24px;border:1px solid var(--line);background:var(--panel)}}pre{{max-width:100%;padding:18px;overflow:auto;background:#132a40;color:#e9f2f8;font:12px/1.55 var(--mono)}}footer{{padding:32px clamp(28px,6vw,92px);color:var(--muted);font-size:12px}}@media(max-width:1080px){{.shell{{grid-template-columns:minmax(0,1fr)}}nav{{position:relative;height:auto;min-width:0;width:100%;border-right:0;border-bottom:1px solid var(--line)}}nav ul{{display:flex;max-width:100%;overflow:auto;gap:16px;padding:10px 0 0}}nav a{{white-space:nowrap}}.profile-grid{{grid-template-columns:minmax(0,1fr)}}.charts{{grid-template-columns:minmax(0,1fr)}}}}@media(max-width:720px){{section,.hero{{padding:48px 20px}}h1{{font-size:clamp(34px,11vw,46px);line-break:anywhere;word-break:break-all}}p,li,strong{{overflow-wrap:anywhere}}.decision-grid,.split,.appendix-grid{{grid-template-columns:minmax(0,1fr)}}.thesis-chain,.flow{{grid-template-columns:minmax(0,1fr)}}.thesis-chain div,.flow div{{border-right:0;border-bottom:1px solid var(--navy)}}.bar-row{{grid-template-columns:78px minmax(0,1fr)}}.bar-row b{{grid-column:2}}}}@media(prefers-reduced-motion:reduce){{html{{scroll-behavior:auto}}}}@media print{{nav{{display:none}}.shell{{display:block}}section,.hero{{padding:28px 20px;break-inside:auto}}.hero{{min-height:auto}}.profile-card,.decision,.risk,.contract,.appendix-card{{box-shadow:none;break-inside:avoid}}details{{display:block}}details>summary{{display:none}}details>*{{display:block!important}}a{{color:inherit;text-decoration:none}}}}
 </style>
+<style>
+.diagram{{margin:30px 0;padding:20px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow)}}
+.diagram img{{display:block;width:100%;height:auto;margin:auto}}
+.diagram figcaption{{margin-top:14px;color:var(--muted);font-size:13px}}
+.call-stack-table{{min-width:1100px}}.call-stack-table td:nth-child(2){{width:38%}}
+</style>
 </head>
 <body><div class="shell">
 <nav aria-label="报告目录"><div class="brand">AUTO·INFER<small>ARCHITECTURE / PERFORMANCE / EVIDENCE</small></div><ul>
 <li><a href="#executive-summary">管理结论</a></li><li><a href="#matched-benchmark">Matched benchmark</a></li>
-<li><a href="#profiling-deep-dive">Profiling 深挖</a></li><li><a href="#why-faster">为什么更快</a></li>
+<li><a href="#profiling-deep-dive">Profiling 深挖</a></li><li><a href="#call-stack-comparison">调用栈对比</a></li><li><a href="#why-faster">为什么更快</a></li>
 <li><a href="#architecture-comparison">架构对比</a></li><li><a href="#invariants">不变与重生成</a></li>
 <li><a href="#acceptance-workflow">模型验收流程</a></li><li><a href="#evidence-appendix">证据附录</a></li></ul></nav>
 <main>
@@ -374,15 +427,21 @@ def build_report(summary: dict, manifest: dict) -> str:
 
 <section id="profiling-deep-dive"><div class="section-head"><span class="eyebrow">RAW CHROME TRACE · DIRECTLY OPENABLE</span><h2>Qwen3 三框架 profiling</h2><p>每份 trace 捕获同一 B{profile_workload["batch_size"]}、{profile_workload["output_tokens"]}-token generate：<strong>{phases["prefill_passes"]} 次 prefill</strong> + <strong>{phases["decode_passes"]} 次连续 decode</strong>。这是连续多步 decode，<strong>不是投机 MTP</strong>。{_e(attention_evidence)}</p></div>
 <div class="callout"><strong>如何一眼找到阶段：</strong>在 Chrome Trace / Perfetto 中找到置顶的 <code>QWEN3 PHASES</code> process，唯一的 <code>PREFILL</code> 后面依次是 <code>DECODE 001</code>…<code>DECODE {phases["decode_passes"]:03d}</code>。这是采集器对三套 engine step 写入的统一 host range；三方原生 operator、线程和 category 会保留，因此 JSON 结构和事件数不会相同。</div>
+<figure class="diagram"><img src="../figures/qwen3-profile-phase-sequence.png" alt="Qwen3 profiling phase sequence comparing auto-infer, omni-npu and vllm-ascend"><figcaption>统一 phase contract：三方均为 1 PREFILL + {phases["decode_passes"]} DECODE；omni-npu 与 vllm-ascend 的 terminal drain 保留在 decode 之外。</figcaption></figure>
 <div class="callout"><strong>读取口径：</strong>captured request range 是 profiler-instrumented wall range，可用于本次短窗口对照，但不替代 headline。阶段表是 complete events 的累计事件时间；host/device、嵌套 range 与并发 stream 会重叠，因此不能把 phase duration 相加当作请求墙钟。</div>
 <div class="profile-grid">{_profile_cards(summary, manifest)}</div>
 <p class="callout">本次 {profile_workload["output_tokens"]}-token profile digest 三方{'一致' if profile_digest_equal else '不一致'}；这不改变 {headline_workload["output_tokens"]}-token headline 中 omni-npu digest 不同的事实。打开方式：在 Chromium 输入 <code>chrome://tracing</code>，选择 Load 后载入任一 JSON；文件本身未压缩、未截断。</p></section>
+
+<section id="call-stack-comparison"><div class="section-head"><span class="eyebrow">SOURCE-OBSERVED · HOT PATH</span><h2>同一请求，三套调用栈</h2><p>调用层数不是单独的性能结论；真正重要的是状态所有权、变化隔离和每步需要穿越的组件边界。以下符号按本次已锁定源码版本核对。</p></div>
+<figure class="diagram"><img src="../figures/qwen3-three-framework-call-stacks.png" alt="Source observed Qwen3 call stacks for auto-infer, omni-npu and vllm-ascend"><figcaption>auto-infer 用短执行协议连接唯一 EngineCore 与设备 runner；另外两套框架保留 vLLM 通用生命周期，并在 plugin / worker / runner 层加入 Ascend 专化。</figcaption></figure>
+<div class="table-scroll"><table class="call-stack-table"><thead><tr><th>框架</th><th>主调用栈</th><th>所有权 / 间接性</th><th>源码位置</th></tr></thead><tbody>{_call_stack_rows()}</tbody></table></div></section>
 
 <section id="why-faster"><div class="section-head"><span class="eyebrow">MEASURED → OBSERVED → INFERRED</span><h2>为什么 auto-infer 更快</h2><p>性能解释必须区分事实与因果推断。下面把每条机制连到测试结果与源码边界；没有单变量 ablation 的地方不会写成已证明因果。</p></div>
 <div class="table-scroll"><table class="evidence-table"><thead><tr><th>证据类型</th><th>环节</th><th>结论</th><th>依据 / 限制</th></tr></thead><tbody>{_causal_rows(summary, manifest)}</tbody></table></div>
 <div class="callout"><strong>核心解释：</strong>auto-infer 的优势不是“异步越多越快”。本负载下 depth-{headline_workload["async_batches"]} async 反而更慢，最终采用同步默认。领先来自更短的确定性热路径：启动期捕获恰当 gear、固定地址输入、脏 metadata 更新、event 排序、packed projection 与 captured greedy epilogue 的组合。</div></section>
 
 <section id="architecture-comparison"><div class="section-head"><span class="eyebrow">SOURCE-OBSERVED · SCOPED</span><h2>架构优劣详细对比</h2><p>auto-infer 的核心优势是低间接性、明确所有权和小扩展 seam；两个对手的优势是产品宽度与成熟生态。代码行数只表示审计面，不单独构成质量结论。</p></div>
+<figure class="diagram"><img src="../figures/qwen3-three-framework-architecture.png" alt="Architecture layers of auto-infer, omni-npu and vllm-ascend"><figcaption>同层横向阅读：auto-infer 把变化压在 capability/registry 与设备 backend；omni-npu 和 vllm-ascend 用更宽的通用框架与平台扩展换取生态覆盖。</figcaption></figure>
 <div class="table-scroll"><table class="architecture-table"><thead><tr><th>维度</th><th>auto-infer</th><th>omni-npu</th><th>vllm-ascend</th></tr></thead><tbody>{_architecture_rows()}</tbody></table></div>
 <div class="split" style="margin-top:24px"><article class="appendix-card"><span class="evidence observed">源码观察</span><h3>auto-infer 的架构优势</h3><ul><li>执行、attention、MTP 都通过 capability/registry 换对象，而不是把模型分支压进 engine。</li><li>graph 性能胶水拆为 staging、task pipeline、epilogue；可单测且状态所有者清楚。</li><li>生产核心 9,960 Python LOC / 93 files，无内部 import cycle，审计路径短。</li><li>unsupported 能力 fail-fast，不保留静默 eager fallback 来掩盖错误路径。</li></ul></article><article class="appendix-card"><span class="evidence measured">诚实短板</span><h3>两个对手仍更强的地方</h3><ul><li>vllm-ascend：上游模型、OpenAI API、scheduler、connector 与部署工具链成熟。</li><li>omni-npu：优化模型、复杂 MoE/EP/P-D、算子与 best-practice 配置覆盖更深。</li><li>auto-infer：模型面、量化、生产拓扑广度、长期 soak 证据仍需持续建设。</li><li>当前优胜结论不能外推到未测模型、shape、并行规模或量化格式。</li></ul></article></div></section>
 
@@ -471,6 +530,7 @@ def build_markdown_report(summary: dict, manifest: dict) -> str:
         ])
 
     causal_rows = [list(row) for row in _causal_data(summary, manifest)]
+    call_stack_rows = [list(row) for row in _call_stack_data()]
     architecture_rows = [list(row) for row in _architecture_data()]
     artifact_rows = []
     for framework in FRAMEWORKS:
@@ -518,6 +578,8 @@ def build_markdown_report(summary: dict, manifest: dict) -> str:
 
 三份 JSON 的结构和事件数不同是预期现象：auto-infer、omni-npu 和 vllm-ascend 暴露的 Python/C++/ACL graph、async queue 与 runtime 元数据层级不同。可比性来自统一 workload、输出长度、KV 容量、设备、精度和 `QWEN3 PHASES` 边界，而不是要求三份 trace 长得一样。
 
+![Qwen3 三框架 phase 时序](../figures/qwen3-profile-phase-sequence.png)
+
 {_md_table(['框架', '请求范围', 'PREFILL host range', f'{phases['decode_passes']} 个 DECODE 合计', '原生 complete events', '原始 Trace'], profile_rows)}
 
 ### 逐步 phase 索引
@@ -526,6 +588,14 @@ def build_markdown_report(summary: dict, manifest: dict) -> str:
 
 {_md_table(['阶段', *FRAMEWORKS], step_rows)}
 
+## 三框架调用栈对比
+
+![Qwen3 三框架源码调用栈](../figures/qwen3-three-framework-call-stacks.png)
+
+调用层数不是单独的性能结论；这里比较的是状态所有权、变化隔离和一次模型执行需要穿越的组件边界。符号按 manifest 锁定的源码版本核对。
+
+{_md_table(['框架', '主调用栈', '所有权 / 间接性', '源码位置'], call_stack_rows)}
+
 ## 为什么 auto-infer 更快
 
 {_md_table(['证据类型', '环节', '结论', '依据 / 限制'], causal_rows)}
@@ -533,6 +603,8 @@ def build_markdown_report(summary: dict, manifest: dict) -> str:
 领先来自较短且确定的热路径组合：启动期捕获合适 gear、固定地址输入、dirty metadata 更新、event 排序、packed projection，以及 graph 内 BF16 lm_head 与 greedy argmax。没有单变量 ablation 的机制只作为与结果一致的因果解释，不写成已独立证明的毫秒收益。
 
 ## 架构优劣详细对比
+
+![Qwen3 三框架架构分层](../figures/qwen3-three-framework-architecture.png)
 
 {_md_table(['维度', 'auto-infer', 'omni-npu', 'vllm-ascend'], architecture_rows)}
 

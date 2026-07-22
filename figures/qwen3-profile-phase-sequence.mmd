@@ -1,0 +1,38 @@
+sequenceDiagram
+    participant Harness as Unified profiler harness
+    participant Auto as auto-infer
+    participant Omni as omni-npu
+    participant Ascend as vllm-ascend
+
+    Harness->>Auto: PREFILL
+    activate Auto
+    Auto-->>Harness: first token
+    deactivate Auto
+    loop DECODE 001 to 015
+        Harness->>Auto: engine step
+        Auto-->>Harness: next token
+    end
+
+    Harness->>Omni: PREFILL
+    activate Omni
+    Omni-->>Harness: async scheduled output
+    deactivate Omni
+    loop DECODE 001 to 015
+        Harness->>Omni: engine step
+        Omni-->>Harness: next token
+    end
+    Harness->>Omni: RUNTIME DRAIN
+    Omni-->>Harness: flush terminal async output
+
+    Harness->>Ascend: PREFILL
+    activate Ascend
+    Ascend-->>Harness: async scheduled output
+    deactivate Ascend
+    loop DECODE 001 to 015
+        Harness->>Ascend: engine step
+        Ascend-->>Harness: next token
+    end
+    Harness->>Ascend: RUNTIME DRAIN
+    Ascend-->>Harness: flush terminal async output
+
+    Note over Harness,Ascend: QWEN3 PHASES lane contains only 1 PREFILL and 15 DECODE ranges, while runtime drains stay visible outside decode.

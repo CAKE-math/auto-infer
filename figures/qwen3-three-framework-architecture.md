@@ -1,0 +1,44 @@
+# Qwen3 三框架架构分层对比
+
+对比核心所有权、模型扩展 seam、性能胶水和平台优化层。层数本身不是质量指标；图强调的是状态归属与变化隔离。
+
+```mermaid
+flowchart TB
+    a0["auto-infer"]:::autoHeader --> a1["Offline LLM / Online Serving"]
+    a1 --> a2["EngineCore<br/>request · scheduler · KV owner"]
+    a2 --> a3["BatchPlan ↔ Executor ↔ ExecutionResult"]
+    a3 --> a4["Staging · Graph Pipeline · Epilogue"]
+    a4 --> a5["Model capability + backend registry"]
+    a5 --> a6["ACL Graph · BF16 kernels · HCCL"]
+
+    o0["omni-npu"]:::otherHeader --> o1["vLLM API / Serving"]
+    o1 --> o2["vLLM Engine / Scheduler / KV"]
+    o2 --> o3["Omni plugin loader + patch sets"]
+    o3 --> o4["Omni worker / runner / model variants"]
+    o4 --> o5["Best-practice configs + attention backends"]
+    o5 --> o6["Omni operators · ACL Graph · HCCL"]
+
+    v0["vllm-ascend"]:::otherHeader --> v1["vLLM API / Serving"]
+    v1 --> v2["vLLM V1 Engine / Scheduler / KV"]
+    v2 --> v3["Ascend platform plugin"]
+    v3 --> v4["Worker / ModelRunner / Compiler"]
+    v4 --> v5["Custom ops + attention backends"]
+    v5 --> v6["Piecewise ACL Graph · HCCL"]
+
+    a0 ~~~ o0 ~~~ v0
+    a1 ~~~ o1 ~~~ v1
+    a2 ~~~ o2 ~~~ v2
+    a3 ~~~ o3 ~~~ v3
+    a4 ~~~ o4 ~~~ v4
+    a5 ~~~ o5 ~~~ v5
+    a6 ~~~ o6 ~~~ v6
+
+    classDef autoHeader fill:#087e8b,stroke:#065f68,color:#ffffff,stroke-width:2px
+    classDef otherHeader fill:#5b6878,stroke:#3e4956,color:#ffffff,stroke-width:2px
+    classDef ownership fill:#dff2f3,stroke:#087e8b,color:#122033,stroke-width:2px
+    classDef seam fill:#def3e9,stroke:#177252,color:#122033,stroke-width:2px
+    classDef ecosystem fill:#edf2f6,stroke:#5b6878,color:#122033,stroke-width:1.5px
+    class a1,a2,a3,a4 ownership
+    class a5,a6 seam
+    class o1,o2,o3,o4,o5,o6,v1,v2,v3,v4,v5,v6 ecosystem
+```

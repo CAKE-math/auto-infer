@@ -361,6 +361,26 @@ def test_report_links_every_raw_trace_and_labels_evidence(profile_evidence):
     assert "不是投机 MTP" in html
 
 
+def test_reports_include_call_stack_and_architecture_visuals(profile_evidence):
+    html = build_report(*profile_evidence)
+    markdown = build_markdown_report(*profile_evidence)
+    diagrams = (
+        "qwen3-three-framework-call-stacks.png",
+        "qwen3-three-framework-architecture.png",
+        "qwen3-profile-phase-sequence.png",
+    )
+
+    for diagram in diagrams:
+        assert f"../figures/{diagram}" in html
+        assert f"../figures/{diagram}" in markdown
+    for symbol in (
+        "EngineCore.step", "BatchPlan", "GraphPagedRunner.execute",
+        "NPUWorker.execute_model", "NPUModelRunner.execute_model",
+    ):
+        assert symbol in html
+        assert symbol in markdown
+
+
 def test_markdown_report_is_full_and_uses_same_evidence(profile_evidence):
     summary, manifest = profile_evidence
 

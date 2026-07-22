@@ -1,8 +1,8 @@
 {
-  "capture_harness_revision": "74899b6f092b4d6f3227cd375f031555abbc55a0",
+  "capture_harness_revision": "1507a19ed2db3abe7cf5145c1ea0e66f9ad2cb34",
   "capture_harness_verification": {
-    "benchmarks/profile_qwen3.py": "e205d0b631056073373d9e6cd57f2965eb35ce809fd3cf3e0b197dbbaca1879a",
-    "benchmarks/qwen3_profile_common.py": "5c7b205c7a6bbaf213d44fb4267683e47867d4271e7f236598adf361a144579c",
+    "benchmarks/profile_qwen3.py": "098a01fba3af3fc0e28509cbaba1f6267ef2cd790788e26c7ad78276757c2486",
+    "benchmarks/qwen3_profile_common.py": "ea302908c48d9d6efeb6f34af039912e458a31ffc91a5b095ef8cacf007dee1b",
     "method": "remote deployed files matched git object content by SHA-256"
   },
   "driver": {
@@ -13,7 +13,7 @@
   },
   "framework_sources": {
     "auto-infer": {
-      "auto_infer": "74899b6f092b4d6f3227cd375f031555abbc55a0"
+      "auto_infer": "1507a19ed2db3abe7cf5145c1ea0e66f9ad2cb34"
     },
     "omni-npu": {
       "omni_npu": "6fc4c538e99839988e5b0dce3fadb9b1e801decb",
@@ -42,19 +42,44 @@
       13
     ]
   },
+  "phase_annotation": {
+    "decode_marker": "qwen3/phase/decode/NNN",
+    "lane": "QWEN3 PHASES",
+    "prefill_marker": "qwen3/phase/prefill",
+    "runtime_drain_marker": "qwen3/runtime/drain/NNN",
+    "semantics": "Host engine-step ranges. Native framework and device events remain unchanged; terminal async drains are visible but excluded from decode.",
+    "validated_counts": {
+      "auto-infer": {
+        "decode": 15,
+        "prefill": 1,
+        "runtime_drains": 0
+      },
+      "omni-npu": {
+        "decode": 15,
+        "prefill": 1,
+        "runtime_drains": 1
+      },
+      "vllm-ascend": {
+        "decode": 15,
+        "prefill": 1,
+        "runtime_drains": 1
+      }
+    }
+  },
   "runtime_kv_capacity": {
     "auto-infer": {
       "evidence": "EngineConfig CacheConfig plus matched runtime kv_capacity readback",
+      "log_sha256": "1ee853fdd37af3c2786a681340d7050e7a151bc9b3c99f7936ef461802db1697",
       "usable_tokens": 14464
     },
     "omni-npu": {
-      "evidence": "profile log line 184 runtime readback",
-      "log_sha256": "fb26592cfc1fa454eddc1658461f92cc7c608d10cded498ac60e69e7c28e7db7",
+      "evidence": "profile metadata runtime readback plus retained capture log",
+      "log_sha256": "5e2836432b5628f13a46a436300041144f293e3e5065862b18175b05a210c0e2",
       "usable_tokens": 14464
     },
     "vllm-ascend": {
-      "evidence": "profile log line 61 runtime readback",
-      "log_sha256": "eac48327fb85b75eeddcb1e1664666e2f83d0b7bcda3085e3755c5624e3e473c",
+      "evidence": "profile metadata runtime readback plus retained capture log",
+      "log_sha256": "4e1e17e4f5a854a898d374c734d1c166e6cf7e7f1eaa87b344d83de4817733ba",
       "usable_tokens": 14464
     }
   },
