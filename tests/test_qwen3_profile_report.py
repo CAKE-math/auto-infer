@@ -6,6 +6,8 @@ from pathlib import Path
 
 import pytest
 
+from benchmarks import qwen3_profile_common
+from benchmarks import profile_qwen3 as qwen3_profile
 from benchmarks.qwen3_profile_common import (
     StepPhaseRecorder,
     add_visible_phase_lane,
@@ -221,6 +223,135 @@ def test_step_phase_recorder_keeps_terminal_runtime_drain_out_of_decode():
     assert recorder.validate(output_tokens=3)["runtime_drains"] == 1
 
 
+def test_runtime_call_stack_recorder_wraps_real_nested_boundaries_and_restores():
+    assert hasattr(qwen3_profile_common, "CallTarget")
+    assert hasattr(qwen3_profile_common, "RuntimeCallStackRecorder")
+    CallTarget = qwen3_profile_common.CallTarget
+    RuntimeCallStackRecorder = qwen3_profile_common.RuntimeCallStackRecorder
+    calls = []
+
+    class Range:
+        def __init__(self, name):
+            self.name = name
+
+        def __enter__(self):
+            calls.append(("enter", self.name))
+
+        def __exit__(self, *_):
+            calls.append(("exit", self.name))
+
+    class Scheduler:
+        def schedule(self):
+            return "batch"
+
+    class Runner:
+        def execute(self, batch):
+            return batch
+
+    class Engine:
+        def __init__(self):
+            self.scheduler = Scheduler()
+            self.runner = Runner()
+
+        def step(self):
+            return self.runner.execute(self.scheduler.schedule())
+
+    engine = Engine()
+    original_step = engine.step
+    recorder = RuntimeCallStackRecorder(Range)
+    targets = (
+        CallTarget("engine", engine, "step"),
+        CallTarget("scheduler", engine.scheduler, "schedule"),
+        CallTarget("runner", engine.runner, "execute"),
+    )
+    with recorder.instrument(targets):
+        assert engine.step() == "batch"
+
+    entered = [name for action, name in calls if action == "enter"]
+    assert [name.split("/")[2] for name in entered] == [
+        "engine", "scheduler", "runner"]
+    assert all(name.startswith("qwen3/call/") for name in entered)
+    assert recorder.counts == {"engine": 1, "scheduler": 1, "runner": 1}
+    assert engine.step == original_step
+
+
+def test_visible_call_stack_lane_is_trace_derived_and_preserves_nesting(tmp_path):
+    assert hasattr(qwen3_profile_common, "add_visible_call_stack_lane")
+    add_visible_call_stack_lane = qwen3_profile_common.add_visible_call_stack_lane
+    path = tmp_path / "trace.json"
+    path.write_text(json.dumps([
+        {"name": "qwen3/phase/prefill", "cat": "cpu_op", "ph": "X",
+         "ts": 0, "dur": 100, "pid": 7, "tid": 8},
+        {"name": "qwen3/call/engine/pkg.Engine.step", "cat": "cpu_op",
+         "ph": "X", "ts": 1, "dur": 90, "pid": 7, "tid": 8},
+        {"name": "qwen3/call/scheduler/pkg.Scheduler.schedule",
+         "cat": "cpu_op", "ph": "X", "ts": 2, "dur": 10,
+         "pid": 7, "tid": 8},
+        {"name": "qwen3/call/executor/pkg.Executor.execute",
+         "cat": "cpu_op", "ph": "X", "ts": 20, "dur": 70,
+         "pid": 7, "tid": 8},
+        {"name": "qwen3/call/runner/pkg.Runner.execute", "cat": "cpu_op",
+         "ph": "X", "ts": 21, "dur": 60, "pid": 7, "tid": 8},
+        {"name": "qwen3/phase/decode/001", "cat": "cpu_op", "ph": "X",
+         "ts": 110, "dur": 50, "pid": 7, "tid": 8},
+        {"name": "qwen3/call/engine/pkg.Engine.step", "cat": "cpu_op",
+         "ph": "X", "ts": 111, "dur": 48, "pid": 7, "tid": 8},
+    ]))
+
+    index = add_visible_call_stack_lane(path)
+    events = json.loads(path.read_text())
+
+    assert any(event.get("args", {}).get("name") == "QWEN3 CALL STACK"
+               for event in events)
+    copied = [event for event in events if event.get("cat") == "qwen3.callstack"]
+    assert len(copied) == 5
+    assert [item["depth"] for item in index["phases"]["prefill"]] == [
+        0, 1, 1, 2]
+    assert index["phases"]["decode"][0]["step"] == 1
+    assert index["phases"]["decode"][0]["events"][0]["symbol"] == (
+        "pkg.Engine.step")
+    assert hasattr(qwen3_profile_common, "extract_call_stack_index")
+    assert qwen3_profile_common.extract_call_stack_index(path) == index
+
+
+def test_framework_call_targets_follow_live_runtime_objects():
+    assert hasattr(qwen3_profile, "_auto_call_targets")
+    assert hasattr(qwen3_profile, "_vllm_call_targets")
+    _auto_call_targets = qwen3_profile._auto_call_targets
+    _vllm_call_targets = qwen3_profile._vllm_call_targets
+    class Node:
+        def step(self): pass
+        def step_fn(self): pass
+        def schedule(self): pass
+        def execute(self): pass
+        def execute_model(self): pass
+        def get_output(self): pass
+        def submit(self): pass
+        def _eager_submit(self): pass
+        def _graph_submit(self): pass
+        def _prefill_graph_submit(self): pass
+
+    auto = Node()
+    auto.scheduler = Node()
+    auto.executor = Node()
+    auto.executor.runner = Node()
+    assert [target.layer for target in _auto_call_targets(auto)] == [
+        "engine", "scheduler", "executor", "runner", "submit",
+        "eager", "decode-graph", "prefill-graph"]
+
+    llm_engine = Node()
+    client = llm_engine.engine_core = Node()
+    core = client.engine_core = Node()
+    core.scheduler = Node()
+    executor = core.model_executor = Node()
+    wrapper = executor.driver_worker = Node()
+    worker = wrapper.worker = Node()
+    worker.model_runner = Node()
+    assert [target.layer for target in _vllm_call_targets(llm_engine)] == [
+        "llm-engine", "engine-client", "engine-core", "scheduler",
+        "executor", "worker-wrapper", "worker", "model-runner"]
+
+
 def test_visible_phase_lane_is_explicit_and_machine_validated(tmp_path):
     path = tmp_path / "trace.json"
     path.write_text(json.dumps([
@@ -315,6 +446,21 @@ def test_trace_summary_accepts_numeric_string_duration_and_retains_identity(
     assert summary["top_events"][0]["categories"] == ["cpu_op"]
     assert summary["top_events"][0]["pids"] == [4]
     assert summary["top_events"][0]["tids"] == [5]
+
+
+def test_trace_summary_excludes_runtime_call_stack_annotation_ranges(tmp_path):
+    path = tmp_path / "trace.json"
+    path.write_text(json.dumps([
+        _event("GraphReplay", 7),
+        _event("qwen3/call/engine/pkg.Engine.step", 6, cat="cpu_op"),
+        _event("engine · pkg.Engine.step", 6, cat="qwen3.callstack"),
+    ]))
+
+    summary = summarize_trace(path)
+
+    assert summary["complete_event_count"] == 1
+    assert [event["name"] for event in summary["top_events"]] == [
+        "GraphReplay"]
 
 
 def test_publish_trace_copies_validated_artifact_to_raw_directory(tmp_path):

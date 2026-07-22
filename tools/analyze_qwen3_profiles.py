@@ -13,8 +13,8 @@ if __package__ in {None, ""}:
 
 from benchmarks.compare_results import EXPECTED_FRAMEWORKS, load_comparable_results
 from benchmarks.qwen3_profile_common import (
-    extract_phase_index, load_chrome_trace_events, sha256_file,
-    validate_chrome_trace)
+    extract_call_stack_index, extract_phase_index, load_chrome_trace_events,
+    sha256_file, validate_chrome_trace)
 
 
 PHASES = (
@@ -83,8 +83,8 @@ def summarize_trace(path: Path) -> dict:
         if duration is None:
             continue
         name = str(event.get("name", "<unnamed>"))
-        if (name.startswith("qwen3/phase/")
-                or event.get("cat") == "qwen3.phase"):
+        if (name.startswith(("qwen3/phase/", "qwen3/call/"))
+                or event.get("cat") in {"qwen3.phase", "qwen3.callstack"}):
             continue
         phase = classify_event(name)
         complete_count += 1
@@ -230,6 +230,7 @@ def build_evidence(metadata_paths: list[Path], benchmark_paths: list[Path],
         profiles[framework] = {
             **summarize_trace(trace_path),
             "execution_phases": extract_phase_index(trace_path),
+            "runtime_call_stack": extract_call_stack_index(trace_path),
         }
         artifacts[framework] = {
             "path": f"raw/{framework}.trace.json",

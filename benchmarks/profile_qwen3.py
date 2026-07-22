@@ -16,7 +16,10 @@ if __package__ in {None, ""}:
 
 from benchmarks.common import load_manifest, token_digest
 from benchmarks.qwen3_profile_common import (
+    CallTarget,
+    RuntimeCallStackRecorder,
     StepPhaseRecorder,
+    add_visible_call_stack_lane,
     add_visible_phase_lane,
     sha256_file,
     validate_chrome_trace,
@@ -140,6 +143,41 @@ def _environment(torch, torch_npu) -> dict:
     }
 
 
+def _auto_call_targets(engine):
+    executor = engine.executor
+    runner = executor.runner
+    return (
+        CallTarget("engine", engine, "step"),
+        CallTarget("scheduler", engine.scheduler, "schedule"),
+        CallTarget("executor", executor, "execute"),
+        CallTarget("runner", runner, "execute"),
+        CallTarget("submit", runner, "submit"),
+        CallTarget("eager", runner, "_eager_submit"),
+        CallTarget("decode-graph", runner, "_graph_submit"),
+        CallTarget("prefill-graph", runner, "_prefill_graph_submit"),
+    )
+
+
+def _vllm_call_targets(engine):
+    client = engine.engine_core
+    core = client.engine_core
+    executor = core.model_executor
+    wrapper = executor.driver_worker
+    worker = wrapper.worker
+    runner = worker.model_runner
+    core_step = "step_fn" if hasattr(core, "step_fn") else "step"
+    return (
+        CallTarget("llm-engine", engine, "step"),
+        CallTarget("engine-client", client, "get_output"),
+        CallTarget("engine-core", core, core_step),
+        CallTarget("scheduler", core.scheduler, "schedule"),
+        CallTarget("executor", executor, "execute_model"),
+        CallTarget("worker-wrapper", wrapper, "execute_model"),
+        CallTarget("worker", worker, "execute_model"),
+        CallTarget("model-runner", runner, "execute_model"),
+    )
+
+
 class _AutoInferAdapter:
     def __init__(self, manifest: dict):
         from transformers import AutoTokenizer
@@ -169,6 +207,7 @@ class _AutoInferAdapter:
             async_batches=manifest["async_batches"])
         self._llm = LLM(config)
         self.phase_engine = self._llm.engine
+        self.call_targets = _auto_call_targets(self.phase_engine)
         self.runtime_kv_capacity = {
             "usable_tokens": manifest["usable_kv_tokens"],
             "runtime_block_size": block_size,
@@ -201,6 +240,7 @@ class _VllmAdapter:
             kv_cache_memory_bytes=manifest["kv_cache_memory_bytes"],
             enforce_eager=False, seed=manifest["seed"])
         self.phase_engine = self._llm.llm_engine
+        self.call_targets = _vllm_call_targets(self.phase_engine)
         self._prompt_ids = self._llm.get_tokenizer().encode(manifest["prompt"])
         engine = self._llm.llm_engine
         cache = engine.vllm_config.cache_config
@@ -272,21 +312,24 @@ def capture(manifest_path: Path, framework: str, output_dir: Path) -> None:
             record_shapes=False, profile_memory=False, with_stack=False,
         ) as profiler:
             phase_recorder = StepPhaseRecorder(record_function)
+            call_recorder = RuntimeCallStackRecorder(record_function)
             with record_function("qwen3/profiled_request"):
                 with record_function(framework):
                     with record_function("qwen3/prefill_and_decode"):
-                        with phase_recorder.instrument(
-                                engine.phase_engine,
-                                output_tokens=workload["output_tokens"]):
-                            outputs = engine.run(
-                                workload["batch_size"],
-                                workload["output_tokens"])
+                        with call_recorder.instrument(engine.call_targets):
+                            with phase_recorder.instrument(
+                                    engine.phase_engine,
+                                    output_tokens=workload["output_tokens"]):
+                                outputs = engine.run(
+                                    workload["batch_size"],
+                                    workload["output_tokens"])
             torch.npu.synchronize()
         completed_at = datetime.now(timezone.utc).isoformat()
         profiler.export_chrome_trace(str(trace_path))
         phase_counts = phase_recorder.validate(workload["output_tokens"])
         phase_index = add_visible_phase_lane(
             trace_path, workload["output_tokens"])
+        call_stack_index = add_visible_call_stack_lane(trace_path)
     finally:
         engine.close()
 
@@ -310,7 +353,9 @@ def capture(manifest_path: Path, framework: str, output_dir: Path) -> None:
         "capture": {"started_at_utc": started_at,
                     "completed_at_utc": completed_at,
                     "phase_counts": phase_counts,
-                    "phase_index": phase_index},
+                    "phase_index": phase_index,
+                    "call_counts": call_recorder.counts,
+                    "call_stack_index": call_stack_index},
         "output_digest": token_digest(outputs[0]),
         "output_batch_digests": [token_digest(tokens) for tokens in outputs],
         "output_length": lengths[0],
