@@ -1,0 +1,199 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="930" viewBox="0 0 1600 930" role="img" aria-labelledby="title desc">
+<title id="title">Qwen3 trace-derived runtime call-stack comparison</title>
+<desc id="desc">Measured prefill and median decode host ranges for auto-infer, omni-npu, and vllm-ascend.</desc>
+<style>text{font-family:Inter,Arial,"PingFang SC",sans-serif;fill:#122033}.bg{fill:#f4f7fa}.panel{fill:#fff;stroke:#ced8e3;stroke-width:1}.stripe{fill:#f3f6f8}.eyebrow{font-size:13px;font-weight:700;letter-spacing:1.5px;fill:#087e8b}.headline{font-size:24px;font-weight:750}.framework{font-size:18px;font-weight:750}.metric{font-size:14px;font-weight:650}.note{font-size:13px;fill:#5b6878}.panel-title{font-size:13px;font-weight:700}.panel-value{font-size:15px;font-weight:750}.call-label{font:11px "SFMono-Regular",Consolas,monospace;fill:#34495e}.axis{stroke:#8796a5;stroke-width:1}.tick{font-size:10px;fill:#6a7785}.footer{font-size:12px;fill:#5b6878}</style>
+<rect width="1600" height="930" class="bg"/>
+<text x="28.0" y="32.0" class="eyebrow" text-anchor="start">TRACE-DERIVED HOST CALL STACK</text>
+<text x="28.0" y="67.0" class="headline" text-anchor="start">Decode: auto-infer 1.12× faster than omni-npu, 3.01× faster than vllm-ascend</text>
+<text x="28.0" y="94.0" class="note" text-anchor="start">Prefill is shown separately: vllm-ascend leads this captured window; stack depth alone is not treated as causality.</text>
+<text x="275.0" y="132.0" class="framework" text-anchor="middle">auto-infer</text>
+<text x="275.0" y="154.0" class="metric" text-anchor="middle">decode median 7.85 ms · max nesting 5 · baseline</text>
+<rect x="25" y="174" width="500" height="250" rx="8" class="panel"/>
+<text x="41.0" y="199.0" class="panel-title" text-anchor="start">PREFILL · measured runtime boundaries</text>
+<text x="509.0" y="199.0" class="panel-value" text-anchor="end">52.34 ms</text>
+<text x="39.0" y="219.0" class="call-label" text-anchor="start">d0  EngineCore.step</text>
+<rect x="265.0" y="205.0" width="224.2" height="15" rx="2" fill="#087e8b"><title>engine · auto_infer.engine.engine_core.EngineCore.step · 52.285 ms</title></rect>
+<rect x="33" y="227" width="484" height="25" class="stripe"/>
+<text x="46.0" y="244.0" class="call-label" text-anchor="start">d1  Scheduler.schedule</text>
+<rect x="265.1" y="230.0" width="1.6" height="15" rx="2" fill="#d99024"><title>scheduler · auto_infer.engine.scheduler.Scheduler.schedule · 0.377 ms</title></rect>
+<text x="46.0" y="269.0" class="call-label" text-anchor="start">d1  GraphPagedNpuExecutor.execute</text>
+<rect x="269.0" y="255.0" width="219.4" height="15" rx="2" fill="#315f8c"><title>executor · auto_infer.worker.graph_decode_runner.GraphPagedNpuExecutor.execute · 51.173 ms</title></rect>
+<rect x="33" y="277" width="484" height="25" class="stripe"/>
+<text x="53.0" y="294.0" class="call-label" text-anchor="start">d2  GraphPagedRunner.execute</text>
+<rect x="269.1" y="280.0" width="219.1" height="15" rx="2" fill="#238b68"><title>runner · auto_infer.worker.graph_decode_runner.GraphPagedRunner.execute · 51.105 ms</title></rect>
+<text x="60.0" y="319.0" class="call-label" text-anchor="start">d3  GraphPagedRunner.submit</text>
+<rect x="269.2" y="305.0" width="218.3" height="15" rx="2" fill="#30a179"><title>submit · auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit · 50.900 ms</title></rect>
+<rect x="33" y="327" width="484" height="25" class="stripe"/>
+<text x="67.0" y="344.0" class="call-label" text-anchor="start">d4  GraphPagedRunner._eager_submit</text>
+<rect x="269.5" y="330.0" width="217.8" height="15" rx="2" fill="#59ad75"><title>eager · auto_infer.worker.graph_decode_runner.GraphPagedRunner._eager_submit · 50.802 ms</title></rect>
+<line x1="265" y1="406" x2="509" y2="406" class="axis"/>
+<line x1="265" y1="403" x2="265" y2="409" class="axis"/>
+<text x="265.0" y="420.0" class="tick" text-anchor="middle">0</text>
+<line x1="387.0" y1="403" x2="387.0" y2="409" class="axis"/>
+<text x="387.0" y="420.0" class="tick" text-anchor="middle">28</text>
+<line x1="509" y1="403" x2="509" y2="409" class="axis"/>
+<text x="509.0" y="420.0" class="tick" text-anchor="middle">57</text>
+<rect x="25" y="456" width="500" height="250" rx="8" class="panel"/>
+<text x="41.0" y="481.0" class="panel-title" text-anchor="start">DECODE 011 · nearest-to-median step</text>
+<text x="509.0" y="481.0" class="panel-value" text-anchor="end">7.85 ms</text>
+<text x="39.0" y="501.0" class="call-label" text-anchor="start">d0  EngineCore.step</text>
+<rect x="265.0" y="487.0" width="80.4" height="15" rx="2" fill="#087e8b"><title>engine · auto_infer.engine.engine_core.EngineCore.step · 7.799 ms</title></rect>
+<rect x="33" y="509" width="484" height="25" class="stripe"/>
+<text x="46.0" y="526.0" class="call-label" text-anchor="start">d1  Scheduler.schedule</text>
+<rect x="265.2" y="512.0" width="1.5" height="15" rx="2" fill="#d99024"><title>scheduler · auto_infer.engine.scheduler.Scheduler.schedule · 0.121 ms</title></rect>
+<text x="46.0" y="551.0" class="call-label" text-anchor="start">d1  GraphPagedNpuExecutor.execute</text>
+<rect x="269.0" y="537.0" width="74.8" height="15" rx="2" fill="#315f8c"><title>executor · auto_infer.worker.graph_decode_runner.GraphPagedNpuExecutor.execute · 7.250 ms</title></rect>
+<rect x="33" y="559" width="484" height="25" class="stripe"/>
+<text x="53.0" y="576.0" class="call-label" text-anchor="start">d2  GraphPagedRunner.execute</text>
+<rect x="269.2" y="562.0" width="74.3" height="15" rx="2" fill="#238b68"><title>runner · auto_infer.worker.graph_decode_runner.GraphPagedRunner.execute · 7.203 ms</title></rect>
+<text x="60.0" y="601.0" class="call-label" text-anchor="start">d3  GraphPagedRunner.submit</text>
+<rect x="269.4" y="587.0" width="70.8" height="15" rx="2" fill="#30a179"><title>submit · auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit · 6.867 ms</title></rect>
+<rect x="33" y="609" width="484" height="25" class="stripe"/>
+<text x="67.0" y="626.0" class="call-label" text-anchor="start">d4  GraphPagedRunner._graph_submit</text>
+<rect x="269.8" y="612.0" width="70.0" height="15" rx="2" fill="#177252"><title>decode-graph · auto_infer.worker.graph_decode_runner.GraphPagedRunner._graph_submit · 6.793 ms</title></rect>
+<line x1="265" y1="688" x2="509" y2="688" class="axis"/>
+<line x1="265" y1="685" x2="265" y2="691" class="axis"/>
+<text x="265.0" y="702.0" class="tick" text-anchor="middle">0</text>
+<line x1="387.0" y1="685" x2="387.0" y2="691" class="axis"/>
+<text x="387.0" y="702.0" class="tick" text-anchor="middle">12</text>
+<line x1="509" y1="685" x2="509" y2="691" class="axis"/>
+<text x="509.0" y="702.0" class="tick" text-anchor="middle">24</text>
+<text x="800.0" y="132.0" class="framework" text-anchor="middle">omni-npu</text>
+<text x="800.0" y="154.0" class="metric" text-anchor="middle">decode median 8.82 ms · max nesting 7 · 1.12× slower</text>
+<rect x="550" y="174" width="500" height="250" rx="8" class="panel"/>
+<text x="566.0" y="199.0" class="panel-title" text-anchor="start">PREFILL · measured runtime boundaries</text>
+<text x="1034.0" y="199.0" class="panel-value" text-anchor="end">56.90 ms</text>
+<text x="564.0" y="219.0" class="call-label" text-anchor="start">d0  LLMEngine.step</text>
+<rect x="790.0" y="205.0" width="243.7" height="15" rx="2" fill="#087e8b"><title>llm-engine · vllm.v1.engine.llm_engine.LLMEngine.step · 56.844 ms</title></rect>
+<rect x="558" y="227" width="484" height="25" class="stripe"/>
+<text x="571.0" y="244.0" class="call-label" text-anchor="start">d1  InprocClient.get_output</text>
+<rect x="790.1" y="230.0" width="243.5" height="15" rx="2" fill="#6d7f91"><title>engine-client · vllm.v1.engine.core_client.InprocClient.get_output · 56.778 ms</title></rect>
+<text x="578.0" y="269.0" class="call-label" text-anchor="start">d2  EngineCore.step_fn</text>
+<rect x="790.2" y="255.0" width="243.1" height="15" rx="2" fill="#3d6485"><title>engine-core · vllm.v1.engine.core.EngineCore.step_fn · 56.687 ms</title></rect>
+<rect x="558" y="277" width="484" height="25" class="stripe"/>
+<text x="585.0" y="294.0" class="call-label" text-anchor="start">d3  AsyncScheduler.schedule</text>
+<rect x="790.2" y="280.0" width="2.6" height="15" rx="2" fill="#d99024"><title>scheduler · vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule · 0.612 ms</title></rect>
+<text x="585.0" y="319.0" class="call-label" text-anchor="start">d3  UniProcExecutor.execute_model</text>
+<rect x="793.0" y="305.0" width="236.1" height="15" rx="2" fill="#315f8c"><title>executor · vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model · 55.052 ms</title></rect>
+<rect x="558" y="327" width="484" height="25" class="stripe"/>
+<text x="592.0" y="344.0" class="call-label" text-anchor="start">d4  WorkerWrapperBase.execute_model</text>
+<rect x="793.1" y="330.0" width="235.7" height="15" rx="2" fill="#75869a"><title>worker-wrapper · vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model · 54.971 ms</title></rect>
+<text x="599.0" y="369.0" class="call-label" text-anchor="start">d5  NPUWorker.execute_model</text>
+<rect x="793.2" y="355.0" width="235.5" height="15" rx="2" fill="#58718c"><title>worker · omni_npu.worker.npu_worker.NPUWorker.execute_model · 54.930 ms</title></rect>
+<rect x="558" y="377" width="484" height="25" class="stripe"/>
+<text x="606.0" y="394.0" class="call-label" text-anchor="start">d6  NPUModelRunner.execute_model</text>
+<rect x="793.3" y="380.0" width="235.3" height="15" rx="2" fill="#238b68"><title>model-runner · omni_npu.worker.npu_model_runner.NPUModelRunner.execute_model · 54.876 ms</title></rect>
+<line x1="790" y1="406" x2="1034" y2="406" class="axis"/>
+<line x1="790" y1="403" x2="790" y2="409" class="axis"/>
+<text x="790.0" y="420.0" class="tick" text-anchor="middle">0</text>
+<line x1="912.0" y1="403" x2="912.0" y2="409" class="axis"/>
+<text x="912.0" y="420.0" class="tick" text-anchor="middle">28</text>
+<line x1="1034" y1="403" x2="1034" y2="409" class="axis"/>
+<text x="1034.0" y="420.0" class="tick" text-anchor="middle">57</text>
+<rect x="550" y="456" width="500" height="250" rx="8" class="panel"/>
+<text x="566.0" y="481.0" class="panel-title" text-anchor="start">DECODE 009 · nearest-to-median step</text>
+<text x="1034.0" y="481.0" class="panel-value" text-anchor="end">8.82 ms</text>
+<text x="564.0" y="501.0" class="call-label" text-anchor="start">d0  LLMEngine.step</text>
+<rect x="790.0" y="487.0" width="90.1" height="15" rx="2" fill="#087e8b"><title>llm-engine · vllm.v1.engine.llm_engine.LLMEngine.step · 8.735 ms</title></rect>
+<rect x="558" y="509" width="484" height="25" class="stripe"/>
+<text x="571.0" y="526.0" class="call-label" text-anchor="start">d1  InprocClient.get_output</text>
+<rect x="790.2" y="512.0" width="88.4" height="15" rx="2" fill="#6d7f91"><title>engine-client · vllm.v1.engine.core_client.InprocClient.get_output · 8.574 ms</title></rect>
+<text x="578.0" y="551.0" class="call-label" text-anchor="start">d2  EngineCore.step_fn</text>
+<rect x="790.4" y="537.0" width="87.8" height="15" rx="2" fill="#3d6485"><title>engine-core · vllm.v1.engine.core.EngineCore.step_fn · 8.514 ms</title></rect>
+<rect x="558" y="559" width="484" height="25" class="stripe"/>
+<text x="585.0" y="576.0" class="call-label" text-anchor="start">d3  AsyncScheduler.schedule</text>
+<rect x="790.6" y="562.0" width="3.4" height="15" rx="2" fill="#d99024"><title>scheduler · vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule · 0.326 ms</title></rect>
+<text x="585.0" y="601.0" class="call-label" text-anchor="start">d3  UniProcExecutor.execute_model</text>
+<rect x="794.1" y="587.0" width="74.1" height="15" rx="2" fill="#315f8c"><title>executor · vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model · 7.187 ms</title></rect>
+<rect x="558" y="609" width="484" height="25" class="stripe"/>
+<text x="592.0" y="626.0" class="call-label" text-anchor="start">d4  WorkerWrapperBase.execute_model</text>
+<rect x="794.3" y="612.0" width="73.4" height="15" rx="2" fill="#75869a"><title>worker-wrapper · vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model · 7.122 ms</title></rect>
+<text x="599.0" y="651.0" class="call-label" text-anchor="start">d5  NPUWorker.execute_model</text>
+<rect x="794.5" y="637.0" width="73.0" height="15" rx="2" fill="#58718c"><title>worker · omni_npu.worker.npu_worker.NPUWorker.execute_model · 7.084 ms</title></rect>
+<rect x="558" y="659" width="484" height="25" class="stripe"/>
+<text x="606.0" y="676.0" class="call-label" text-anchor="start">d6  NPUModelRunner.execute_model</text>
+<rect x="794.7" y="662.0" width="72.5" height="15" rx="2" fill="#238b68"><title>model-runner · omni_npu.worker.npu_model_runner.NPUModelRunner.execute_model · 7.033 ms</title></rect>
+<line x1="790" y1="688" x2="1034" y2="688" class="axis"/>
+<line x1="790" y1="685" x2="790" y2="691" class="axis"/>
+<text x="790.0" y="702.0" class="tick" text-anchor="middle">0</text>
+<line x1="912.0" y1="685" x2="912.0" y2="691" class="axis"/>
+<text x="912.0" y="702.0" class="tick" text-anchor="middle">12</text>
+<line x1="1034" y1="685" x2="1034" y2="691" class="axis"/>
+<text x="1034.0" y="702.0" class="tick" text-anchor="middle">24</text>
+<text x="1325.0" y="132.0" class="framework" text-anchor="middle">vllm-ascend</text>
+<text x="1325.0" y="154.0" class="metric" text-anchor="middle">decode median 23.66 ms · max nesting 7 · 3.01× slower</text>
+<rect x="1075" y="174" width="500" height="250" rx="8" class="panel"/>
+<text x="1091.0" y="199.0" class="panel-title" text-anchor="start">PREFILL · measured runtime boundaries</text>
+<text x="1559.0" y="199.0" class="panel-value" text-anchor="end">24.60 ms</text>
+<text x="1089.0" y="219.0" class="call-label" text-anchor="start">d0  LLMEngine.step</text>
+<rect x="1315.0" y="205.0" width="105.2" height="15" rx="2" fill="#087e8b"><title>llm-engine · vllm.v1.engine.llm_engine.LLMEngine.step · 24.524 ms</title></rect>
+<rect x="1083" y="227" width="484" height="25" class="stripe"/>
+<text x="1096.0" y="244.0" class="call-label" text-anchor="start">d1  InprocClient.get_output</text>
+<rect x="1315.1" y="230.0" width="104.8" height="15" rx="2" fill="#6d7f91"><title>engine-client · vllm.v1.engine.core_client.InprocClient.get_output · 24.444 ms</title></rect>
+<text x="1103.0" y="269.0" class="call-label" text-anchor="start">d2  EngineCore.step_fn</text>
+<rect x="1315.2" y="255.0" width="104.0" height="15" rx="2" fill="#3d6485"><title>engine-core · vllm.v1.engine.core.EngineCore.step_fn · 24.255 ms</title></rect>
+<rect x="1083" y="277" width="484" height="25" class="stripe"/>
+<text x="1110.0" y="294.0" class="call-label" text-anchor="start">d3  AsyncScheduler.schedule</text>
+<rect x="1315.4" y="280.0" width="4.4" height="15" rx="2" fill="#d99024"><title>scheduler · vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule · 1.028 ms</title></rect>
+<text x="1110.0" y="319.0" class="call-label" text-anchor="start">d3  UniProcExecutor.execute_model</text>
+<rect x="1320.0" y="305.0" width="93.1" height="15" rx="2" fill="#315f8c"><title>executor · vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model · 21.709 ms</title></rect>
+<rect x="1083" y="327" width="484" height="25" class="stripe"/>
+<text x="1117.0" y="344.0" class="call-label" text-anchor="start">d4  WorkerWrapperBase.execute_model</text>
+<rect x="1320.2" y="330.0" width="92.6" height="15" rx="2" fill="#75869a"><title>worker-wrapper · vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model · 21.602 ms</title></rect>
+<text x="1124.0" y="369.0" class="call-label" text-anchor="start">d5  NPUWorker.execute_model</text>
+<rect x="1320.3" y="355.0" width="92.4" height="15" rx="2" fill="#58718c"><title>worker · vllm_ascend.worker.worker.NPUWorker.execute_model · 21.551 ms</title></rect>
+<rect x="1083" y="377" width="484" height="25" class="stripe"/>
+<text x="1131.0" y="394.0" class="call-label" text-anchor="start">d6  NPUModelRunner.execute_model</text>
+<rect x="1320.5" y="380.0" width="92.1" height="15" rx="2" fill="#238b68"><title>model-runner · vllm_ascend.worker.model_runner_v1.NPUModelRunner.execute_model · 21.467 ms</title></rect>
+<line x1="1315" y1="406" x2="1559" y2="406" class="axis"/>
+<line x1="1315" y1="403" x2="1315" y2="409" class="axis"/>
+<text x="1315.0" y="420.0" class="tick" text-anchor="middle">0</text>
+<line x1="1437.0" y1="403" x2="1437.0" y2="409" class="axis"/>
+<text x="1437.0" y="420.0" class="tick" text-anchor="middle">28</text>
+<line x1="1559" y1="403" x2="1559" y2="409" class="axis"/>
+<text x="1559.0" y="420.0" class="tick" text-anchor="middle">57</text>
+<rect x="1075" y="456" width="500" height="250" rx="8" class="panel"/>
+<text x="1091.0" y="481.0" class="panel-title" text-anchor="start">DECODE 012 · nearest-to-median step</text>
+<text x="1559.0" y="481.0" class="panel-value" text-anchor="end">23.66 ms</text>
+<text x="1089.0" y="501.0" class="call-label" text-anchor="start">d0  LLMEngine.step</text>
+<rect x="1315.0" y="487.0" width="242.1" height="15" rx="2" fill="#087e8b"><title>llm-engine · vllm.v1.engine.llm_engine.LLMEngine.step · 23.480 ms</title></rect>
+<rect x="1083" y="509" width="484" height="25" class="stripe"/>
+<text x="1096.0" y="526.0" class="call-label" text-anchor="start">d1  InprocClient.get_output</text>
+<rect x="1315.2" y="512.0" width="240.3" height="15" rx="2" fill="#6d7f91"><title>engine-client · vllm.v1.engine.core_client.InprocClient.get_output · 23.302 ms</title></rect>
+<text x="1103.0" y="551.0" class="call-label" text-anchor="start">d2  EngineCore.step_fn</text>
+<rect x="1315.5" y="537.0" width="238.9" height="15" rx="2" fill="#3d6485"><title>engine-core · vllm.v1.engine.core.EngineCore.step_fn · 23.170 ms</title></rect>
+<rect x="1083" y="559" width="484" height="25" class="stripe"/>
+<text x="1110.0" y="576.0" class="call-label" text-anchor="start">d3  AsyncScheduler.schedule</text>
+<rect x="1315.8" y="562.0" width="4.1" height="15" rx="2" fill="#d99024"><title>scheduler · vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule · 0.400 ms</title></rect>
+<text x="1110.0" y="601.0" class="call-label" text-anchor="start">d3  UniProcExecutor.execute_model</text>
+<rect x="1320.2" y="587.0" width="219.9" height="15" rx="2" fill="#315f8c"><title>executor · vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model · 21.326 ms</title></rect>
+<rect x="1083" y="609" width="484" height="25" class="stripe"/>
+<text x="1117.0" y="626.0" class="call-label" text-anchor="start">d4  WorkerWrapperBase.execute_model</text>
+<rect x="1320.4" y="612.0" width="219.1" height="15" rx="2" fill="#75869a"><title>worker-wrapper · vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model · 21.245 ms</title></rect>
+<text x="1124.0" y="651.0" class="call-label" text-anchor="start">d5  NPUWorker.execute_model</text>
+<rect x="1320.7" y="637.0" width="218.6" height="15" rx="2" fill="#58718c"><title>worker · vllm_ascend.worker.worker.NPUWorker.execute_model · 21.198 ms</title></rect>
+<rect x="1083" y="659" width="484" height="25" class="stripe"/>
+<text x="1131.0" y="676.0" class="call-label" text-anchor="start">d6  NPUModelRunner.execute_model</text>
+<rect x="1320.9" y="662.0" width="218.0" height="15" rx="2" fill="#238b68"><title>model-runner · vllm_ascend.worker.model_runner_v1.NPUModelRunner.execute_model · 21.139 ms</title></rect>
+<line x1="1315" y1="688" x2="1559" y2="688" class="axis"/>
+<line x1="1315" y1="685" x2="1315" y2="691" class="axis"/>
+<text x="1315.0" y="702.0" class="tick" text-anchor="middle">0</text>
+<line x1="1437.0" y1="685" x2="1437.0" y2="691" class="axis"/>
+<text x="1437.0" y="702.0" class="tick" text-anchor="middle">12</text>
+<line x1="1559" y1="685" x2="1559" y2="691" class="axis"/>
+<text x="1559.0" y="702.0" class="tick" text-anchor="middle">24</text>
+<text x="28.0" y="744.0" class="note" text-anchor="start">Common x-scale within each row (ms). Bar position and width come from qwen3/call ranges in the raw trace; dN is measured nesting depth.</text>
+<text x="28.0" y="778.0" class="metric" text-anchor="start">Observed target scope: auto-infer does not traverse the instrumented vLLM client/core or worker-wrapper/worker boundaries; decode is shorter.</text>
+<text x="28.0" y="806.0" class="note" text-anchor="start">What it does not prove: fewer Python boundaries alone caused the speedup. Device graph work is asynchronous and requires operator-level attribution.</text>
+<rect x="28" y="838" width="14" height="14" rx="2" fill="#087e8b"/>
+<text x="48.0" y="850.0" class="footer" text-anchor="start">engine/core</text>
+<rect x="178" y="838" width="14" height="14" rx="2" fill="#d99024"/>
+<text x="198.0" y="850.0" class="footer" text-anchor="start">scheduler</text>
+<rect x="328" y="838" width="14" height="14" rx="2" fill="#315f8c"/>
+<text x="348.0" y="850.0" class="footer" text-anchor="start">executor</text>
+<rect x="478" y="838" width="14" height="14" rx="2" fill="#58718c"/>
+<text x="498.0" y="850.0" class="footer" text-anchor="start">worker/runner</text>
+<rect x="628" y="838" width="14" height="14" rx="2" fill="#177252"/>
+<text x="648.0" y="850.0" class="footer" text-anchor="start">graph/eager</text>
+<text x="28.0" y="894.0" class="footer" text-anchor="start">Source: docs/profiling/qwen3/raw/*.trace.json · B16 · BF16 · 1 prefill + 15 continuous decode steps · profiler-instrumented host time</text>
+</svg>

@@ -83,7 +83,8 @@ def summarize_trace(path: Path) -> dict:
         if duration is None:
             continue
         name = str(event.get("name", "<unnamed>"))
-        if (name.startswith(("qwen3/phase/", "qwen3/call/"))
+        if (name.startswith(("qwen3/phase/", "qwen3/call/",
+                            "qwen3/runtime/"))
                 or event.get("cat") in {"qwen3.phase", "qwen3.callstack"}):
             continue
         phase = classify_event(name)

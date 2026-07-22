@@ -2,11 +2,18 @@
 
 import html
 import json
+import statistics
 import sys
 from pathlib import Path
 
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from tools.plot_qwen3_trace_call_stacks import (
+    OUTPUT as CALL_STACK_FIGURE,
+    build_svg as build_call_stack_svg,
+    representative_decode,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -209,51 +216,45 @@ def _architecture_data() -> list[tuple[str, str, str, str]]:
     ]
 
 
-def _call_stack_data() -> list[tuple[str, str, str, str]]:
-    return [
-        (
-            "auto-infer",
-            "LLM.generate → EngineCore.step → Scheduler.schedule → "
-            "BatchPlan.from_scheduler → "
-            "GraphPagedNpuExecutor[RunnerExecutor.execute] → "
-            "GraphPagedRunner.execute → "
-            "GraphPagedRunner.submit → Model.forward(ctx) → "
-            "AttentionBackend",
-            "EngineCore owns request、scheduler、KV 与 completion；执行层只交换短协议对象。",
-            "auto_infer/entrypoints/llm.py · engine/engine_core.py · "
-            "engine/execution.py · worker/graph_decode_runner.py",
-        ),
-        (
-            "omni-npu",
-            "vLLM LLM.generate → LLMEngine.step → vLLM EngineCore → "
-            "Scheduler.schedule → ModelExecutor.execute_model → "
-            "omni_npu.NPUWorker.execute_model → "
-            "omni_npu.NPUModelRunner.execute_model → model / graph patches → "
-            "Model.forward",
-            "上游 vLLM 生命周期、Omni plugin/patch、worker 与模型优化共同决定实际路径。",
-            "vllm/entrypoints/llm.py · omni_npu/worker/npu_worker.py · "
-            "omni_npu/worker/npu_model_runner.py",
-        ),
-        (
-            "vllm-ascend",
-            "vLLM LLM.generate → LLMEngine.step → "
-            "InprocClient.get_output → vLLM EngineCore.step_fn → "
-            "Scheduler.schedule → ModelExecutor.execute_model → "
-            "vllm_ascend.NPUWorker.execute_model → "
-            "vllm_ascend.NPUModelRunner.execute_model → Model.forward",
-            "vLLM V1 保持通用 engine；Ascend plugin 在 platform、worker、runner、compiler 与 custom-op 层专化。",
-            "vllm/v1/engine/llm_engine.py · vllm/v1/engine/core_client.py · "
-            "vllm_ascend/worker/worker.py · worker/model_runner_v1.py",
-        ),
-    ]
+def _runtime_call_stack_data(summary: dict) -> list[tuple[str, str, str, str, str]]:
+    auto_steps = summary["profiles"]["auto-infer"]["runtime_call_stack"][
+        "phases"]["decode"]
+    auto_median = statistics.median(
+        step["duration_us"] for step in auto_steps)
+    rows = []
+    for framework in FRAMEWORKS:
+        profile = summary["profiles"][framework]
+        stack = profile["runtime_call_stack"]
+        representative = representative_decode(stack)
+        median_us = statistics.median(
+            step["duration_us"] for step in stack["phases"]["decode"])
+        prefill_ms = profile["execution_phases"]["steps"][0][
+            "duration_us"] / 1000
+        nesting = max(
+            event["depth"] for event in representative["events"]) + 1
+        observed = " · ".join(
+            f'd{event["depth"]} {".".join(event["symbol"].split(".")[-2:])}'
+            for event in representative["events"])
+        comparison = (
+            "baseline" if framework == "auto-infer"
+            else f"{median_us / auto_median:.2f}× slower than auto-infer")
+        rows.append((
+            framework,
+            f"{prefill_ms:.2f} ms",
+            f"{median_us / 1000:.2f} ms ({comparison})",
+            str(nesting),
+            observed,
+        ))
+    return rows
 
 
-def _call_stack_rows() -> str:
+def _runtime_call_stack_rows(summary: dict) -> str:
     return "".join(
         f'<tr><th scope="row">{_e(framework)}</th>'
-        f'<td><code>{_e(stack)}</code></td><td>{_e(boundary)}</td>'
-        f'<td><code>{_e(sources)}</code></td></tr>'
-        for framework, stack, boundary, sources in _call_stack_data())
+        f'<td>{_e(prefill)}</td><td>{_e(decode)}</td>'
+        f'<td>{_e(nesting)}</td><td><code>{_e(observed)}</code></td></tr>'
+        for framework, prefill, decode, nesting, observed
+        in _runtime_call_stack_data(summary))
 
 
 def _architecture_rows() -> str:
@@ -379,6 +380,17 @@ def build_report(summary: dict, manifest: dict) -> str:
     profile_digest_equal = len({
         manifest["artifacts"][f]["metadata"]["output_digest"]
         for f in FRAMEWORKS}) == 1
+    decode_medians_us = {
+        framework: statistics.median(
+            step["duration_us"] for step in summary["profiles"][framework][
+                "runtime_call_stack"]["phases"]["decode"])
+        for framework in FRAMEWORKS
+    }
+    auto_decode_ms = decode_medians_us["auto-infer"] / 1000
+    omni_decode_ratio = (
+        decode_medians_us["omni-npu"] / decode_medians_us["auto-infer"])
+    vllm_decode_ratio = (
+        decode_medians_us["vllm-ascend"] / decode_medians_us["auto-infer"])
     unclassified_percentages = [
         summary["profiles"][framework]["phases"]["unclassified"]["share"] * 100
         for framework in FRAMEWORKS
@@ -401,7 +413,7 @@ def build_report(summary: dict, manifest: dict) -> str:
 .diagram{{margin:30px 0;padding:20px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow)}}
 .diagram img{{display:block;width:100%;height:auto;margin:auto}}
 .diagram figcaption{{margin-top:14px;color:var(--muted);font-size:13px}}
-.call-stack-table{{min-width:1100px}}.call-stack-table td:nth-child(2){{width:38%}}
+.call-stack-table{{min-width:1100px}}.call-stack-table th:first-child{{width:120px}}.call-stack-table td:nth-child(2),.call-stack-table td:nth-child(3),.call-stack-table td:nth-child(4){{width:125px}}.call-stack-table td:last-child{{width:auto}}
 </style>
 </head>
 <body><div class="shell">
@@ -432,9 +444,11 @@ def build_report(summary: dict, manifest: dict) -> str:
 <div class="profile-grid">{_profile_cards(summary, manifest)}</div>
 <p class="callout">本次 {profile_workload["output_tokens"]}-token profile digest 三方{'一致' if profile_digest_equal else '不一致'}；这不改变 {headline_workload["output_tokens"]}-token headline 中 omni-npu digest 不同的事实。打开方式：在 Chromium 输入 <code>chrome://tracing</code>，选择 Load 后载入任一 JSON；文件本身未压缩、未截断。</p></section>
 
-<section id="call-stack-comparison"><div class="section-head"><span class="eyebrow">SOURCE-OBSERVED · HOT PATH</span><h2>同一请求，三套调用栈</h2><p>调用层数不是单独的性能结论；真正重要的是状态所有权、变化隔离和每步需要穿越的组件边界。以下符号按本次已锁定源码版本核对。</p></div>
-<figure class="diagram"><img src="../figures/qwen3-three-framework-call-stacks.png" alt="Source observed Qwen3 call stacks for auto-infer, omni-npu and vllm-ascend"><figcaption>auto-infer 用短执行协议连接唯一 EngineCore 与设备 runner；另外两套框架保留 vLLM 通用生命周期，并在 plugin / worker / runner 层加入 Ascend 专化。</figcaption></figure>
-<div class="table-scroll"><table class="call-stack-table"><thead><tr><th>框架</th><th>主调用栈</th><th>所有权 / 间接性</th><th>源码位置</th></tr></thead><tbody>{_call_stack_rows()}</tbody></table></div></section>
+<section id="call-stack-comparison"><div class="section-head"><span class="eyebrow">TRACE-DERIVED · MEASURED HOST RANGES</span><h2>Trace 里的真实调用栈对比</h2><p>下图不再从源码箭头推演：每个 bar 都来自运行时对象上实际被调用的 <code>qwen3/call</code> profiler range。Prefill 与 15 个 decode 分开，decode 图选择最接近中位数的实际 step，不挑最优样本。</p></div>
+<figure class="diagram"><img src="../figures/qwen3-trace-call-stack-comparison.svg" alt="Trace-derived Qwen3 prefill and decode runtime call stacks for all three frameworks"><figcaption>同一行使用公共毫秒比例尺；bar 的位置、宽度和嵌套深度都来自原始 trace。auto-infer decode 中位数为 {auto_decode_ms:.2f} ms，相对 omni-npu 快 {omni_decode_ratio:.2f}×，相对 vllm-ascend 快 {vllm_decode_ratio:.2f}×；prefill 则如实显示 vllm-ascend 领先。</figcaption></figure>
+<div class="callout"><strong>在原始 JSON 中查看：</strong>打开任一 trace，找到置顶的 <code>QWEN3 CALL STACK</code> process。<code>d0…dN</code> 是实测嵌套深度；原生 CPU/NPU event 仍保留在原 process，专用 lane 只复制已测 range 以便阅读。</div>
+<div class="table-scroll"><table class="call-stack-table"><thead><tr><th>框架</th><th>PREFILL</th><th>15-step decode 中位数</th><th>最大嵌套</th><th>Trace 实测边界（中位 step）</th></tr></thead><tbody>{_runtime_call_stack_rows(summary)}</tbody></table></div>
+<p class="callout warning"><strong>因果边界：</strong>trace 证明 auto-infer 的 decode host range 更短，且在本次预先选定的 live-object 插桩边界中未经过 vLLM client/core 与 worker-wrapper/worker；这不等于证明所有未插桩函数都不存在，也不能只凭“层数更少”断言全部加速因果。<code>record_function</code> 对每个边界也有小幅且不同数量的扰动，因此排名仍以无 profiler headline 为准。</p></section>
 
 <section id="why-faster"><div class="section-head"><span class="eyebrow">MEASURED → OBSERVED → INFERRED</span><h2>为什么 auto-infer 更快</h2><p>性能解释必须区分事实与因果推断。下面把每条机制连到测试结果与源码边界；没有单变量 ablation 的地方不会写成已证明因果。</p></div>
 <div class="table-scroll"><table class="evidence-table"><thead><tr><th>证据类型</th><th>环节</th><th>结论</th><th>依据 / 限制</th></tr></thead><tbody>{_causal_rows(summary, manifest)}</tbody></table></div>
@@ -530,7 +544,7 @@ def build_markdown_report(summary: dict, manifest: dict) -> str:
         ])
 
     causal_rows = [list(row) for row in _causal_data(summary, manifest)]
-    call_stack_rows = [list(row) for row in _call_stack_data()]
+    call_stack_rows = [list(row) for row in _runtime_call_stack_data(summary)]
     architecture_rows = [list(row) for row in _architecture_data()]
     artifact_rows = []
     for framework in FRAMEWORKS:
@@ -588,13 +602,17 @@ def build_markdown_report(summary: dict, manifest: dict) -> str:
 
 {_md_table(['阶段', *FRAMEWORKS], step_rows)}
 
-## 三框架调用栈对比
+## Trace 里的真实调用栈对比
 
-![Qwen3 三框架源码调用栈](../figures/qwen3-three-framework-call-stacks.png)
+**TRACE-DERIVED · MEASURED HOST RANGES**
 
-调用层数不是单独的性能结论；这里比较的是状态所有权、变化隔离和一次模型执行需要穿越的组件边界。符号按 manifest 锁定的源码版本核对。
+![Qwen3 三框架 Trace 实测调用栈](../figures/qwen3-trace-call-stack-comparison.svg)
 
-{_md_table(['框架', '主调用栈', '所有权 / 间接性', '源码位置'], call_stack_rows)}
+每个 bar 都来自运行时真正被调用的 `qwen3/call` profiler range。Decode 图选择 15 步中最接近中位数的实际 step，不挑最优样本。在任一原始 JSON 中找到置顶的 **`QWEN3 CALL STACK`** process，即可核对相同嵌套 range。
+
+{_md_table(['框架', 'PREFILL', '15-step decode 中位数', '最大嵌套', 'Trace 实测边界（中位 step）'], call_stack_rows)}
+
+Trace 证明 auto-infer 的 decode host range 更短，且在本次预先选定的 live-object 插桩边界中未经过 vLLM client/core 与 worker-wrapper/worker。这不等于证明所有未插桩函数都不存在，也不能单独证明“层数更少”就是全部加速因果。`record_function` 对每个边界也有小幅且不同数量的扰动，排名仍以无 profiler headline 为准。
 
 ## 为什么 auto-infer 更快
 
@@ -654,6 +672,7 @@ auto-infer 的核心优势是低间接性、明确所有权和较小扩展 seam�
 def main() -> None:
     summary = json.loads((PROFILE_DIR / "summary.json").read_text())
     manifest = json.loads((PROFILE_DIR / "manifest.json").read_text())
+    CALL_STACK_FIGURE.write_text(build_call_stack_svg(summary))
     OUTPUT.write_text(build_report(summary, manifest))
     OUTPUT_MD.write_text(build_markdown_report(summary, manifest))
 

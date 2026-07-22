@@ -42,9 +42,9 @@
 
 | 框架 | 请求范围 | PREFILL host range | 15 个 DECODE 合计 | 原生 complete events | 原始 Trace |
 | --- | --- | --- | --- | --- | --- |
-| auto-infer | 188.62 ms | 51.14 ms | 136.53 ms | 64,947 | [raw/auto-infer.trace.json](profiling/qwen3/raw/auto-infer.trace.json) |
-| omni-npu | 196.16 ms | 58.32 ms | 131.84 ms | 41,302 | [raw/omni-npu.trace.json](profiling/qwen3/raw/omni-npu.trace.json) |
-| vllm-ascend | 362.67 ms | 22.58 ms | 333.05 ms | 38,839 | [raw/vllm-ascend.trace.json](profiling/qwen3/raw/vllm-ascend.trace.json) |
+| auto-infer | 170.80 ms | 52.34 ms | 117.45 ms | 57,433 | [raw/auto-infer.trace.json](profiling/qwen3/raw/auto-infer.trace.json) |
+| omni-npu | 196.26 ms | 56.90 ms | 133.07 ms | 41,301 | [raw/omni-npu.trace.json](profiling/qwen3/raw/omni-npu.trace.json) |
+| vllm-ascend | 390.39 ms | 24.60 ms | 359.26 ms | 38,838 | [raw/vllm-ascend.trace.json](profiling/qwen3/raw/vllm-ascend.trace.json) |
 
 ### 逐步 phase 索引
 
@@ -52,34 +52,38 @@
 
 | 阶段 | auto-infer | omni-npu | vllm-ascend |
 | --- | --- | --- | --- |
-| PREFILL | 51.144 ms | 58.324 ms | 22.576 ms |
-| DECODE 001 | 9.365 ms | 9.142 ms | 22.570 ms |
-| DECODE 002 | 8.921 ms | 8.664 ms | 22.031 ms |
-| DECODE 003 | 8.903 ms | 8.615 ms | 21.811 ms |
-| DECODE 004 | 8.903 ms | 8.588 ms | 21.846 ms |
-| DECODE 005 | 8.882 ms | 8.595 ms | 21.752 ms |
-| DECODE 006 | 8.947 ms | 9.650 ms | 22.724 ms |
-| DECODE 007 | 9.058 ms | 8.727 ms | 22.545 ms |
-| DECODE 008 | 9.318 ms | 8.804 ms | 22.006 ms |
-| DECODE 009 | 9.177 ms | 8.729 ms | 21.979 ms |
-| DECODE 010 | 9.144 ms | 8.773 ms | 22.003 ms |
-| DECODE 011 | 9.247 ms | 8.705 ms | 22.117 ms |
-| DECODE 012 | 9.068 ms | 8.696 ms | 23.177 ms |
-| DECODE 013 | 9.183 ms | 8.700 ms | 22.221 ms |
-| DECODE 014 | 9.191 ms | 8.652 ms | 22.114 ms |
-| DECODE 015 | 9.217 ms | 8.806 ms | 22.153 ms |
+| PREFILL | 52.336 ms | 56.903 ms | 24.598 ms |
+| DECODE 001 | 8.158 ms | 9.068 ms | 25.816 ms |
+| DECODE 002 | 7.661 ms | 8.778 ms | 24.157 ms |
+| DECODE 003 | 7.665 ms | 8.764 ms | 23.611 ms |
+| DECODE 004 | 7.600 ms | 8.725 ms | 23.450 ms |
+| DECODE 005 | 7.637 ms | 8.721 ms | 24.512 ms |
+| DECODE 006 | 7.607 ms | 8.703 ms | 23.632 ms |
+| DECODE 007 | 7.603 ms | 8.721 ms | 23.632 ms |
+| DECODE 008 | 8.162 ms | 8.852 ms | 23.679 ms |
+| DECODE 009 | 7.834 ms | 8.817 ms | 23.571 ms |
+| DECODE 010 | 7.875 ms | 8.842 ms | 23.756 ms |
+| DECODE 011 | 7.852 ms | 8.843 ms | 24.852 ms |
+| DECODE 012 | 7.918 ms | 8.810 ms | 23.663 ms |
+| DECODE 013 | 7.929 ms | 8.864 ms | 23.597 ms |
+| DECODE 014 | 7.875 ms | 8.839 ms | 23.569 ms |
+| DECODE 015 | 8.079 ms | 9.727 ms | 23.759 ms |
 
-## 三框架调用栈对比
+## Trace 里的真实调用栈对比
 
-![Qwen3 三框架源码调用栈](../figures/qwen3-three-framework-call-stacks.png)
+**TRACE-DERIVED · MEASURED HOST RANGES**
 
-调用层数不是单独的性能结论；这里比较的是状态所有权、变化隔离和一次模型执行需要穿越的组件边界。符号按 manifest 锁定的源码版本核对。
+![Qwen3 三框架 Trace 实测调用栈](../figures/qwen3-trace-call-stack-comparison.svg)
 
-| 框架 | 主调用栈 | 所有权 / 间接性 | 源码位置 |
-| --- | --- | --- | --- |
-| auto-infer | LLM.generate → EngineCore.step → Scheduler.schedule → BatchPlan.from_scheduler → GraphPagedNpuExecutor[RunnerExecutor.execute] → GraphPagedRunner.execute → GraphPagedRunner.submit → Model.forward(ctx) → AttentionBackend | EngineCore owns request、scheduler、KV 与 completion；执行层只交换短协议对象。 | auto_infer/entrypoints/llm.py · engine/engine_core.py · engine/execution.py · worker/graph_decode_runner.py |
-| omni-npu | vLLM LLM.generate → LLMEngine.step → vLLM EngineCore → Scheduler.schedule → ModelExecutor.execute_model → omni_npu.NPUWorker.execute_model → omni_npu.NPUModelRunner.execute_model → model / graph patches → Model.forward | 上游 vLLM 生命周期、Omni plugin/patch、worker 与模型优化共同决定实际路径。 | vllm/entrypoints/llm.py · omni_npu/worker/npu_worker.py · omni_npu/worker/npu_model_runner.py |
-| vllm-ascend | vLLM LLM.generate → LLMEngine.step → InprocClient.get_output → vLLM EngineCore.step_fn → Scheduler.schedule → ModelExecutor.execute_model → vllm_ascend.NPUWorker.execute_model → vllm_ascend.NPUModelRunner.execute_model → Model.forward | vLLM V1 保持通用 engine；Ascend plugin 在 platform、worker、runner、compiler 与 custom-op 层专化。 | vllm/v1/engine/llm_engine.py · vllm/v1/engine/core_client.py · vllm_ascend/worker/worker.py · worker/model_runner_v1.py |
+每个 bar 都来自运行时真正被调用的 `qwen3/call` profiler range。Decode 图选择 15 步中最接近中位数的实际 step，不挑最优样本。在任一原始 JSON 中找到置顶的 **`QWEN3 CALL STACK`** process，即可核对相同嵌套 range。
+
+| 框架 | PREFILL | 15-step decode 中位数 | 最大嵌套 | Trace 实测边界（中位 step） |
+| --- | --- | --- | --- | --- |
+| auto-infer | 52.34 ms | 7.85 ms (baseline) | 5 | d0 EngineCore.step · d1 Scheduler.schedule · d1 GraphPagedNpuExecutor.execute · d2 GraphPagedRunner.execute · d3 GraphPagedRunner.submit · d4 GraphPagedRunner._graph_submit |
+| omni-npu | 56.90 ms | 8.82 ms (1.12× slower than auto-infer) | 7 | d0 LLMEngine.step · d1 InprocClient.get_output · d2 EngineCore.step_fn · d3 AsyncScheduler.schedule · d3 UniProcExecutor.execute_model · d4 WorkerWrapperBase.execute_model · d5 NPUWorker.execute_model · d6 NPUModelRunner.execute_model |
+| vllm-ascend | 24.60 ms | 23.66 ms (3.01× slower than auto-infer) | 7 | d0 LLMEngine.step · d1 InprocClient.get_output · d2 EngineCore.step_fn · d3 AsyncScheduler.schedule · d3 UniProcExecutor.execute_model · d4 WorkerWrapperBase.execute_model · d5 NPUWorker.execute_model · d6 NPUModelRunner.execute_model |
+
+Trace 证明 auto-infer 的 decode host range 更短，且在本次预先选定的 live-object 插桩边界中未经过 vLLM client/core 与 worker-wrapper/worker。这不等于证明所有未插桩函数都不存在，也不能单独证明“层数更少”就是全部加速因果。`record_function` 对每个边界也有小幅且不同数量的扰动，排名仍以无 profiler headline 为准。
 
 ## 为什么 auto-infer 更快
 
@@ -92,7 +96,7 @@
 | 因果推断 | 较少 host/device 胶水 | 固定地址与脏更新降低逐步分配、拷贝和 Python 调度成本。 | trace 中 auto-infer request range 最短 |
 | 源码观察 | Packed projections | QKV 与 gate/up 使用 packed weight；BF16 lm_head 与 greedy argmax 留在 captured epilogue。 | packed projections / decode epilogue |
 | 因果推断 | 更少 kernel 与同步边界 | projection packing 与直接 argmax 降低 launch 数；收益随模型/shape 变化，必须重做 profiling。 | 机制合理但不能由相关性证明全部增益 |
-| 实测 | Profiler window | B16 16-token 请求范围约 188.6 / 196.2 / 362.7 ms（auto / omni / vllm）。 | 三份 raw Chrome Trace |
+| 实测 | Profiler window | B16 16-token 请求范围约 170.8 / 196.3 / 390.4 ms（auto / omni / vllm）。 | 三份 raw Chrome Trace |
 | 实测 | Startup | 1.484 s vs 52.045 s vs 44.482 s；auto-infer 只捕获所需 gear，通用框架初始化面更宽。 | headline benchmark + framework logs |
 
 领先来自较短且确定的热路径组合：启动期捕获合适 gear、固定地址输入、dirty metadata 更新、event 排序、packed projection，以及 graph 内 BF16 lm_head 与 greedy argmax。没有单变量 ablation 的机制只作为与结果一致的因果解释，不写成已独立证明的毫秒收益。
@@ -160,9 +164,9 @@ auto-infer 的核心优势是低间接性、明确所有权和较小扩展 seam�
 
 | 框架 | 原始文件 | events | 大小 | SHA-256 |
 | --- | --- | --- | --- | --- |
-| auto-infer | [raw/auto-infer.trace.json](profiling/qwen3/raw/auto-infer.trace.json) | 85,343 | 13.9 MiB | `deabff830ba6cc30be105e40b2874bcdc7f389b4dbe406afb59aafa7f4a0bd8a` |
-| omni-npu | [raw/omni-npu.trace.json](profiling/qwen3/raw/omni-npu.trace.json) | 59,764 | 9.2 MiB | `ccfef4c9f66ce5177bb3f1f480be0e2d52d333cd1ed022edc76f65f519b6fd2f` |
-| vllm-ascend | [raw/vllm-ascend.trace.json](profiling/qwen3/raw/vllm-ascend.trace.json) | 55,388 | 8.4 MiB | `2aca519e0e23a212033369b1a86de731a3c215f479f0be594ff52d7e7ae65f7d` |
+| auto-infer | [raw/auto-infer.trace.json](profiling/qwen3/raw/auto-infer.trace.json) | 78,024 | 12.2 MiB | `4245892d355f004f910bedfa9908d44d6c2ddccad8fdba706e8f4359796882fd` |
+| omni-npu | [raw/omni-npu.trace.json](profiling/qwen3/raw/omni-npu.trace.json) | 60,039 | 9.2 MiB | `bbbebb2594b1d5e474834b8f59dc22dd77e219f7d95df224909c20771783c362` |
+| vllm-ascend | [raw/vllm-ascend.trace.json](profiling/qwen3/raw/vllm-ascend.trace.json) | 55,663 | 8.4 MiB | `8853c5e31b4fa00f4dfd781c6d8994bb40388bcd47223a7de2adf710bc7947cb` |
 
 - [manifest.json](profiling/qwen3/manifest.json)：工作负载、环境与 artifact contract。
 - [summary.json](profiling/qwen3/summary.json)：标准化 headline、operator 分类和 phase index。

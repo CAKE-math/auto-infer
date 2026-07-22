@@ -1,10 +1,984 @@
 {
   "artifacts": {
     "auto-infer": {
-      "event_count": 85343,
+      "event_count": 78024,
       "metadata": {
         "capture": {
-          "completed_at_utc": "2026-07-22T14:52:28.476093+00:00",
+          "call_counts": {
+            "decode-graph": 15,
+            "eager": 1,
+            "engine": 16,
+            "executor": 16,
+            "runner": 16,
+            "scheduler": 16,
+            "submit": 16
+          },
+          "call_stack_index": {
+            "lane": "QWEN3 CALL STACK",
+            "phases": {
+              "decode": [
+                {
+                  "duration_us": 8157.67,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 8097.3,
+                      "layer": "engine",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                      "timestamp_us": 1784734745657370.2
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 134.73,
+                      "layer": "scheduler",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                      "timestamp_us": 1784734745657392.5
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 7521.01,
+                      "layer": "executor",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedNpuExecutor.execute",
+                      "timestamp_us": 1784734745657782.0
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 7468.13,
+                      "layer": "runner",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.execute",
+                      "timestamp_us": 1784734745657807.0
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 7138.83,
+                      "layer": "submit",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit",
+                      "timestamp_us": 1784734745657826.0
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 7071.16,
+                      "layer": "decode-graph",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._graph_submit",
+                      "timestamp_us": 1784734745657862.0
+                    }
+                  ],
+                  "step": 1
+                },
+                {
+                  "duration_us": 7661.24,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 7608.77,
+                      "layer": "engine",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                      "timestamp_us": 1784734745665545.2
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 128.96,
+                      "layer": "scheduler",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                      "timestamp_us": 1784734745665564.2
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 7042.48,
+                      "layer": "executor",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedNpuExecutor.execute",
+                      "timestamp_us": 1784734745665946.5
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 6993.03,
+                      "layer": "runner",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.execute",
+                      "timestamp_us": 1784734745665966.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 6661.18,
+                      "layer": "submit",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit",
+                      "timestamp_us": 1784734745665985.0
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 6596.54,
+                      "layer": "decode-graph",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._graph_submit",
+                      "timestamp_us": 1784734745666018.5
+                    }
+                  ],
+                  "step": 2
+                },
+                {
+                  "duration_us": 7665.36,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 7607.08,
+                      "layer": "engine",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                      "timestamp_us": 1784734745673239.5
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 124.41,
+                      "layer": "scheduler",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                      "timestamp_us": 1784734745673258.5
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 7046.32,
+                      "layer": "executor",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedNpuExecutor.execute",
+                      "timestamp_us": 1784734745673635.2
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 6997.27,
+                      "layer": "runner",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.execute",
+                      "timestamp_us": 1784734745673657.8
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 6657.24,
+                      "layer": "submit",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit",
+                      "timestamp_us": 1784734745673678.2
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 6592.27,
+                      "layer": "decode-graph",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._graph_submit",
+                      "timestamp_us": 1784734745673713.0
+                    }
+                  ],
+                  "step": 3
+                },
+                {
+                  "duration_us": 7600.0,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 7540.32,
+                      "layer": "engine",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                      "timestamp_us": 1784734745680933.0
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 125.45,
+                      "layer": "scheduler",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                      "timestamp_us": 1784734745680953.2
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 6975.34,
+                      "layer": "executor",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedNpuExecutor.execute",
+                      "timestamp_us": 1784734745681331.0
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 6927.92,
+                      "layer": "runner",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.execute",
+                      "timestamp_us": 1784734745681350.5
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 6596.15,
+                      "layer": "submit",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit",
+                      "timestamp_us": 1784734745681371.8
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 6532.99,
+                      "layer": "decode-graph",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._graph_submit",
+                      "timestamp_us": 1784734745681403.5
+                    }
+                  ],
+                  "step": 4
+                },
+                {
+                  "duration_us": 7637.12,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 7585.89,
+                      "layer": "engine",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                      "timestamp_us": 1784734745688550.0
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 126.75,
+                      "layer": "scheduler",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                      "timestamp_us": 1784734745688568.0
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 7026.34,
+                      "layer": "executor",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedNpuExecutor.execute",
+                      "timestamp_us": 1784734745688946.0
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 6980.3,
+                      "layer": "runner",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.execute",
+                      "timestamp_us": 1784734745688965.0
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 6641.46,
+                      "layer": "submit",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit",
+                      "timestamp_us": 1784734745688981.2
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 6577.59,
+                      "layer": "decode-graph",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._graph_submit",
+                      "timestamp_us": 1784734745689013.2
+                    }
+                  ],
+                  "step": 5
+                },
+                {
+                  "duration_us": 7606.66,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 7550.22,
+                      "layer": "engine",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                      "timestamp_us": 1784734745696219.2
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 134.88,
+                      "layer": "scheduler",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                      "timestamp_us": 1784734745696238.0
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 6987.84,
+                      "layer": "executor",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedNpuExecutor.execute",
+                      "timestamp_us": 1784734745696622.0
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 6940.58,
+                      "layer": "runner",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.execute",
+                      "timestamp_us": 1784734745696641.5
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 6608.97,
+                      "layer": "submit",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit",
+                      "timestamp_us": 1784734745696658.0
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 6540.47,
+                      "layer": "decode-graph",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._graph_submit",
+                      "timestamp_us": 1784734745696697.0
+                    }
+                  ],
+                  "step": 6
+                },
+                {
+                  "duration_us": 7602.61,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 7551.52,
+                      "layer": "engine",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                      "timestamp_us": 1784734745703848.5
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 149.25,
+                      "layer": "scheduler",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                      "timestamp_us": 1784734745703866.5
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 6971.25,
+                      "layer": "executor",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedNpuExecutor.execute",
+                      "timestamp_us": 1784734745704266.5
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 6919.84,
+                      "layer": "runner",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.execute",
+                      "timestamp_us": 1784734745704289.0
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 6579.22,
+                      "layer": "submit",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit",
+                      "timestamp_us": 1784734745704310.0
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 6516.05,
+                      "layer": "decode-graph",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._graph_submit",
+                      "timestamp_us": 1784734745704342.2
+                    }
+                  ],
+                  "step": 7
+                },
+                {
+                  "duration_us": 8161.93,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 8105.47,
+                      "layer": "engine",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                      "timestamp_us": 1784734745711482.8
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 177.8,
+                      "layer": "scheduler",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                      "timestamp_us": 1784734745711501.5
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 7485.49,
+                      "layer": "executor",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedNpuExecutor.execute",
+                      "timestamp_us": 1784734745711941.0
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 7434.62,
+                      "layer": "runner",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.execute",
+                      "timestamp_us": 1784734745711965.0
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 7101.5,
+                      "layer": "submit",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit",
+                      "timestamp_us": 1784734745711983.0
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 7038.58,
+                      "layer": "decode-graph",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._graph_submit",
+                      "timestamp_us": 1784734745712015.2
+                    }
+                  ],
+                  "step": 8
+                },
+                {
+                  "duration_us": 7834.43,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 7783.78,
+                      "layer": "engine",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                      "timestamp_us": 1784734745719664.2
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 126.71,
+                      "layer": "scheduler",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                      "timestamp_us": 1784734745719682.8
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 7216.41,
+                      "layer": "executor",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedNpuExecutor.execute",
+                      "timestamp_us": 1784734745720070.8
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 7168.67,
+                      "layer": "runner",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.execute",
+                      "timestamp_us": 1784734745720090.8
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 6826.14,
+                      "layer": "submit",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit",
+                      "timestamp_us": 1784734745720112.2
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 6759.13,
+                      "layer": "decode-graph",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._graph_submit",
+                      "timestamp_us": 1784734745720148.5
+                    }
+                  ],
+                  "step": 9
+                },
+                {
+                  "duration_us": 7875.08,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 7823.92,
+                      "layer": "engine",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                      "timestamp_us": 1784734745727524.0
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 120.61,
+                      "layer": "scheduler",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                      "timestamp_us": 1784734745727542.2
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 7257.78,
+                      "layer": "executor",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedNpuExecutor.execute",
+                      "timestamp_us": 1784734745727927.8
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 7209.42,
+                      "layer": "runner",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.execute",
+                      "timestamp_us": 1784734745727948.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 6867.24,
+                      "layer": "submit",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit",
+                      "timestamp_us": 1784734745727968.2
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 6803.38,
+                      "layer": "decode-graph",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._graph_submit",
+                      "timestamp_us": 1784734745728000.5
+                    }
+                  ],
+                  "step": 10
+                },
+                {
+                  "duration_us": 7851.62,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 7798.78,
+                      "layer": "engine",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                      "timestamp_us": 1784734745735424.5
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 121.46,
+                      "layer": "scheduler",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                      "timestamp_us": 1784734745735442.5
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 7250.45,
+                      "layer": "executor",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedNpuExecutor.execute",
+                      "timestamp_us": 1784734745735813.5
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 7203.08,
+                      "layer": "runner",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.execute",
+                      "timestamp_us": 1784734745735832.5
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 6867.0,
+                      "layer": "submit",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit",
+                      "timestamp_us": 1784734745735852.2
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 6793.24,
+                      "layer": "decode-graph",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._graph_submit",
+                      "timestamp_us": 1784734745735893.8
+                    }
+                  ],
+                  "step": 11
+                },
+                {
+                  "duration_us": 7917.5,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 7863.9,
+                      "layer": "engine",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                      "timestamp_us": 1784734745743304.5
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 121.61,
+                      "layer": "scheduler",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                      "timestamp_us": 1784734745743322.8
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 7314.76,
+                      "layer": "executor",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedNpuExecutor.execute",
+                      "timestamp_us": 1784734745743693.5
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 7269.0,
+                      "layer": "runner",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.execute",
+                      "timestamp_us": 1784734745743712.0
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 6925.62,
+                      "layer": "submit",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit",
+                      "timestamp_us": 1784734745743727.8
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 6862.78,
+                      "layer": "decode-graph",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._graph_submit",
+                      "timestamp_us": 1784734745743759.2
+                    }
+                  ],
+                  "step": 12
+                },
+                {
+                  "duration_us": 7928.81,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 7877.34,
+                      "layer": "engine",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                      "timestamp_us": 1784734745751244.8
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 120.63,
+                      "layer": "scheduler",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                      "timestamp_us": 1784734745751263.0
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 7328.77,
+                      "layer": "executor",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedNpuExecutor.execute",
+                      "timestamp_us": 1784734745751632.2
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 7281.58,
+                      "layer": "runner",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.execute",
+                      "timestamp_us": 1784734745751651.5
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 6946.88,
+                      "layer": "submit",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit",
+                      "timestamp_us": 1784734745751667.5
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 6876.87,
+                      "layer": "decode-graph",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._graph_submit",
+                      "timestamp_us": 1784734745751706.8
+                    }
+                  ],
+                  "step": 13
+                },
+                {
+                  "duration_us": 7875.18,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 7819.17,
+                      "layer": "engine",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                      "timestamp_us": 1784734745759204.8
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 121.4,
+                      "layer": "scheduler",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                      "timestamp_us": 1784734745759223.5
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 7269.27,
+                      "layer": "executor",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedNpuExecutor.execute",
+                      "timestamp_us": 1784734745759595.8
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 7221.8,
+                      "layer": "runner",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.execute",
+                      "timestamp_us": 1784734745759615.0
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 6888.34,
+                      "layer": "submit",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit",
+                      "timestamp_us": 1784734745759636.2
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 6820.3,
+                      "layer": "decode-graph",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._graph_submit",
+                      "timestamp_us": 1784734745759672.8
+                    }
+                  ],
+                  "step": 14
+                },
+                {
+                  "duration_us": 8078.65,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 8023.91,
+                      "layer": "engine",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                      "timestamp_us": 1784734745767101.8
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 120.97,
+                      "layer": "scheduler",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                      "timestamp_us": 1784734745767120.0
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 7296.47,
+                      "layer": "executor",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedNpuExecutor.execute",
+                      "timestamp_us": 1784734745767491.5
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 7249.59,
+                      "layer": "runner",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.execute",
+                      "timestamp_us": 1784734745767510.5
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 6917.26,
+                      "layer": "submit",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit",
+                      "timestamp_us": 1784734745767527.0
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 6849.79,
+                      "layer": "decode-graph",
+                      "source_pid": 200193,
+                      "source_tid": 200193,
+                      "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._graph_submit",
+                      "timestamp_us": 1784734745767563.5
+                    }
+                  ],
+                  "step": 15
+                }
+              ],
+              "prefill": [
+                {
+                  "depth": 0,
+                  "duration_us": 52285.45,
+                  "layer": "engine",
+                  "source_pid": 200193,
+                  "source_tid": 200193,
+                  "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                  "timestamp_us": 1784734745604984.8
+                },
+                {
+                  "depth": 1,
+                  "duration_us": 377.42,
+                  "layer": "scheduler",
+                  "source_pid": 200193,
+                  "source_tid": 200193,
+                  "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                  "timestamp_us": 1784734745605006.0
+                },
+                {
+                  "depth": 1,
+                  "duration_us": 51173.23,
+                  "layer": "executor",
+                  "source_pid": 200193,
+                  "source_tid": 200193,
+                  "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedNpuExecutor.execute",
+                  "timestamp_us": 1784734745605912.8
+                },
+                {
+                  "depth": 2,
+                  "duration_us": 51105.31,
+                  "layer": "runner",
+                  "source_pid": 200193,
+                  "source_tid": 200193,
+                  "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.execute",
+                  "timestamp_us": 1784734745605949.8
+                },
+                {
+                  "depth": 3,
+                  "duration_us": 50899.97,
+                  "layer": "submit",
+                  "source_pid": 200193,
+                  "source_tid": 200193,
+                  "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit",
+                  "timestamp_us": 1784734745605973.8
+                },
+                {
+                  "depth": 4,
+                  "duration_us": 50801.97,
+                  "layer": "eager",
+                  "source_pid": 200193,
+                  "source_tid": 200193,
+                  "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._eager_submit",
+                  "timestamp_us": 1784734745606038.0
+                }
+              ],
+              "runtime": []
+            },
+            "schema_version": 1
+          },
+          "completed_at_utc": "2026-07-22T15:39:06.303105+00:00",
           "phase_counts": {
             "decode_passes": 15,
             "prefill_passes": 1,
@@ -15,125 +989,125 @@
             "schema_version": 1,
             "steps": [
               {
-                "duration_us": 51144.14,
+                "duration_us": 52336.49,
                 "label": "PREFILL",
                 "phase": "prefill",
                 "step": 0,
-                "timestamp_us": 1784731947682755.8
+                "timestamp_us": 1784734745604959.5
               },
               {
-                "duration_us": 9364.74,
+                "duration_us": 8157.67,
                 "label": "DECODE 001",
                 "phase": "decode",
                 "step": 1,
-                "timestamp_us": 1784731947733949.0
+                "timestamp_us": 1784734745657333.2
               },
               {
-                "duration_us": 8921.26,
+                "duration_us": 7661.24,
                 "label": "DECODE 002",
                 "phase": "decode",
                 "step": 2,
-                "timestamp_us": 1784731947743346.0
+                "timestamp_us": 1784734745665517.5
               },
               {
-                "duration_us": 8903.24,
+                "duration_us": 7665.36,
                 "label": "DECODE 003",
                 "phase": "decode",
                 "step": 3,
-                "timestamp_us": 1784731947752298.5
+                "timestamp_us": 1784734745673205.0
               },
               {
-                "duration_us": 8903.16,
+                "duration_us": 7600.0,
                 "label": "DECODE 004",
                 "phase": "decode",
                 "step": 4,
-                "timestamp_us": 1784731947761236.0
+                "timestamp_us": 1784734745680897.5
               },
               {
-                "duration_us": 8882.09,
+                "duration_us": 7637.12,
                 "label": "DECODE 005",
                 "phase": "decode",
                 "step": 5,
-                "timestamp_us": 1784731947770170.2
+                "timestamp_us": 1784734745688523.0
               },
               {
-                "duration_us": 8947.47,
+                "duration_us": 7606.66,
                 "label": "DECODE 006",
                 "phase": "decode",
                 "step": 6,
-                "timestamp_us": 1784731947779082.5
+                "timestamp_us": 1784734745696186.8
               },
               {
-                "duration_us": 9058.19,
+                "duration_us": 7602.61,
                 "label": "DECODE 007",
                 "phase": "decode",
                 "step": 7,
-                "timestamp_us": 1784731947788061.8
+                "timestamp_us": 1784734745703821.5
               },
               {
-                "duration_us": 9318.49,
+                "duration_us": 8161.93,
                 "label": "DECODE 008",
                 "phase": "decode",
                 "step": 8,
-                "timestamp_us": 1784731947797150.2
+                "timestamp_us": 1784734745711450.5
               },
               {
-                "duration_us": 9177.08,
+                "duration_us": 7834.43,
                 "label": "DECODE 009",
                 "phase": "decode",
                 "step": 9,
-                "timestamp_us": 1784731947806499.2
+                "timestamp_us": 1784734745719637.2
               },
               {
-                "duration_us": 9144.46,
+                "duration_us": 7875.08,
                 "label": "DECODE 010",
                 "phase": "decode",
                 "step": 10,
-                "timestamp_us": 1784731947815706.5
+                "timestamp_us": 1784734745727496.5
               },
               {
-                "duration_us": 9246.75,
+                "duration_us": 7851.62,
                 "label": "DECODE 011",
                 "phase": "decode",
                 "step": 11,
-                "timestamp_us": 1784731947824880.2
+                "timestamp_us": 1784734745735397.0
               },
               {
-                "duration_us": 9068.11,
+                "duration_us": 7917.5,
                 "label": "DECODE 012",
                 "phase": "decode",
                 "step": 12,
-                "timestamp_us": 1784731947834157.5
+                "timestamp_us": 1784734745743275.0
               },
               {
-                "duration_us": 9182.63,
+                "duration_us": 7928.81,
                 "label": "DECODE 013",
                 "phase": "decode",
                 "step": 13,
-                "timestamp_us": 1784731947843254.8
+                "timestamp_us": 1784734745751218.0
               },
               {
-                "duration_us": 9191.2,
+                "duration_us": 7875.18,
                 "label": "DECODE 014",
                 "phase": "decode",
                 "step": 14,
-                "timestamp_us": 1784731947852466.2
+                "timestamp_us": 1784734745759173.0
               },
               {
-                "duration_us": 9216.66,
+                "duration_us": 8078.65,
                 "label": "DECODE 015",
                 "phase": "decode",
                 "step": 15,
-                "timestamp_us": 1784731947861687.5
+                "timestamp_us": 1784734745767074.2
               }
             ]
           },
-          "started_at_utc": "2026-07-22T14:52:27.570209+00:00"
+          "started_at_utc": "2026-07-22T15:39:05.507562+00:00"
         },
         "environment": {
-          "capture_harness_revision": "1507a19ed2db3abe7cf5145c1ea0e66f9ad2cb34",
+          "capture_harness_revision": "085fe39afd43c7e314cfc586d3ffc6a45e0dec6f",
           "capture_harness_revision_origin": "content_hash_verified_deployment",
-          "captured_at_utc": "2026-07-22T14:52:38.608636+00:00",
+          "captured_at_utc": "2026-07-22T15:39:17.202586+00:00",
           "device": "Ascend910B1",
           "driver": {
             "ascendhal_version": "7.35.23",
@@ -197,10 +1171,10 @@
           "usable_tokens": 14464
         },
         "trace": {
-          "event_count": 85343,
+          "event_count": 78024,
           "file": "auto-infer.trace.json",
-          "sha256": "deabff830ba6cc30be105e40b2874bcdc7f389b4dbe406afb59aafa7f4a0bd8a",
-          "size_bytes": 14546003
+          "sha256": "4245892d355f004f910bedfa9908d44d6c2ddccad8fdba706e8f4359796882fd",
+          "size_bytes": 12769584
         },
         "workload": {
           "batch_size": 16,
@@ -226,14 +1200,1356 @@
         }
       },
       "path": "raw/auto-infer.trace.json",
-      "sha256": "deabff830ba6cc30be105e40b2874bcdc7f389b4dbe406afb59aafa7f4a0bd8a",
-      "size_bytes": 14546003
+      "sha256": "4245892d355f004f910bedfa9908d44d6c2ddccad8fdba706e8f4359796882fd",
+      "size_bytes": 12769584
     },
     "omni-npu": {
-      "event_count": 59764,
+      "event_count": 60039,
       "metadata": {
         "capture": {
-          "completed_at_utc": "2026-07-22T14:51:27.973232+00:00",
+          "call_counts": {
+            "engine-client": 17,
+            "engine-core": 17,
+            "executor": 17,
+            "llm-engine": 17,
+            "model-runner": 17,
+            "scheduler": 17,
+            "worker": 17,
+            "worker-wrapper": 17
+          },
+          "call_stack_index": {
+            "lane": "QWEN3 CALL STACK",
+            "phases": {
+              "decode": [
+                {
+                  "duration_us": 9068.16,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 9002.84,
+                      "layer": "llm-engine",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784735228086344.5
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 8778.36,
+                      "layer": "engine-client",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784735228086385.2
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 8714.24,
+                      "layer": "engine-core",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784735228086400.5
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 341.51,
+                      "layer": "scheduler",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784735228086422.8
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 7342.28,
+                      "layer": "executor",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784735228086782.5
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 7275.56,
+                      "layer": "worker-wrapper",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784735228086806.2
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 7237.05,
+                      "layer": "worker",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784735228086824.0
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 7186.46,
+                      "layer": "model-runner",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_model_runner.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784735228086844.2
+                    }
+                  ],
+                  "step": 1
+                },
+                {
+                  "duration_us": 8778.06,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 8702.21,
+                      "layer": "llm-engine",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784735228095453.0
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 8545.96,
+                      "layer": "engine-client",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784735228095471.2
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 8482.0,
+                      "layer": "engine-core",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784735228095487.0
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 323.32,
+                      "layer": "scheduler",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784735228095506.5
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 7135.73,
+                      "layer": "executor",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784735228095847.5
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 7070.66,
+                      "layer": "worker-wrapper",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784735228095869.2
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 7031.94,
+                      "layer": "worker",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784735228095886.0
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 6982.63,
+                      "layer": "model-runner",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_model_runner.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784735228095905.2
+                    }
+                  ],
+                  "step": 2
+                },
+                {
+                  "duration_us": 8764.02,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 8685.56,
+                      "layer": "llm-engine",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784735228104264.8
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 8514.0,
+                      "layer": "engine-client",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784735228104298.2
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 8451.36,
+                      "layer": "engine-core",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784735228104314.8
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 325.15,
+                      "layer": "scheduler",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784735228104334.5
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 7112.4,
+                      "layer": "executor",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784735228104678.0
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 7046.92,
+                      "layer": "worker-wrapper",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784735228104700.2
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 7009.41,
+                      "layer": "worker",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784735228104716.8
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 6959.03,
+                      "layer": "model-runner",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_model_runner.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784735228104737.0
+                    }
+                  ],
+                  "step": 3
+                },
+                {
+                  "duration_us": 8724.99,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 8660.11,
+                      "layer": "llm-engine",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784735228113058.8
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 8470.33,
+                      "layer": "engine-client",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784735228113091.5
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 8405.34,
+                      "layer": "engine-core",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784735228113107.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 326.01,
+                      "layer": "scheduler",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784735228113126.5
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 7082.95,
+                      "layer": "executor",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784735228113470.2
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 7017.86,
+                      "layer": "worker-wrapper",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784735228113492.0
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 6979.65,
+                      "layer": "worker",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784735228113508.5
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 6929.45,
+                      "layer": "model-runner",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_model_runner.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784735228113527.8
+                    }
+                  ],
+                  "step": 4
+                },
+                {
+                  "duration_us": 8721.28,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 8660.16,
+                      "layer": "llm-engine",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784735228121820.2
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 8479.49,
+                      "layer": "engine-client",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784735228121837.8
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 8416.36,
+                      "layer": "engine-core",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784735228121852.8
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 315.76,
+                      "layer": "scheduler",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784735228121871.8
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 7112.09,
+                      "layer": "executor",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784735228122206.0
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 7048.15,
+                      "layer": "worker-wrapper",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784735228122227.2
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 7010.84,
+                      "layer": "worker",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784735228122243.8
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 6961.04,
+                      "layer": "model-runner",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_model_runner.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784735228122263.0
+                    }
+                  ],
+                  "step": 5
+                },
+                {
+                  "duration_us": 8703.25,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 8648.31,
+                      "layer": "llm-engine",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784735228130583.2
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 8471.58,
+                      "layer": "engine-client",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784735228130601.2
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 8408.45,
+                      "layer": "engine-core",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784735228130616.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 317.22,
+                      "layer": "scheduler",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784735228130634.8
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 7079.85,
+                      "layer": "executor",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784735228130969.8
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 7014.89,
+                      "layer": "worker-wrapper",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784735228130991.5
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 6977.82,
+                      "layer": "worker",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784735228131007.8
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 6928.14,
+                      "layer": "model-runner",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_model_runner.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784735228131027.0
+                    }
+                  ],
+                  "step": 6
+                },
+                {
+                  "duration_us": 8720.58,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 8653.97,
+                      "layer": "llm-engine",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784735228139329.8
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 8467.32,
+                      "layer": "engine-client",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784735228139348.0
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 8402.64,
+                      "layer": "engine-core",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784735228139364.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 320.35,
+                      "layer": "scheduler",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784735228139384.5
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 7085.16,
+                      "layer": "executor",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784735228139722.2
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 7021.1,
+                      "layer": "worker-wrapper",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784735228139743.5
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 6984.27,
+                      "layer": "worker",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784735228139759.2
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 6933.65,
+                      "layer": "model-runner",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_model_runner.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784735228139779.5
+                    }
+                  ],
+                  "step": 7
+                },
+                {
+                  "duration_us": 8851.76,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 8795.4,
+                      "layer": "llm-engine",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784735228148081.5
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 8621.89,
+                      "layer": "engine-client",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784735228148099.2
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 8558.53,
+                      "layer": "engine-core",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784735228148114.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 316.3,
+                      "layer": "scheduler",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784735228148132.8
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 7232.37,
+                      "layer": "executor",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784735228148466.0
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 7168.68,
+                      "layer": "worker-wrapper",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784735228148487.0
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 7132.06,
+                      "layer": "worker",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784735228148502.8
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 7081.92,
+                      "layer": "model-runner",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_model_runner.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784735228148522.5
+                    }
+                  ],
+                  "step": 8
+                },
+                {
+                  "duration_us": 8817.41,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 8734.69,
+                      "layer": "llm-engine",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784735228156971.2
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 8573.75,
+                      "layer": "engine-client",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784735228156989.5
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 8513.75,
+                      "layer": "engine-core",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784735228157005.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 325.79,
+                      "layer": "scheduler",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784735228157025.0
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 7187.31,
+                      "layer": "executor",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784735228157369.0
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 7121.68,
+                      "layer": "worker-wrapper",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784735228157392.2
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 7083.95,
+                      "layer": "worker",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784735228157409.2
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 7033.0,
+                      "layer": "model-runner",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_model_runner.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784735228157429.5
+                    }
+                  ],
+                  "step": 9
+                },
+                {
+                  "duration_us": 8841.65,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 8758.38,
+                      "layer": "llm-engine",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784735228165823.8
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 8603.11,
+                      "layer": "engine-client",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784735228165843.2
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 8540.72,
+                      "layer": "engine-core",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784735228165859.0
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 321.6,
+                      "layer": "scheduler",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784735228165878.5
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 7215.0,
+                      "layer": "executor",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784735228166218.2
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 7148.16,
+                      "layer": "worker-wrapper",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784735228166241.2
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 7110.48,
+                      "layer": "worker",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784735228166257.8
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 7059.23,
+                      "layer": "model-runner",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_model_runner.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784735228166277.8
+                    }
+                  ],
+                  "step": 10
+                },
+                {
+                  "duration_us": 8843.46,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 8785.28,
+                      "layer": "llm-engine",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784735228174686.8
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 8587.03,
+                      "layer": "engine-client",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784735228174719.8
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 8519.89,
+                      "layer": "engine-core",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784735228174735.8
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 324.2,
+                      "layer": "scheduler",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784735228174755.5
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 7195.56,
+                      "layer": "executor",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784735228175097.5
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 7129.68,
+                      "layer": "worker-wrapper",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784735228175119.8
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 7093.11,
+                      "layer": "worker",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784735228175136.0
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 7043.2,
+                      "layer": "model-runner",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_model_runner.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784735228175155.5
+                    }
+                  ],
+                  "step": 11
+                },
+                {
+                  "duration_us": 8810.37,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 8738.38,
+                      "layer": "llm-engine",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784735228183567.8
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 8561.53,
+                      "layer": "engine-client",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784735228183586.5
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 8499.41,
+                      "layer": "engine-core",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784735228183601.5
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 338.08,
+                      "layer": "scheduler",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784735228183620.5
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 7146.43,
+                      "layer": "executor",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784735228183976.8
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 7081.69,
+                      "layer": "worker-wrapper",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784735228183998.2
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 7044.23,
+                      "layer": "worker",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784735228184014.0
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 6993.98,
+                      "layer": "model-runner",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_model_runner.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784735228184033.5
+                    }
+                  ],
+                  "step": 12
+                },
+                {
+                  "duration_us": 8863.82,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 8790.12,
+                      "layer": "llm-engine",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784735228192405.2
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 8624.24,
+                      "layer": "engine-client",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784735228192423.2
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 8563.79,
+                      "layer": "engine-core",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784735228192439.0
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 322.85,
+                      "layer": "scheduler",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784735228192458.0
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 7243.14,
+                      "layer": "executor",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784735228192797.8
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 7176.07,
+                      "layer": "worker-wrapper",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784735228192821.2
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 7137.52,
+                      "layer": "worker",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784735228192838.2
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 7085.14,
+                      "layer": "model-runner",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_model_runner.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784735228192857.8
+                    }
+                  ],
+                  "step": 13
+                },
+                {
+                  "duration_us": 8838.76,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 8768.08,
+                      "layer": "llm-engine",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784735228201317.0
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 8584.87,
+                      "layer": "engine-client",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784735228201336.0
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 8519.3,
+                      "layer": "engine-core",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784735228201352.0
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 320.55,
+                      "layer": "scheduler",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784735228201371.8
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 7206.22,
+                      "layer": "executor",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784735228201710.5
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 7139.84,
+                      "layer": "worker-wrapper",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784735228201732.5
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 7102.16,
+                      "layer": "worker",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784735228201749.2
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 7052.04,
+                      "layer": "model-runner",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_model_runner.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784735228201768.5
+                    }
+                  ],
+                  "step": 14
+                },
+                {
+                  "duration_us": 9726.92,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 9650.12,
+                      "layer": "llm-engine",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784735228210184.5
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 9484.18,
+                      "layer": "engine-client",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784735228210202.5
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 9417.7,
+                      "layer": "engine-core",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784735228210217.8
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 317.37,
+                      "layer": "scheduler",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784735228210237.0
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 7963.35,
+                      "layer": "executor",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784735228210572.0
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 7892.99,
+                      "layer": "worker-wrapper",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784735228210593.2
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 7854.68,
+                      "layer": "worker",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784735228210609.5
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 7803.18,
+                      "layer": "model-runner",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_model_runner.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784735228210629.2
+                    }
+                  ],
+                  "step": 15
+                }
+              ],
+              "prefill": [
+                {
+                  "depth": 0,
+                  "duration_us": 56843.89,
+                  "layer": "llm-engine",
+                  "source_pid": 360,
+                  "source_tid": 360,
+                  "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                  "timestamp_us": 1784735228029375.5
+                },
+                {
+                  "depth": 1,
+                  "duration_us": 56778.46,
+                  "layer": "engine-client",
+                  "source_pid": 360,
+                  "source_tid": 360,
+                  "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                  "timestamp_us": 1784735228029396.5
+                },
+                {
+                  "depth": 2,
+                  "duration_us": 56686.67,
+                  "layer": "engine-core",
+                  "source_pid": 360,
+                  "source_tid": 360,
+                  "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                  "timestamp_us": 1784735228029412.0
+                },
+                {
+                  "depth": 3,
+                  "duration_us": 611.68,
+                  "layer": "scheduler",
+                  "source_pid": 360,
+                  "source_tid": 360,
+                  "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                  "timestamp_us": 1784735228029433.5
+                },
+                {
+                  "depth": 3,
+                  "duration_us": 55051.56,
+                  "layer": "executor",
+                  "source_pid": 360,
+                  "source_tid": 360,
+                  "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                  "timestamp_us": 1784735228030075.2
+                },
+                {
+                  "depth": 4,
+                  "duration_us": 54970.6,
+                  "layer": "worker-wrapper",
+                  "source_pid": 360,
+                  "source_tid": 360,
+                  "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                  "timestamp_us": 1784735228030102.8
+                },
+                {
+                  "depth": 5,
+                  "duration_us": 54929.89,
+                  "layer": "worker",
+                  "source_pid": 360,
+                  "source_tid": 360,
+                  "symbol": "omni_npu.worker.npu_worker.NPUWorker.execute_model",
+                  "timestamp_us": 1784735228030120.8
+                },
+                {
+                  "depth": 6,
+                  "duration_us": 54875.58,
+                  "layer": "model-runner",
+                  "source_pid": 360,
+                  "source_tid": 360,
+                  "symbol": "omni_npu.worker.npu_model_runner.NPUModelRunner.execute_model",
+                  "timestamp_us": 1784735228030142.5
+                }
+              ],
+              "runtime": [
+                {
+                  "duration_us": 1424.49,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 1363.06,
+                      "layer": "llm-engine",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784735228219974.8
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 1041.14,
+                      "layer": "engine-client",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784735228219993.8
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 999.31,
+                      "layer": "engine-core",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784735228220009.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 83.53,
+                      "layer": "scheduler",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784735228220029.8
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 528.96,
+                      "layer": "executor",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784735228220129.0
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 467.77,
+                      "layer": "worker-wrapper",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784735228220149.0
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 430.62,
+                      "layer": "worker",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784735228220166.0
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 381.49,
+                      "layer": "model-runner",
+                      "source_pid": 360,
+                      "source_tid": 360,
+                      "symbol": "omni_npu.worker.npu_model_runner.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784735228220185.8
+                    }
+                  ],
+                  "step": 1
+                }
+              ]
+            },
+            "schema_version": 1
+          },
+          "completed_at_utc": "2026-07-22T15:47:08.501824+00:00",
           "phase_counts": {
             "decode_passes": 15,
             "prefill_passes": 1,
@@ -244,125 +2560,125 @@
             "schema_version": 1,
             "steps": [
               {
-                "duration_us": 58324.37,
+                "duration_us": 56903.42,
                 "label": "PREFILL",
                 "phase": "prefill",
                 "step": 0,
-                "timestamp_us": 1784731887505309.8
+                "timestamp_us": 1784735228029341.5
               },
               {
-                "duration_us": 9141.61,
+                "duration_us": 9068.16,
                 "label": "DECODE 001",
                 "phase": "decode",
                 "step": 1,
-                "timestamp_us": 1784731887563688.2
+                "timestamp_us": 1784735228086314.5
               },
               {
-                "duration_us": 8663.94,
+                "duration_us": 8778.06,
                 "label": "DECODE 002",
                 "phase": "decode",
                 "step": 2,
-                "timestamp_us": 1784731887572876.2
+                "timestamp_us": 1784735228095426.0
               },
               {
-                "duration_us": 8614.56,
+                "duration_us": 8764.02,
                 "label": "DECODE 003",
                 "phase": "decode",
                 "step": 3,
-                "timestamp_us": 1784731887581583.5
+                "timestamp_us": 1784735228104234.2
               },
               {
-                "duration_us": 8587.69,
+                "duration_us": 8724.99,
                 "label": "DECODE 004",
                 "phase": "decode",
                 "step": 4,
-                "timestamp_us": 1784731887590244.2
+                "timestamp_us": 1784735228113028.5
               },
               {
-                "duration_us": 8595.39,
+                "duration_us": 8721.28,
                 "label": "DECODE 005",
                 "phase": "decode",
                 "step": 5,
-                "timestamp_us": 1784731887598874.8
+                "timestamp_us": 1784735228121795.0
               },
               {
-                "duration_us": 9649.79,
+                "duration_us": 8703.25,
                 "label": "DECODE 006",
                 "phase": "decode",
                 "step": 6,
-                "timestamp_us": 1784731887607516.0
+                "timestamp_us": 1784735228130556.8
               },
               {
-                "duration_us": 8726.74,
+                "duration_us": 8720.58,
                 "label": "DECODE 007",
                 "phase": "decode",
                 "step": 7,
-                "timestamp_us": 1784731887617212.8
+                "timestamp_us": 1784735228139292.5
               },
               {
-                "duration_us": 8804.34,
+                "duration_us": 8851.76,
                 "label": "DECODE 008",
                 "phase": "decode",
                 "step": 8,
-                "timestamp_us": 1784731887626009.2
+                "timestamp_us": 1784735228148054.5
               },
               {
-                "duration_us": 8728.74,
+                "duration_us": 8817.41,
                 "label": "DECODE 009",
                 "phase": "decode",
                 "step": 9,
-                "timestamp_us": 1784731887634861.0
+                "timestamp_us": 1784735228156934.5
               },
               {
-                "duration_us": 8773.01,
+                "duration_us": 8841.65,
                 "label": "DECODE 010",
                 "phase": "decode",
                 "step": 10,
-                "timestamp_us": 1784731887643635.0
+                "timestamp_us": 1784735228165787.2
               },
               {
-                "duration_us": 8705.33,
+                "duration_us": 8843.46,
                 "label": "DECODE 011",
                 "phase": "decode",
                 "step": 11,
-                "timestamp_us": 1784731887652455.0
+                "timestamp_us": 1784735228174658.2
               },
               {
-                "duration_us": 8695.59,
+                "duration_us": 8810.37,
                 "label": "DECODE 012",
                 "phase": "decode",
                 "step": 12,
-                "timestamp_us": 1784731887661204.5
+                "timestamp_us": 1784735228183530.5
               },
               {
-                "duration_us": 8700.01,
+                "duration_us": 8863.82,
                 "label": "DECODE 013",
                 "phase": "decode",
                 "step": 13,
-                "timestamp_us": 1784731887669945.2
+                "timestamp_us": 1784735228192379.2
               },
               {
-                "duration_us": 8651.7,
+                "duration_us": 8838.76,
                 "label": "DECODE 014",
                 "phase": "decode",
                 "step": 14,
-                "timestamp_us": 1784731887678690.0
+                "timestamp_us": 1784735228201281.0
               },
               {
-                "duration_us": 8806.34,
+                "duration_us": 9726.92,
                 "label": "DECODE 015",
                 "phase": "decode",
                 "step": 15,
-                "timestamp_us": 1784731887687386.2
+                "timestamp_us": 1784735228210158.5
               }
             ]
           },
-          "started_at_utc": "2026-07-22T14:51:27.384344+00:00"
+          "started_at_utc": "2026-07-22T15:47:07.923824+00:00"
         },
         "environment": {
-          "capture_harness_revision": "1507a19ed2db3abe7cf5145c1ea0e66f9ad2cb34",
+          "capture_harness_revision": "085fe39afd43c7e314cfc586d3ffc6a45e0dec6f",
           "capture_harness_revision_origin": "content_hash_verified_deployment",
-          "captured_at_utc": "2026-07-22T14:51:39.032023+00:00",
+          "captured_at_utc": "2026-07-22T15:47:20.270787+00:00",
           "device": "Ascend910B1",
           "driver": {
             "ascendhal_version": "7.35.23",
@@ -375,7 +2691,7 @@
             "omniinfer": "181f5d4119e7098df937faaa9529c0722c3f1208",
             "vllm": "b17039bccc17b94a2ea107272ad7bc93508708df"
           },
-          "hostname": "59086a8590ed",
+          "hostname": "202135e7b64b",
           "omni_plugin": "omni-npu,omni_npu_patches",
           "platform": "Linux-5.10.0-136.12.0.86.r1526_92.hce2.aarch64-aarch64-with-glibc2.34",
           "python": "3.11.12",
@@ -429,10 +2745,10 @@
           "usable_tokens": 14464
         },
         "trace": {
-          "event_count": 59764,
+          "event_count": 60039,
           "file": "omni-npu.trace.json",
-          "sha256": "ccfef4c9f66ce5177bb3f1f480be0e2d52d333cd1ed022edc76f65f519b6fd2f",
-          "size_bytes": 9597326
+          "sha256": "bbbebb2594b1d5e474834b8f59dc22dd77e219f7d95df224909c20771783c362",
+          "size_bytes": 9673533
         },
         "workload": {
           "batch_size": 16,
@@ -458,14 +2774,1356 @@
         }
       },
       "path": "raw/omni-npu.trace.json",
-      "sha256": "ccfef4c9f66ce5177bb3f1f480be0e2d52d333cd1ed022edc76f65f519b6fd2f",
-      "size_bytes": 9597326
+      "sha256": "bbbebb2594b1d5e474834b8f59dc22dd77e219f7d95df224909c20771783c362",
+      "size_bytes": 9673533
     },
     "vllm-ascend": {
-      "event_count": 55388,
+      "event_count": 55663,
       "metadata": {
         "capture": {
-          "completed_at_utc": "2026-07-22T14:42:20.923636+00:00",
+          "call_counts": {
+            "engine-client": 17,
+            "engine-core": 17,
+            "executor": 17,
+            "llm-engine": 17,
+            "model-runner": 17,
+            "scheduler": 17,
+            "worker": 17,
+            "worker-wrapper": 17
+          },
+          "call_stack_index": {
+            "lane": "QWEN3 CALL STACK",
+            "phases": {
+              "decode": [
+                {
+                  "duration_us": 25816.22,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 25607.9,
+                      "layer": "llm-engine",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784734997201009.5
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 25203.32,
+                      "layer": "engine-client",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784734997201113.0
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 25007.48,
+                      "layer": "engine-core",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784734997201180.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 466.18,
+                      "layer": "scheduler",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784734997201219.8
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 22926.91,
+                      "layer": "executor",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784734997201714.2
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 22823.17,
+                      "layer": "worker-wrapper",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784734997201758.2
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 22772.42,
+                      "layer": "worker",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784734997201783.2
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 22699.8,
+                      "layer": "model-runner",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.model_runner_v1.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784734997201818.0
+                    }
+                  ],
+                  "step": 1
+                },
+                {
+                  "duration_us": 24156.72,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 23981.09,
+                      "layer": "llm-engine",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784734997226920.8
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 23765.95,
+                      "layer": "engine-client",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784734997226967.5
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 23616.58,
+                      "layer": "engine-core",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784734997226996.8
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 425.18,
+                      "layer": "scheduler",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784734997227033.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 21651.71,
+                      "layer": "executor",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784734997227486.8
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 21558.49,
+                      "layer": "worker-wrapper",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784734997227523.8
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 21505.87,
+                      "layer": "worker",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784734997227550.0
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 21440.47,
+                      "layer": "model-runner",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.model_runner_v1.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784734997227579.5
+                    }
+                  ],
+                  "step": 2
+                },
+                {
+                  "duration_us": 23610.83,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 23435.62,
+                      "layer": "llm-engine",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784734997251121.5
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 23192.74,
+                      "layer": "engine-client",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784734997251205.2
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 23044.4,
+                      "layer": "engine-core",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784734997251253.8
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 417.05,
+                      "layer": "scheduler",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784734997251288.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 21164.21,
+                      "layer": "executor",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784734997251733.5
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 21077.27,
+                      "layer": "worker-wrapper",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784734997251767.0
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 21029.73,
+                      "layer": "worker",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784734997251789.5
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 20967.7,
+                      "layer": "model-runner",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.model_runner_v1.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784734997251816.2
+                    }
+                  ],
+                  "step": 3
+                },
+                {
+                  "duration_us": 23450.25,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 23279.7,
+                      "layer": "llm-engine",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784734997274763.8
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 23046.77,
+                      "layer": "engine-client",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784734997274843.2
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 22905.96,
+                      "layer": "engine-core",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784734997274885.5
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 406.84,
+                      "layer": "scheduler",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784734997274919.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 21040.98,
+                      "layer": "executor",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784734997275353.5
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 20952.53,
+                      "layer": "worker-wrapper",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784734997275386.8
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 20904.25,
+                      "layer": "worker",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784734997275408.8
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 20841.11,
+                      "layer": "model-runner",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.model_runner_v1.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784734997275435.8
+                    }
+                  ],
+                  "step": 4
+                },
+                {
+                  "duration_us": 24512.34,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 24334.16,
+                      "layer": "llm-engine",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784734997298250.8
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 24090.82,
+                      "layer": "engine-client",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784734997298332.0
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 23942.16,
+                      "layer": "engine-core",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784734997298377.0
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 410.88,
+                      "layer": "scheduler",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784734997298410.5
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 21021.58,
+                      "layer": "executor",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784734997298848.0
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 20936.13,
+                      "layer": "worker-wrapper",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784734997298880.8
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 20889.99,
+                      "layer": "worker",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784734997298901.8
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 20829.78,
+                      "layer": "model-runner",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.model_runner_v1.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784734997298926.8
+                    }
+                  ],
+                  "step": 5
+                },
+                {
+                  "duration_us": 23631.91,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 23450.98,
+                      "layer": "llm-engine",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784734997322798.2
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 23206.96,
+                      "layer": "engine-client",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784734997322881.5
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 23039.73,
+                      "layer": "engine-core",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784734997322931.0
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 412.23,
+                      "layer": "scheduler",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784734997322961.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 21117.06,
+                      "layer": "executor",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784734997323401.8
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 21035.06,
+                      "layer": "worker-wrapper",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784734997323429.8
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 20988.68,
+                      "layer": "worker",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784734997323450.2
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 20927.61,
+                      "layer": "model-runner",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.model_runner_v1.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784734997323475.5
+                    }
+                  ],
+                  "step": 6
+                },
+                {
+                  "duration_us": 23631.86,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 23459.81,
+                      "layer": "llm-engine",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784734997346466.0
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 23219.22,
+                      "layer": "engine-client",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784734997346551.0
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 23078.43,
+                      "layer": "engine-core",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784734997346593.5
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 419.1,
+                      "layer": "scheduler",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784734997346631.0
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 21191.28,
+                      "layer": "executor",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784734997347077.5
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 21109.79,
+                      "layer": "worker-wrapper",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784734997347105.2
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 21061.98,
+                      "layer": "worker",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784734997347127.5
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 21002.92,
+                      "layer": "model-runner",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.model_runner_v1.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784734997347151.2
+                    }
+                  ],
+                  "step": 7
+                },
+                {
+                  "duration_us": 23679.06,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 23507.84,
+                      "layer": "llm-engine",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784734997370128.0
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 23275.68,
+                      "layer": "engine-client",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784734997370208.0
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 23130.52,
+                      "layer": "engine-core",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784734997370257.0
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 409.42,
+                      "layer": "scheduler",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784734997370285.8
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 21265.65,
+                      "layer": "executor",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784734997370723.0
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 21182.86,
+                      "layer": "worker-wrapper",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784734997370751.0
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 21117.17,
+                      "layer": "worker",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784734997370773.2
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 21056.89,
+                      "layer": "model-runner",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.model_runner_v1.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784734997370798.2
+                    }
+                  ],
+                  "step": 8
+                },
+                {
+                  "duration_us": 23570.58,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 23403.06,
+                      "layer": "llm-engine",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784734997393838.8
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 23161.53,
+                      "layer": "engine-client",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784734997393917.8
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 23013.95,
+                      "layer": "engine-core",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784734997393969.5
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 411.09,
+                      "layer": "scheduler",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784734997393998.8
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 21146.38,
+                      "layer": "executor",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784734997394438.2
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 21064.31,
+                      "layer": "worker-wrapper",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784734997394466.0
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 21012.79,
+                      "layer": "worker",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784734997394492.5
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 20952.26,
+                      "layer": "model-runner",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.model_runner_v1.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784734997394517.8
+                    }
+                  ],
+                  "step": 9
+                },
+                {
+                  "duration_us": 23756.1,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 23516.63,
+                      "layer": "llm-engine",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784734997417445.5
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 23278.9,
+                      "layer": "engine-client",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784734997417528.0
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 23117.18,
+                      "layer": "engine-core",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784734997417571.5
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 403.44,
+                      "layer": "scheduler",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784734997417601.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 21247.99,
+                      "layer": "executor",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784734997418032.2
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 21166.03,
+                      "layer": "worker-wrapper",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784734997418061.0
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 21118.56,
+                      "layer": "worker",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784734997418083.5
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 21058.47,
+                      "layer": "model-runner",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.model_runner_v1.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784734997418109.0
+                    }
+                  ],
+                  "step": 10
+                },
+                {
+                  "duration_us": 24852.13,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 24666.83,
+                      "layer": "llm-engine",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784734997441185.8
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 24444.19,
+                      "layer": "engine-client",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784734997441215.8
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 24333.04,
+                      "layer": "engine-core",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784734997441237.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 404.83,
+                      "layer": "scheduler",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784734997441264.8
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 22464.35,
+                      "layer": "executor",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784734997441696.2
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 22379.06,
+                      "layer": "worker-wrapper",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784734997441728.2
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 22328.72,
+                      "layer": "worker",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784734997441753.2
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 22270.14,
+                      "layer": "model-runner",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.model_runner_v1.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784734997441777.8
+                    }
+                  ],
+                  "step": 11
+                },
+                {
+                  "duration_us": 23662.95,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 23480.16,
+                      "layer": "llm-engine",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784734997466071.5
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 23302.24,
+                      "layer": "engine-client",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784734997466094.0
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 23170.14,
+                      "layer": "engine-core",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784734997466115.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 399.91,
+                      "layer": "scheduler",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784734997466144.5
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 21325.81,
+                      "layer": "executor",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784734997466571.5
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 21245.27,
+                      "layer": "worker-wrapper",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784734997466598.8
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 21198.44,
+                      "layer": "worker",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784734997466620.5
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 21139.27,
+                      "layer": "model-runner",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.model_runner_v1.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784734997466644.8
+                    }
+                  ],
+                  "step": 12
+                },
+                {
+                  "duration_us": 23596.63,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 23418.12,
+                      "layer": "llm-engine",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784734997489765.2
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 23226.23,
+                      "layer": "engine-client",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784734997489787.5
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 23100.72,
+                      "layer": "engine-core",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784734997489807.8
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 403.39,
+                      "layer": "scheduler",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784734997489842.0
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 21226.26,
+                      "layer": "executor",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784734997490273.0
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 21141.98,
+                      "layer": "worker-wrapper",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784734997490303.8
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 21094.33,
+                      "layer": "worker",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784734997490325.5
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 21034.72,
+                      "layer": "model-runner",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.model_runner_v1.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784734997490350.5
+                    }
+                  ],
+                  "step": 13
+                },
+                {
+                  "duration_us": 23568.98,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 23384.22,
+                      "layer": "llm-engine",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784734997513400.8
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 23197.88,
+                      "layer": "engine-client",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784734997513424.2
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 23069.98,
+                      "layer": "engine-core",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784734997513444.8
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 402.92,
+                      "layer": "scheduler",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784734997513475.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 21205.81,
+                      "layer": "executor",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784734997513905.2
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 21125.1,
+                      "layer": "worker-wrapper",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784734997513932.8
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 21079.33,
+                      "layer": "worker",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784734997513953.8
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 21019.96,
+                      "layer": "model-runner",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.model_runner_v1.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784734997513978.0
+                    }
+                  ],
+                  "step": 14
+                },
+                {
+                  "duration_us": 23758.95,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 23575.46,
+                      "layer": "llm-engine",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784734997536996.8
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 23328.59,
+                      "layer": "engine-client",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784734997537019.8
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 23268.04,
+                      "layer": "engine-core",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784734997537040.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 402.02,
+                      "layer": "scheduler",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784734997537072.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 21370.52,
+                      "layer": "executor",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784734997537500.8
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 21279.08,
+                      "layer": "worker-wrapper",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784734997537534.5
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 21231.77,
+                      "layer": "worker",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784734997537555.5
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 21170.77,
+                      "layer": "model-runner",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.model_runner_v1.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784734997537581.0
+                    }
+                  ],
+                  "step": 15
+                }
+              ],
+              "prefill": [
+                {
+                  "depth": 0,
+                  "duration_us": 24524.25,
+                  "layer": "llm-engine",
+                  "source_pid": 201148,
+                  "source_tid": 201148,
+                  "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                  "timestamp_us": 1784734997176246.5
+                },
+                {
+                  "depth": 1,
+                  "duration_us": 24443.82,
+                  "layer": "engine-client",
+                  "source_pid": 201148,
+                  "source_tid": 201148,
+                  "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                  "timestamp_us": 1784734997176275.5
+                },
+                {
+                  "depth": 2,
+                  "duration_us": 24255.13,
+                  "layer": "engine-core",
+                  "source_pid": 201148,
+                  "source_tid": 201148,
+                  "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                  "timestamp_us": 1784734997176302.0
+                },
+                {
+                  "depth": 3,
+                  "duration_us": 1027.68,
+                  "layer": "scheduler",
+                  "source_pid": 201148,
+                  "source_tid": 201148,
+                  "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                  "timestamp_us": 1784734997176346.5
+                },
+                {
+                  "depth": 3,
+                  "duration_us": 21709.3,
+                  "layer": "executor",
+                  "source_pid": 201148,
+                  "source_tid": 201148,
+                  "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                  "timestamp_us": 1784734997177414.2
+                },
+                {
+                  "depth": 4,
+                  "duration_us": 21602.11,
+                  "layer": "worker-wrapper",
+                  "source_pid": 201148,
+                  "source_tid": 201148,
+                  "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                  "timestamp_us": 1784734997177454.0
+                },
+                {
+                  "depth": 5,
+                  "duration_us": 21551.15,
+                  "layer": "worker",
+                  "source_pid": 201148,
+                  "source_tid": 201148,
+                  "symbol": "vllm_ascend.worker.worker.NPUWorker.execute_model",
+                  "timestamp_us": 1784734997177479.5
+                },
+                {
+                  "depth": 6,
+                  "duration_us": 21467.31,
+                  "layer": "model-runner",
+                  "source_pid": 201148,
+                  "source_tid": 201148,
+                  "symbol": "vllm_ascend.worker.model_runner_v1.NPUModelRunner.execute_model",
+                  "timestamp_us": 1784734997177524.2
+                }
+              ],
+              "runtime": [
+                {
+                  "duration_us": 1995.06,
+                  "events": [
+                    {
+                      "depth": 0,
+                      "duration_us": 1913.16,
+                      "layer": "llm-engine",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.llm_engine.LLMEngine.step",
+                      "timestamp_us": 1784734997560795.2
+                    },
+                    {
+                      "depth": 1,
+                      "duration_us": 1549.83,
+                      "layer": "engine-client",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core_client.InprocClient.get_output",
+                      "timestamp_us": 1784734997560818.2
+                    },
+                    {
+                      "depth": 2,
+                      "duration_us": 1497.85,
+                      "layer": "engine-core",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.engine.core.EngineCore.step_fn",
+                      "timestamp_us": 1784734997560838.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 102.18,
+                      "layer": "scheduler",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.core.sched.async_scheduler.AsyncScheduler.schedule",
+                      "timestamp_us": 1784734997560866.2
+                    },
+                    {
+                      "depth": 3,
+                      "duration_us": 860.37,
+                      "layer": "executor",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.executor.uniproc_executor.UniProcExecutor.execute_model",
+                      "timestamp_us": 1784734997560992.8
+                    },
+                    {
+                      "depth": 4,
+                      "duration_us": 783.43,
+                      "layer": "worker-wrapper",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm.v1.worker.worker_base.WorkerWrapperBase.execute_model",
+                      "timestamp_us": 1784734997561017.2
+                    },
+                    {
+                      "depth": 5,
+                      "duration_us": 740.5,
+                      "layer": "worker",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.worker.NPUWorker.execute_model",
+                      "timestamp_us": 1784734997561036.8
+                    },
+                    {
+                      "depth": 6,
+                      "duration_us": 693.77,
+                      "layer": "model-runner",
+                      "source_pid": 201148,
+                      "source_tid": 201148,
+                      "symbol": "vllm_ascend.worker.model_runner_v1.NPUModelRunner.execute_model",
+                      "timestamp_us": 1784734997561057.5
+                    }
+                  ],
+                  "step": 1
+                }
+              ]
+            },
+            "schema_version": 1
+          },
+          "completed_at_utc": "2026-07-22T15:43:18.189865+00:00",
           "phase_counts": {
             "decode_passes": 15,
             "prefill_passes": 1,
@@ -476,125 +4134,125 @@
             "schema_version": 1,
             "steps": [
               {
-                "duration_us": 22576.13,
+                "duration_us": 24597.57,
                 "label": "PREFILL",
                 "phase": "prefill",
                 "step": 0,
-                "timestamp_us": 1784731340017035.5
+                "timestamp_us": 1784734997176205.2
               },
               {
-                "duration_us": 22569.59,
+                "duration_us": 25816.22,
                 "label": "DECODE 001",
                 "phase": "decode",
                 "step": 1,
-                "timestamp_us": 1784731340039756.0
+                "timestamp_us": 1784734997200890.5
               },
               {
-                "duration_us": 22031.07,
+                "duration_us": 24156.72,
                 "label": "DECODE 002",
                 "phase": "decode",
                 "step": 2,
-                "timestamp_us": 1784731340062447.5
+                "timestamp_us": 1784734997226824.0
               },
               {
-                "duration_us": 21811.26,
+                "duration_us": 23610.83,
                 "label": "DECODE 003",
                 "phase": "decode",
                 "step": 3,
-                "timestamp_us": 1784731340084589.8
+                "timestamp_us": 1784734997251019.2
               },
               {
-                "duration_us": 21845.61,
+                "duration_us": 23450.25,
                 "label": "DECODE 004",
                 "phase": "decode",
                 "step": 4,
-                "timestamp_us": 1784731340106515.2
+                "timestamp_us": 1784734997274664.5
               },
               {
-                "duration_us": 21752.3,
+                "duration_us": 24512.34,
                 "label": "DECODE 005",
                 "phase": "decode",
                 "step": 5,
-                "timestamp_us": 1784731340128473.0
+                "timestamp_us": 1784734997298148.8
               },
               {
-                "duration_us": 22724.07,
+                "duration_us": 23631.91,
                 "label": "DECODE 006",
                 "phase": "decode",
                 "step": 6,
-                "timestamp_us": 1784731340150331.2
+                "timestamp_us": 1784734997322695.2
               },
               {
-                "duration_us": 22544.81,
+                "duration_us": 23631.86,
                 "label": "DECODE 007",
                 "phase": "decode",
                 "step": 7,
-                "timestamp_us": 1784731340173178.2
+                "timestamp_us": 1784734997346365.0
               },
               {
-                "duration_us": 22006.14,
+                "duration_us": 23679.06,
                 "label": "DECODE 008",
                 "phase": "decode",
                 "step": 8,
-                "timestamp_us": 1784731340195838.8
+                "timestamp_us": 1784734997370031.2
               },
               {
-                "duration_us": 21979.13,
+                "duration_us": 23570.58,
                 "label": "DECODE 009",
                 "phase": "decode",
                 "step": 9,
-                "timestamp_us": 1784731340217956.0
+                "timestamp_us": 1784734997393742.8
               },
               {
-                "duration_us": 22002.67,
+                "duration_us": 23756.1,
                 "label": "DECODE 010",
                 "phase": "decode",
                 "step": 10,
-                "timestamp_us": 1784731340240041.5
+                "timestamp_us": 1784734997417346.8
               },
               {
-                "duration_us": 22117.21,
+                "duration_us": 24852.13,
                 "label": "DECODE 011",
                 "phase": "decode",
                 "step": 11,
-                "timestamp_us": 1784731340262150.0
+                "timestamp_us": 1784734997441137.5
               },
               {
-                "duration_us": 23177.2,
+                "duration_us": 23662.95,
                 "label": "DECODE 012",
                 "phase": "decode",
                 "step": 12,
-                "timestamp_us": 1784731340284372.8
+                "timestamp_us": 1784734997466023.2
               },
               {
-                "duration_us": 22220.83,
+                "duration_us": 23596.63,
                 "label": "DECODE 013",
                 "phase": "decode",
                 "step": 13,
-                "timestamp_us": 1784731340307661.2
+                "timestamp_us": 1784734997489718.5
               },
               {
-                "duration_us": 22114.14,
+                "duration_us": 23568.98,
                 "label": "DECODE 014",
                 "phase": "decode",
                 "step": 14,
-                "timestamp_us": 1784731340329987.5
+                "timestamp_us": 1784734997513348.2
               },
               {
-                "duration_us": 22153.08,
+                "duration_us": 23758.95,
                 "label": "DECODE 015",
                 "phase": "decode",
                 "step": 15,
-                "timestamp_us": 1784731340352205.5
+                "timestamp_us": 1784734997536949.8
               }
             ]
           },
-          "started_at_utc": "2026-07-22T14:42:19.907471+00:00"
+          "started_at_utc": "2026-07-22T15:43:17.068789+00:00"
         },
         "environment": {
-          "capture_harness_revision": "1507a19ed2db3abe7cf5145c1ea0e66f9ad2cb34",
+          "capture_harness_revision": "085fe39afd43c7e314cfc586d3ffc6a45e0dec6f",
           "capture_harness_revision_origin": "content_hash_verified_deployment",
-          "captured_at_utc": "2026-07-22T14:42:28.186722+00:00",
+          "captured_at_utc": "2026-07-22T15:43:26.231302+00:00",
           "device": "Ascend910B1",
           "driver": {
             "ascendhal_version": "7.35.23",
@@ -607,7 +4265,7 @@
             "vllm_ascend": "367b8e62da799870a7476ce34f5f7658589a8aad"
           },
           "hostname": "cd40b23e4602",
-          "omni_plugin": "",
+          "omni_plugin": "ascend",
           "platform": "Linux-5.10.0-136.12.0.86.r1526_92.hce2.aarch64-aarch64-with-glibc2.35",
           "python": "3.11.15",
           "torch": "2.10.0+cpu",
@@ -660,10 +4318,10 @@
           "usable_tokens": 14464
         },
         "trace": {
-          "event_count": 55388,
+          "event_count": 55663,
           "file": "vllm-ascend.trace.json",
-          "sha256": "2aca519e0e23a212033369b1a86de731a3c215f479f0be594ff52d7e7ae65f7d",
-          "size_bytes": 8773122
+          "sha256": "8853c5e31b4fa00f4dfd781c6d8994bb40388bcd47223a7de2adf710bc7947cb",
+          "size_bytes": 8851320
         },
         "workload": {
           "batch_size": 16,
@@ -689,8 +4347,8 @@
         }
       },
       "path": "raw/vllm-ascend.trace.json",
-      "sha256": "2aca519e0e23a212033369b1a86de731a3c215f479f0be594ff52d7e7ae65f7d",
-      "size_bytes": 8773122
+      "sha256": "8853c5e31b4fa00f4dfd781c6d8994bb40388bcd47223a7de2adf710bc7947cb",
+      "size_bytes": 8851320
     }
   },
   "benchmark_schema": "pre-cold-ttft-v0",
@@ -701,10 +4359,21 @@
   },
   "profile_timing_semantics": "Summed complete-event duration; concurrent streams overlap and values are not request wall-clock time.",
   "provenance": {
-    "capture_harness_revision": "1507a19ed2db3abe7cf5145c1ea0e66f9ad2cb34",
+    "call_stack_annotation": {
+      "lane": "QWEN3 CALL STACK",
+      "marker": "qwen3/call/LAYER/FULLY_QUALIFIED_SYMBOL",
+      "scope": "Targets are explicitly enumerated by _auto_call_targets and _vllm_call_targets; absence claims apply only to those selected boundaries.",
+      "semantics": "Profiler ranges around methods invoked by the live runtime object graph. The dedicated lane copies those measured ranges without replacing native events; nesting and durations are trace-derived host observations.",
+      "validated_boundaries": {
+        "auto-infer": 6,
+        "omni-npu": 8,
+        "vllm-ascend": 8
+      }
+    },
+    "capture_harness_revision": "085fe39afd43c7e314cfc586d3ffc6a45e0dec6f",
     "capture_harness_verification": {
-      "benchmarks/profile_qwen3.py": "098a01fba3af3fc0e28509cbaba1f6267ef2cd790788e26c7ad78276757c2486",
-      "benchmarks/qwen3_profile_common.py": "ea302908c48d9d6efeb6f34af039912e458a31ffc91a5b095ef8cacf007dee1b",
+      "benchmarks/profile_qwen3.py": "6b1a88446d5772da7a1c5c722804be9d131367591f02a0b51cde1c1022c47399",
+      "benchmarks/qwen3_profile_common.py": "ef6f34368dfb2e16f582e67ba329c3febba69db9212354dca2d0a139919f33c1",
       "method": "remote deployed files matched git object content by SHA-256"
     },
     "driver": {
@@ -771,17 +4440,17 @@
     "runtime_kv_capacity": {
       "auto-infer": {
         "evidence": "EngineConfig CacheConfig plus matched runtime kv_capacity readback",
-        "log_sha256": "1ee853fdd37af3c2786a681340d7050e7a151bc9b3c99f7936ef461802db1697",
+        "log_sha256": "73bf73c3e3629608e4f537d6f06ec6fdc838b747ba224744fb941873a1248faf",
         "usable_tokens": 14464
       },
       "omni-npu": {
         "evidence": "profile metadata runtime readback plus retained capture log",
-        "log_sha256": "5e2836432b5628f13a46a436300041144f293e3e5065862b18175b05a210c0e2",
+        "log_sha256": "1de76596ad27f47335ddff9df01763966c88b0c5af10e87a4c26022bf1c07ac1",
         "usable_tokens": 14464
       },
       "vllm-ascend": {
         "evidence": "profile metadata runtime readback plus retained capture log",
-        "log_sha256": "4e1e17e4f5a854a898d374c734d1c166e6cf7e7f1eaa87b344d83de4817733ba",
+        "log_sha256": "0c1c49fc6a9bf1e9a363398bc886a16b9044cc7b0c3d0556b6c6f4da613edfc1",
         "usable_tokens": 14464
       }
     },

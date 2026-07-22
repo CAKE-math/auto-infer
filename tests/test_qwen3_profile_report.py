@@ -1,4 +1,5 @@
 import json
+import importlib
 from contextlib import contextmanager
 from copy import deepcopy
 from html.parser import HTMLParser
@@ -454,6 +455,7 @@ def test_trace_summary_excludes_runtime_call_stack_annotation_ranges(tmp_path):
         _event("GraphReplay", 7),
         _event("qwen3/call/engine/pkg.Engine.step", 6, cat="cpu_op"),
         _event("engine · pkg.Engine.step", 6, cat="qwen3.callstack"),
+        _event("qwen3/runtime/drain/001", 2, cat="cpu_op"),
     ]))
 
     summary = summarize_trace(path)
@@ -507,11 +509,35 @@ def test_report_links_every_raw_trace_and_labels_evidence(profile_evidence):
     assert "不是投机 MTP" in html
 
 
+def test_published_traces_contain_measured_runtime_call_stack_lanes(
+        profile_evidence):
+    summary, manifest = profile_evidence
+    root = Path(__file__).parents[1] / "docs" / "profiling" / "qwen3"
+    expected_boundaries = {
+        "auto-infer": 6, "omni-npu": 8, "vllm-ascend": 8}
+
+    for framework, expected in expected_boundaries.items():
+        path = root / manifest["artifacts"][framework]["path"]
+        events = qwen3_profile_common.load_chrome_trace_events(path)
+        assert any(
+            event.get("args", {}).get("name") == "QWEN3 CALL STACK"
+            for event in events)
+        source = [event for event in events if str(event.get("name", ""))
+                  .startswith("qwen3/call/")]
+        copied = [event for event in events
+                  if event.get("cat") == "qwen3.callstack"]
+        assert source
+        assert len(copied) == len(source)
+        call_stack = summary["profiles"][framework]["runtime_call_stack"]
+        assert len(call_stack["phases"]["decode"]) == 15
+        assert len(call_stack["phases"]["decode"][0]["events"]) == expected
+
+
 def test_reports_include_call_stack_and_architecture_visuals(profile_evidence):
     html = build_report(*profile_evidence)
     markdown = build_markdown_report(*profile_evidence)
     diagrams = (
-        "qwen3-three-framework-call-stacks.png",
+        "qwen3-trace-call-stack-comparison.svg",
         "qwen3-three-framework-architecture.png",
         "qwen3-profile-phase-sequence.png",
     )
@@ -520,11 +546,39 @@ def test_reports_include_call_stack_and_architecture_visuals(profile_evidence):
         assert f"../figures/{diagram}" in html
         assert f"../figures/{diagram}" in markdown
     for symbol in (
-        "EngineCore.step", "BatchPlan", "GraphPagedRunner.execute",
-        "NPUWorker.execute_model", "NPUModelRunner.execute_model",
+        "EngineCore.step", "GraphPagedRunner._graph_submit",
+        "InprocClient.get_output", "NPUModelRunner.execute_model",
     ):
         assert symbol in html
         assert symbol in markdown
+    for fact in ("TRACE-DERIVED", "QWEN3 CALL STACK", "7.85 ms",
+                 "3.01× slower"):
+        assert fact in html
+        assert fact in markdown
+
+
+def test_trace_call_stack_figure_is_generated_from_profile_summary(
+        profile_evidence):
+    try:
+        plotter = importlib.import_module("tools.plot_qwen3_trace_call_stacks")
+    except ModuleNotFoundError:
+        plotter = None
+    assert plotter is not None
+    summary, _ = profile_evidence
+
+    representative = plotter.representative_decode(
+        summary["profiles"]["auto-infer"]["runtime_call_stack"])
+    svg = plotter.build_svg(summary)
+
+    assert representative["step"] == 11
+    assert svg.startswith("<svg")
+    assert "TRACE-DERIVED HOST CALL STACK" in svg
+    for framework in ("auto-infer", "omni-npu", "vllm-ascend"):
+        assert framework in svg
+    assert "GraphPagedRunner._graph_submit" in svg
+    assert "NPUModelRunner.execute_model" in svg
+    assert "7.85 ms" in svg
+    assert "3.01× slower" in svg
 
 
 def test_markdown_report_is_full_and_uses_same_evidence(profile_evidence):

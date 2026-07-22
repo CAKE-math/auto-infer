@@ -1,8 +1,19 @@
 {
-  "capture_harness_revision": "1507a19ed2db3abe7cf5145c1ea0e66f9ad2cb34",
+  "call_stack_annotation": {
+    "lane": "QWEN3 CALL STACK",
+    "marker": "qwen3/call/LAYER/FULLY_QUALIFIED_SYMBOL",
+    "scope": "Targets are explicitly enumerated by _auto_call_targets and _vllm_call_targets; absence claims apply only to those selected boundaries.",
+    "semantics": "Profiler ranges around methods invoked by the live runtime object graph. The dedicated lane copies those measured ranges without replacing native events; nesting and durations are trace-derived host observations.",
+    "validated_boundaries": {
+      "auto-infer": 6,
+      "omni-npu": 8,
+      "vllm-ascend": 8
+    }
+  },
+  "capture_harness_revision": "085fe39afd43c7e314cfc586d3ffc6a45e0dec6f",
   "capture_harness_verification": {
-    "benchmarks/profile_qwen3.py": "098a01fba3af3fc0e28509cbaba1f6267ef2cd790788e26c7ad78276757c2486",
-    "benchmarks/qwen3_profile_common.py": "ea302908c48d9d6efeb6f34af039912e458a31ffc91a5b095ef8cacf007dee1b",
+    "benchmarks/profile_qwen3.py": "6b1a88446d5772da7a1c5c722804be9d131367591f02a0b51cde1c1022c47399",
+    "benchmarks/qwen3_profile_common.py": "ef6f34368dfb2e16f582e67ba329c3febba69db9212354dca2d0a139919f33c1",
     "method": "remote deployed files matched git object content by SHA-256"
   },
   "driver": {
@@ -69,17 +80,17 @@
   "runtime_kv_capacity": {
     "auto-infer": {
       "evidence": "EngineConfig CacheConfig plus matched runtime kv_capacity readback",
-      "log_sha256": "1ee853fdd37af3c2786a681340d7050e7a151bc9b3c99f7936ef461802db1697",
+      "log_sha256": "73bf73c3e3629608e4f537d6f06ec6fdc838b747ba224744fb941873a1248faf",
       "usable_tokens": 14464
     },
     "omni-npu": {
       "evidence": "profile metadata runtime readback plus retained capture log",
-      "log_sha256": "5e2836432b5628f13a46a436300041144f293e3e5065862b18175b05a210c0e2",
+      "log_sha256": "1de76596ad27f47335ddff9df01763966c88b0c5af10e87a4c26022bf1c07ac1",
       "usable_tokens": 14464
     },
     "vllm-ascend": {
       "evidence": "profile metadata runtime readback plus retained capture log",
-      "log_sha256": "4e1e17e4f5a854a898d374c734d1c166e6cf7e7f1eaa87b344d83de4817733ba",
+      "log_sha256": "0c1c49fc6a9bf1e9a363398bc886a16b9044cc7b0c3d0556b6c6f4da613edfc1",
       "usable_tokens": 14464
     }
   },
