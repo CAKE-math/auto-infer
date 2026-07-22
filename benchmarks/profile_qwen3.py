@@ -275,7 +275,9 @@ def capture(manifest_path: Path, framework: str, output_dir: Path) -> None:
             with record_function("qwen3/profiled_request"):
                 with record_function(framework):
                     with record_function("qwen3/prefill_and_decode"):
-                        with phase_recorder.instrument(engine.phase_engine):
+                        with phase_recorder.instrument(
+                                engine.phase_engine,
+                                output_tokens=workload["output_tokens"]):
                             outputs = engine.run(
                                 workload["batch_size"],
                                 workload["output_tokens"])

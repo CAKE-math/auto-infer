@@ -176,7 +176,7 @@ def test_step_phase_recorder_marks_prefill_then_each_decode_step():
     engine = Engine()
     recorder = StepPhaseRecorder(record)
 
-    with recorder.instrument(engine):
+    with recorder.instrument(engine, output_tokens=4):
         for _ in range(4):
             assert engine.step() == "token"
 
@@ -189,7 +189,36 @@ def test_step_phase_recorder_marks_prefill_then_each_decode_step():
     assert recorder.validate(output_tokens=4) == {
         "prefill_passes": 1,
         "decode_passes": 3,
+        "runtime_drains": 0,
     }
+
+
+def test_step_phase_recorder_keeps_terminal_runtime_drain_out_of_decode():
+    names = []
+
+    @contextmanager
+    def record(name):
+        names.append(name)
+        yield
+
+    class Engine:
+        def step(self):
+            return None
+
+    engine = Engine()
+    recorder = StepPhaseRecorder(record)
+
+    with recorder.instrument(engine, output_tokens=3):
+        for _ in range(4):
+            engine.step()
+
+    assert names == [
+        "qwen3/phase/prefill",
+        "qwen3/phase/decode/001",
+        "qwen3/phase/decode/002",
+        "qwen3/runtime/drain/001",
+    ]
+    assert recorder.validate(output_tokens=3)["runtime_drains"] == 1
 
 
 def test_visible_phase_lane_is_explicit_and_machine_validated(tmp_path):

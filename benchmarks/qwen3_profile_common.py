@@ -29,14 +29,18 @@ class StepPhaseRecorder:
         self.step_count = 0
 
     @contextmanager
-    def instrument(self, engine):
+    def instrument(self, engine, output_tokens: int):
         original = engine.step
         had_instance_step = "step" in vars(engine)
 
         def annotated_step(*args, **kwargs):
             index = self.step_count
-            name = (_PREFILL_MARKER if index == 0 else
-                    f"qwen3/phase/decode/{index:03d}")
+            if index == 0:
+                name = _PREFILL_MARKER
+            elif index < output_tokens:
+                name = f"qwen3/phase/decode/{index:03d}"
+            else:
+                name = f"qwen3/runtime/drain/{index - output_tokens + 1:03d}"
             with self._record_function(name):
                 result = original(*args, **kwargs)
             self.step_count += 1
@@ -53,13 +57,14 @@ class StepPhaseRecorder:
 
     def validate(self, output_tokens: int) -> dict:
         expected = max(int(output_tokens), 0)
-        if self.step_count != expected:
+        if self.step_count < expected:
             raise ValueError(
-                "profiled engine step count differs from output tokens: "
+                "profiled engine step count is below output tokens: "
                 f"steps={self.step_count}, output_tokens={expected}")
         return {
             "prefill_passes": 1 if expected else 0,
             "decode_passes": max(expected - 1, 0),
+            "runtime_drains": self.step_count - expected,
         }
 
 
