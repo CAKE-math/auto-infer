@@ -7,7 +7,10 @@ from benchmarks.qwen3_profile_common import (
     validate_chrome_trace,
     write_profile_metadata,
 )
-from benchmarks.profile_qwen3 import profile_configuration
+from benchmarks.profile_qwen3 import (
+    prepare_omni_compatibility,
+    profile_configuration,
+)
 from tools.analyze_qwen3_profiles import classify_event, summarize_trace
 
 
@@ -49,6 +52,15 @@ def test_profile_configuration_accepts_supported_frameworks(framework):
 def test_profile_configuration_rejects_unknown_framework():
     with pytest.raises(ValueError, match="unsupported framework"):
         profile_configuration(_manifest(), "unknown")
+
+
+def test_prepare_omni_compatibility_supplies_model_slot(monkeypatch):
+    monkeypatch.setattr("sys.argv", ["profile_qwen3.py", "manifest.json",
+                                     "omni-npu", "output"])
+
+    prepare_omni_compatibility("/models/qwen3")
+
+    assert __import__("sys").argv[2] == "/models/qwen3"
 
 
 def test_validate_chrome_trace_accepts_trace_events(tmp_path):

@@ -46,6 +46,13 @@ def profile_configuration(manifest: dict, framework: str) -> dict:
     }
 
 
+def prepare_omni_compatibility(model: str) -> None:
+    """Supply the legacy argv model slot read by omni-npu during import."""
+    while len(sys.argv) <= 2:
+        sys.argv.append("")
+    sys.argv[2] = model
+
+
 def _revision() -> str:
     result = subprocess.run(
         ["git", "rev-parse", "HEAD"], check=False, capture_output=True,
@@ -151,6 +158,8 @@ class _VllmAdapter:
 def _adapter(manifest: dict, framework: str):
     if framework == "auto-infer":
         return _AutoInferAdapter(manifest)
+    if framework == "omni-npu":
+        prepare_omni_compatibility(manifest["model"])
     return _VllmAdapter(manifest)
 
 
