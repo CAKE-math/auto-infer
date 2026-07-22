@@ -1,4 +1,5 @@
 import json
+from contextlib import contextmanager
 from copy import deepcopy
 from html.parser import HTMLParser
 from pathlib import Path
@@ -6,6 +7,9 @@ from pathlib import Path
 import pytest
 
 from benchmarks.qwen3_profile_common import (
+    StepPhaseRecorder,
+    add_visible_phase_lane,
+    extract_phase_index,
     sha256_file,
     validate_chrome_trace,
     write_profile_metadata,
@@ -20,7 +24,10 @@ from tools.analyze_qwen3_profiles import (
     classify_event,
     summarize_trace,
 )
-from tools.build_qwen3_architecture_report import build_report
+from tools.build_qwen3_architecture_report import (
+    build_markdown_report,
+    build_report,
+)
 
 
 def _manifest():
@@ -154,6 +161,72 @@ def test_write_profile_metadata_rejects_incomplete_payload(tmp_path):
         })
 
 
+def test_step_phase_recorder_marks_prefill_then_each_decode_step():
+    names = []
+
+    @contextmanager
+    def record(name):
+        names.append(name)
+        yield
+
+    class Engine:
+        def step(self):
+            return "token"
+
+    engine = Engine()
+    recorder = StepPhaseRecorder(record)
+
+    with recorder.instrument(engine):
+        for _ in range(4):
+            assert engine.step() == "token"
+
+    assert names == [
+        "qwen3/phase/prefill",
+        "qwen3/phase/decode/001",
+        "qwen3/phase/decode/002",
+        "qwen3/phase/decode/003",
+    ]
+    assert recorder.validate(output_tokens=4) == {
+        "prefill_passes": 1,
+        "decode_passes": 3,
+    }
+
+
+def test_visible_phase_lane_is_explicit_and_machine_validated(tmp_path):
+    path = tmp_path / "trace.json"
+    path.write_text(json.dumps([
+        _event("qwen3/phase/prefill", 8, ts=100, pid=4, tid=9),
+        _event("qwen3/phase/decode/001", 3, ts=110, pid=4, tid=9),
+        _event("qwen3/phase/decode/002", 2, ts=114, pid=4, tid=9),
+        _event("native_framework_event", 1, ts=111, pid=8, tid=3),
+    ]))
+
+    phase_index = add_visible_phase_lane(path, output_tokens=3)
+
+    assert [item["phase"] for item in phase_index["steps"]] == [
+        "prefill", "decode", "decode"]
+    assert [item["step"] for item in phase_index["steps"]] == [0, 1, 2]
+    assert extract_phase_index(path) == phase_index
+    events = json.loads(path.read_text())
+    assert any(event.get("args", {}).get("name") == "QWEN3 PHASES"
+               for event in events)
+    assert any(event.get("name") == "PREFILL" and
+               event.get("cat") == "qwen3.phase" for event in events)
+    assert any(event.get("name") == "DECODE 002" and
+               event.get("cat") == "qwen3.phase" for event in events)
+
+
+def test_visible_phase_lane_rejects_missing_decode_step(tmp_path):
+    path = tmp_path / "trace.json"
+    path.write_text(json.dumps([
+        _event("qwen3/phase/prefill", 8, ts=100),
+        _event("qwen3/phase/decode/001", 3, ts=110),
+    ]))
+
+    with pytest.raises(ValueError, match="phase marker mismatch"):
+        add_visible_phase_lane(path, output_tokens=3)
+
+
 @pytest.mark.parametrize(("name", "phase"), [
     ("GraphReplay", "graph_replay"),
     ("npu_fused_infer_attention_score_v2", "attention_kv"),
@@ -257,6 +330,25 @@ def test_report_links_every_raw_trace_and_labels_evidence(profile_evidence):
     assert "1 次 prefill" in html
     assert "15 次连续 decode" in html
     assert "不是投机 MTP" in html
+
+
+def test_markdown_report_is_full_and_uses_same_evidence(profile_evidence):
+    summary, manifest = profile_evidence
+
+    document = build_markdown_report(summary, manifest)
+
+    assert document.startswith("# auto-infer 架构与 Qwen3 性能审计报告\n")
+    for heading in (
+        "管理结论", "Matched benchmark", "Qwen3 三框架 profiling",
+        "为什么 auto-infer 更快", "架构优劣详细对比",
+        "什么不应该变化", "新模型生产验收流程", "证据附录",
+    ):
+        assert heading in document
+    for framework in ("auto-infer", "omni-npu", "vllm-ascend"):
+        assert f"profiling/qwen3/raw/{framework}.trace.json" in document
+        assert manifest["artifacts"][framework]["sha256"] in document
+    assert "PREFILL" in document
+    assert "DECODE 001" in document
 
 
 def test_report_is_offline_semantic_and_has_no_placeholders(profile_evidence):

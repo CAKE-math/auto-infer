@@ -12,6 +12,7 @@ if __package__ in {None, ""}:
 ROOT = Path(__file__).resolve().parents[1]
 PROFILE_DIR = ROOT / "docs" / "profiling" / "qwen3"
 OUTPUT = ROOT / "docs" / "AUTO-INFER-ARCHITECTURE-AND-PERFORMANCE-REPORT.html"
+OUTPUT_MD = ROOT / "docs" / "AUTO-INFER-ARCHITECTURE-AND-PERFORMANCE-REPORT.md"
 FRAMEWORKS = ("auto-infer", "omni-npu", "vllm-ascend")
 DISPLAY = {
     "auto-infer": "auto-infer",
@@ -124,6 +125,10 @@ def _profile_cards(summary: dict, manifest: dict) -> str:
         artifact = manifest["artifacts"][framework]
         duration_ms = _request_duration(profile) / 1000
         calls = _attention_calls(profile)
+        execution_steps = profile["execution_phases"]["steps"]
+        prefill = execution_steps[0]
+        decode = execution_steps[1:]
+        decode_total = sum(step["duration_us"] for step in decode)
         phase_rows = []
         for phase, values in profile["phases"].items():
             phase_rows.append(
@@ -147,6 +152,8 @@ def _profile_cards(summary: dict, manifest: dict) -> str:
             <div><strong>{profile["complete_event_count"]:,}</strong><span>complete events</span></div>
             <div><strong>{calls:,}</strong><span>FIA host calls</span></div>
             <div><strong>{artifact["size_bytes"] / 2**20:.1f} MiB</strong><span>raw JSON</span></div>
+            <div><strong>{_fmt(prefill["duration_us"] / 1000, 2)} ms</strong><span>PREFILL host range</span></div>
+            <div><strong>{_fmt(decode_total / 1000, 2)} ms</strong><span>{len(decode)} DECODE host ranges</span></div>
           </div>
           <details><summary>阶段事件时间（展开）</summary>
             <div class="table-scroll"><table class="compact"><thead><tr><th>类别</th><th>事件数</th><th>累计事件时间</th><th>事件时间占比</th></tr></thead>
@@ -161,8 +168,8 @@ def _profile_cards(summary: dict, manifest: dict) -> str:
     return "".join(cards)
 
 
-def _architecture_rows() -> str:
-    rows = [
+def _architecture_data() -> list[tuple[str, str, str, str]]:
+    return [
         ("核心控制流", "EngineCore → BatchPlan → Executor → ExecutionResult；协议短且状态归属明确。",
          "vLLM 主流程之上叠加环境选择的 patch 与额外配置。",
          "复用成熟 vLLM engine，Ascend worker / runner / compiler 专化。"),
@@ -200,13 +207,16 @@ def _architecture_rows() -> str:
          "61,080 / 223；patch 提升适配力，也增加组合状态。",
          "53,219 / 242；生态收益大，平台 runner 体量更高。"),
     ]
+
+
+def _architecture_rows() -> str:
     return "".join(
         f'<tr><th scope="row">{_e(area)}</th><td>{_e(auto)}</td>'
         f'<td>{_e(omni)}</td><td>{_e(vllm)}</td></tr>'
-        for area, auto, omni, vllm in rows)
+        for area, auto, omni, vllm in _architecture_data())
 
 
-def _causal_rows(summary: dict, manifest: dict) -> str:
+def _causal_data(summary: dict, manifest: dict) -> list[tuple[str, str, str, str]]:
     data = summary["headline_benchmarks"]
     relative = summary["relative_to_auto_infer"]
     headline_workload = data["auto-infer"]["manifest"]
@@ -215,7 +225,7 @@ def _causal_rows(summary: dict, manifest: dict) -> str:
         framework: _request_duration(summary["profiles"][framework]) / 1000
         for framework in FRAMEWORKS
     }
-    rows = [
+    return [
         ("实测", f'B{headline_workload["throughput_batch"]} throughput',
          f'{data["auto-infer"]["throughput_tokens_per_second"]["median"]:,.1f} tok/s；较 omni-npu {relative["omni-npu"]["throughput_speedup"]:.2f}×，较 vllm-ascend {relative["vllm-ascend"]["throughput_speedup"]:.2f}×。',
          "headline benchmark JSON"),
@@ -232,14 +242,17 @@ def _causal_rows(summary: dict, manifest: dict) -> str:
          f'{data["auto-infer"]["load_seconds"]:.3f} s vs {data["omni-npu"]["load_seconds"]:.3f} s vs {data["vllm-ascend"]["load_seconds"]:.3f} s；auto-infer 只捕获所需 gear，通用框架初始化面更宽。',
          "headline benchmark + framework logs"),
     ]
+
+
+def _causal_rows(summary: dict, manifest: dict) -> str:
     return "".join(
         f'<tr><td><span class="evidence {"measured" if kind == "实测" else "observed" if kind == "源码观察" else "inferred"}">{_e(kind)}</span></td>'
         f'<th scope="row">{_e(link)}</th><td>{_e(statement)}</td><td>{_e(basis)}</td></tr>'
-        for kind, link, statement, basis in rows)
+        for kind, link, statement, basis in _causal_data(summary, manifest))
 
 
-def _invariant_items() -> str:
-    items = [
+def _invariant_data() -> list[str]:
+    return [
         "EngineCore → BatchPlan → Executor → ExecutionResult 协议",
         "request / scheduler / KV / completion 的单一所有权",
         "模型声明 capability、registry 选择实现；engine 不加模型分支",
@@ -250,11 +263,14 @@ def _invariant_items() -> str:
         "P/D 未接线、MLA MTP unsupported 等边界必须显式",
         "matched manifest、raw samples、trace 和 hash 的证据保留",
     ]
-    return "".join(f"<li>{_e(item)}</li>" for item in items)
 
 
-def _regenerated_items() -> str:
-    items = [
+def _invariant_items() -> str:
+    return "".join(f"<li>{_e(item)}</li>" for item in _invariant_data())
+
+
+def _regenerated_data() -> list[str]:
+    return [
         "checkpoint / config / weight-name inventory 与 adapter",
         "TP/EP head、expert、attention、RoPE 与 cache geometry",
         "KV budget、block size、scratch blocks、max sequence length",
@@ -266,7 +282,10 @@ def _regenerated_items() -> str:
         "unprofiled baseline、raw traces、phase map、CV 与回归阈值",
         "实际声明的 TP/EP/SP/CP 拓扑验证",
     ]
-    return "".join(f"<li>{_e(item)}</li>" for item in items)
+
+
+def _regenerated_items() -> str:
+    return "".join(f"<li>{_e(item)}</li>" for item in _regenerated_data())
 
 
 def _artifact_rows(manifest: dict) -> str:
@@ -354,6 +373,7 @@ def build_report(summary: dict, manifest: dict) -> str:
 <div class="callout warning"><strong>精度口径：</strong>auto-infer 与 vllm-ascend 的 {headline_workload["output_tokens"]}-token digest 均为 <code>{_e(data["auto-infer"]["output_digest"])}</code>。omni-npu 输出长度同为 {data["omni-npu"]["output_length"]}，但 digest 为 <code>{_e(data["omni-npu"]["output_digest"])}</code>，因此该对只做性能可比，不声明 token identity。历史 headline JSON 使用 {_e(manifest["benchmark_schema"])} schema，本报告不补造 cold TTFT。</div></section>
 
 <section id="profiling-deep-dive"><div class="section-head"><span class="eyebrow">RAW CHROME TRACE · DIRECTLY OPENABLE</span><h2>Qwen3 三框架 profiling</h2><p>每份 trace 捕获同一 B{profile_workload["batch_size"]}、{profile_workload["output_tokens"]}-token generate：<strong>{phases["prefill_passes"]} 次 prefill</strong> + <strong>{phases["decode_passes"]} 次连续 decode</strong>。这是连续多步 decode，<strong>不是投机 MTP</strong>。{_e(attention_evidence)}</p></div>
+<div class="callout"><strong>如何一眼找到阶段：</strong>在 Chrome Trace / Perfetto 中找到置顶的 <code>QWEN3 PHASES</code> process，唯一的 <code>PREFILL</code> 后面依次是 <code>DECODE 001</code>…<code>DECODE {phases["decode_passes"]:03d}</code>。这是采集器对三套 engine step 写入的统一 host range；三方原生 operator、线程和 category 会保留，因此 JSON 结构和事件数不会相同。</div>
 <div class="callout"><strong>读取口径：</strong>captured request range 是 profiler-instrumented wall range，可用于本次短窗口对照，但不替代 headline。阶段表是 complete events 的累计事件时间；host/device、嵌套 range 与并发 stream 会重叠，因此不能把 phase duration 相加当作请求墙钟。</div>
 <div class="profile-grid">{_profile_cards(summary, manifest)}</div>
 <p class="callout">本次 {profile_workload["output_tokens"]}-token profile digest 三方{'一致' if profile_digest_equal else '不一致'}；这不改变 {headline_workload["output_tokens"]}-token headline 中 omni-npu digest 不同的事实。打开方式：在 Chromium 输入 <code>chrome://tracing</code>，选择 Load 后载入任一 JSON；文件本身未压缩、未截断。</p></section>
@@ -390,10 +410,180 @@ pytest -q</pre></article></div>
 </main></div></body></html>'''
 
 
+def _md_cell(value) -> str:
+    return str(value).replace("|", "\\|").replace("\n", " ")
+
+
+def _md_table(headers: list[str], rows: list[list[object]]) -> str:
+    lines = [
+        "| " + " | ".join(map(_md_cell, headers)) + " |",
+        "| " + " | ".join("---" for _ in headers) + " |",
+    ]
+    lines.extend(
+        "| " + " | ".join(_md_cell(cell) for cell in row) + " |"
+        for row in rows)
+    return "\n".join(lines)
+
+
+def build_markdown_report(summary: dict, manifest: dict) -> str:
+    """Build the text-first companion from the same evidence as the HTML."""
+    data = summary["headline_benchmarks"]
+    relative = summary["relative_to_auto_infer"]
+    workload = manifest["workload"]
+    headline = data["auto-infer"]["manifest"]
+    phases = workload["capture_phases"]
+    driver = manifest["provenance"]["driver"]
+
+    benchmark_rows = []
+    for label, direction, values, unit in _headline_rows(summary):
+        digits = 1 if unit == "tok/s" else 3
+        benchmark_rows.append([
+            label, direction,
+            *[f"{value:,.{digits}f} {unit}" for value in values],
+        ])
+
+    profile_rows = []
+    for framework in FRAMEWORKS:
+        profile = summary["profiles"][framework]
+        artifact = manifest["artifacts"][framework]
+        steps = profile["execution_phases"]["steps"]
+        profile_rows.append([
+            framework,
+            f"{_request_duration(profile) / 1000:.2f} ms",
+            f"{steps[0]['duration_us'] / 1000:.2f} ms",
+            f"{sum(step['duration_us'] for step in steps[1:]) / 1000:.2f} ms",
+            f"{profile['complete_event_count']:,}",
+            f"[{artifact['path']}](profiling/qwen3/{artifact['path']})",
+        ])
+
+    step_rows = []
+    step_count = len(summary["profiles"][FRAMEWORKS[0]][
+        "execution_phases"]["steps"])
+    for index in range(step_count):
+        reference = summary["profiles"][FRAMEWORKS[0]][
+            "execution_phases"]["steps"][index]
+        step_rows.append([
+            reference["label"],
+            *[
+                f"{summary['profiles'][framework]['execution_phases']['steps'][index]['duration_us'] / 1000:.3f} ms"
+                for framework in FRAMEWORKS
+            ],
+        ])
+
+    causal_rows = [list(row) for row in _causal_data(summary, manifest)]
+    architecture_rows = [list(row) for row in _architecture_data()]
+    artifact_rows = []
+    for framework in FRAMEWORKS:
+        artifact = manifest["artifacts"][framework]
+        artifact_rows.append([
+            framework,
+            f"[{artifact['path']}](profiling/qwen3/{artifact['path']})",
+            f"{artifact['event_count']:,}",
+            f"{artifact['size_bytes'] / 2**20:.1f} MiB",
+            f"`{artifact['sha256']}`",
+        ])
+
+    invariants = "\n".join(f"- {item}" for item in _invariant_data())
+    generated = "\n".join(f"- {item}" for item in _regenerated_data())
+    report = f"""# auto-infer 架构与 Qwen3 性能审计报告
+
+> 面向管理层与工程师的文本版报告。数据源与 HTML 版完全相同；生成器不维护第二套手写指标。
+
+## 管理结论
+
+在 `{Path(headline['model']).name}`、单张 `{driver['soc']}`、`{headline['dtype']}` greedy、每框架 `{headline['usable_kv_tokens']:,}` usable KV tokens 的验收边界内，auto-infer 的稳态延迟、吞吐、启动、等容量内存与稳定性均为本次第一。
+
+- B{headline['throughput_batch']} 吞吐：**{data['auto-infer']['throughput_tokens_per_second']['median']:,.1f} tok/s**。
+- 相对 omni-npu：**{relative['omni-npu']['throughput_speedup']:.2f}×**；相对 vllm-ascend：**{relative['vllm-ascend']['throughput_speedup']:.2f}×**。
+- auto-infer 与 vllm-ascend 的 {headline['output_tokens']}-token digest 一致；omni-npu 长度一致但 digest 不同，因此只声明性能可比，不声明 token identity。
+- 结论仅适用于已测模型、shape、BF16 精度和单卡拓扑；不能外推到未测模型、量化或分布式规模。
+
+## Matched benchmark
+
+权威 headline 来自无 profiler 的 {headline['measured_runs']} 次测量；profiling 只用于解释，不替代性能排名。
+
+{_md_table(['指标', '方向', *FRAMEWORKS], benchmark_rows)}
+
+## Qwen3 三框架 profiling
+
+每份 trace 捕获同一个 B{workload['batch_size']}、{workload['output_tokens']}-token generate：**{phases['prefill_passes']} 次 prefill + {phases['decode_passes']} 次连续 decode**。这是连续多步 decode，不是 speculative MTP。
+
+### 如何直接找到 prefill
+
+在 Chrome 的 `chrome://tracing` 或 Perfetto 中载入任一原始 JSON，然后找到置顶的 **`QWEN3 PHASES`** process：
+
+1. 唯一的 **`PREFILL`** 是首个 engine step。
+2. 后续依次是 **`DECODE 001`** 到 **`DECODE {phases['decode_passes']:03d}`**。
+3. 这些是采集器写入三套框架的统一 host ranges；框架原生 operator、线程、stream 和 category 完整保留。
+
+三份 JSON 的结构和事件数不同是预期现象：auto-infer、omni-npu 和 vllm-ascend 暴露的 Python/C++/ACL graph、async queue 与 runtime 元数据层级不同。可比性来自统一 workload、输出长度、KV 容量、设备、精度和 `QWEN3 PHASES` 边界，而不是要求三份 trace 长得一样。
+
+{_md_table(['框架', '请求范围', 'PREFILL host range', f'{phases['decode_passes']} 个 DECODE 合计', '原生 complete events', '原始 Trace'], profile_rows)}
+
+### 逐步 phase 索引
+
+下面是 host range，不是 NPU kernel 独占时间；异步 device stream 可能越过 host range，不能把这些数直接当作纯算子耗时。
+
+{_md_table(['阶段', *FRAMEWORKS], step_rows)}
+
+## 为什么 auto-infer 更快
+
+{_md_table(['证据类型', '环节', '结论', '依据 / 限制'], causal_rows)}
+
+领先来自较短且确定的热路径组合：启动期捕获合适 gear、固定地址输入、dirty metadata 更新、event 排序、packed projection，以及 graph 内 BF16 lm_head 与 greedy argmax。没有单变量 ablation 的机制只作为与结果一致的因果解释，不写成已独立证明的毫秒收益。
+
+## 架构优劣详细对比
+
+{_md_table(['维度', 'auto-infer', 'omni-npu', 'vllm-ascend'], architecture_rows)}
+
+auto-infer 的核心优势是低间接性、明确所有权和较小扩展 seam；vllm-ascend 的优势是模型/API/部署生态成熟度，omni-npu 的优势是优化模型、算子和复杂并行覆盖。特性广度属于当前 scope 差异，不能反向证明核心架构质量。
+
+## 什么不应该变化
+
+{invariants}
+
+## 什么应针对每个模型重新生成
+
+{generated}
+
+不变量只能通过版本化设计、跨模型回归和新 baseline 修改；模型生成物必须绑定 config、weights、软件与硬件 digest，不能只因 architecture class 同名而复用。
+
+## 新模型生产验收流程
+
+1. Checkpoint inventory：config、weights、digest。
+2. Geometry generation：attention、KV、TP/EP、MTP。
+3. Precision gates：reference logits、token identity、长上下文与边界 block。
+4. Graph matrix：gear、内存、capture、fallback=0。
+5. Stability：continuous batching、preemption、取消、KV 回收与 soak。
+6. Matched ranking：无 profiler headline、raw JSON、phase trace、hash 与报告。
+
+精度门失败时不进入性能排名；profiling 只能解释一个已经通过精度门的实现。
+
+## 证据附录
+
+{_md_table(['框架', '原始文件', 'events', '大小', 'SHA-256'], artifact_rows)}
+
+- [manifest.json](profiling/qwen3/manifest.json)：工作负载、环境与 artifact contract。
+- [summary.json](profiling/qwen3/summary.json)：标准化 headline、operator 分类和 phase index。
+- [provenance.json](profiling/qwen3/provenance.json)：模型、源码、驱动与采集来源。
+- [HTML 报告](AUTO-INFER-ARCHITECTURE-AND-PERFORMANCE-REPORT.html)：同一证据的可视化版本。
+
+### 限制
+
+- profile window 只有 B{workload['batch_size']}、{workload['output_tokens']} tokens，并包含 profiler overhead。
+- `PREFILL`/`DECODE` 是统一 host range；NPU 异步执行可能跨越 host 边界。
+- operator category 的事件时间存在嵌套与并发，不能相加为 request wall time。
+- 三方原生事件命名不同，operator-name 分类仍保留 unclassified；统一 phase lane 不伪造缺失的算子归因。
+- 没有单变量 ablation，不声明每一毫秒都来自某一项单独优化。
+"""
+    return report
+
+
 def main() -> None:
     summary = json.loads((PROFILE_DIR / "summary.json").read_text())
     manifest = json.loads((PROFILE_DIR / "manifest.json").read_text())
     OUTPUT.write_text(build_report(summary, manifest))
+    OUTPUT_MD.write_text(build_markdown_report(summary, manifest))
 
 
 if __name__ == "__main__":

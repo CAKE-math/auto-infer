@@ -16,6 +16,8 @@ if __package__ in {None, ""}:
 
 from benchmarks.common import load_manifest, token_digest
 from benchmarks.qwen3_profile_common import (
+    StepPhaseRecorder,
+    add_visible_phase_lane,
     sha256_file,
     validate_chrome_trace,
     write_profile_metadata,
@@ -166,6 +168,7 @@ class _AutoInferAdapter:
             async_scheduling=manifest["async_scheduling"],
             async_batches=manifest["async_batches"])
         self._llm = LLM(config)
+        self.phase_engine = self._llm.engine
         self.runtime_kv_capacity = {
             "usable_tokens": manifest["usable_kv_tokens"],
             "runtime_block_size": block_size,
@@ -197,6 +200,7 @@ class _VllmAdapter:
             trust_remote_code=True, max_model_len=manifest["max_model_len"],
             kv_cache_memory_bytes=manifest["kv_cache_memory_bytes"],
             enforce_eager=False, seed=manifest["seed"])
+        self.phase_engine = self._llm.llm_engine
         self._prompt_ids = self._llm.get_tokenizer().encode(manifest["prompt"])
         engine = self._llm.llm_engine
         cache = engine.vllm_config.cache_config
@@ -267,14 +271,20 @@ def capture(manifest_path: Path, framework: str, output_dir: Path) -> None:
             activities=[ProfilerActivity.CPU, ProfilerActivity.NPU],
             record_shapes=False, profile_memory=False, with_stack=False,
         ) as profiler:
+            phase_recorder = StepPhaseRecorder(record_function)
             with record_function("qwen3/profiled_request"):
                 with record_function(framework):
                     with record_function("qwen3/prefill_and_decode"):
-                        outputs = engine.run(
-                            workload["batch_size"], workload["output_tokens"])
+                        with phase_recorder.instrument(engine.phase_engine):
+                            outputs = engine.run(
+                                workload["batch_size"],
+                                workload["output_tokens"])
             torch.npu.synchronize()
         completed_at = datetime.now(timezone.utc).isoformat()
         profiler.export_chrome_trace(str(trace_path))
+        phase_counts = phase_recorder.validate(workload["output_tokens"])
+        phase_index = add_visible_phase_lane(
+            trace_path, workload["output_tokens"])
     finally:
         engine.close()
 
@@ -296,7 +306,9 @@ def capture(manifest_path: Path, framework: str, output_dir: Path) -> None:
         "runtime_kv_capacity": runtime_capacity,
         "environment": _environment(torch, torch_npu),
         "capture": {"started_at_utc": started_at,
-                    "completed_at_utc": completed_at},
+                    "completed_at_utc": completed_at,
+                    "phase_counts": phase_counts,
+                    "phase_index": phase_index},
         "output_digest": token_digest(outputs[0]),
         "output_batch_digests": [token_digest(tokens) for tokens in outputs],
         "output_length": lengths[0],
