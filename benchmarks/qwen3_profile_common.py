@@ -15,11 +15,16 @@ REQUIRED_METADATA_FIELDS = {
 }
 
 
-def validate_chrome_trace(path: Path) -> dict:
+def load_chrome_trace_events(path: Path) -> list[dict]:
     payload = json.loads(path.read_text())
-    events = payload.get("traceEvents")
+    events = payload if isinstance(payload, list) else payload.get("traceEvents")
     if not isinstance(events, list):
         raise ValueError("Chrome trace must contain a traceEvents array")
+    return events
+
+
+def validate_chrome_trace(path: Path) -> dict:
+    events = load_chrome_trace_events(path)
     return {"event_count": len(events), "size_bytes": path.stat().st_size}
 
 

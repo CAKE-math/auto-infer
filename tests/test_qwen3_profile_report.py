@@ -7,6 +7,47 @@ from benchmarks.qwen3_profile_common import (
     validate_chrome_trace,
     write_profile_metadata,
 )
+from benchmarks.profile_qwen3 import profile_configuration
+
+
+def _manifest():
+    return {
+        "model": "/data1/models/Qwen3-0.6B",
+        "prompt": "Explain how a transformer decodes text.",
+        "max_model_len": 2048,
+        "output_tokens": 128,
+        "throughput_batch": 16,
+        "warmup_runs": 1,
+        "measured_runs": 20,
+        "usable_kv_tokens": 14464,
+        "kv_block_size": 16,
+        "kv_cache_memory_bytes": 1658847232,
+        "async_scheduling": False,
+        "async_batches": 2,
+        "dtype": "bfloat16",
+        "temperature": 0.0,
+        "seed": 0,
+    }
+
+
+def test_profile_configuration_is_bounded_and_matched():
+    config = profile_configuration(_manifest(), "auto-infer")
+
+    assert config["batch_size"] == 16
+    assert config["output_tokens"] == 16
+    assert config["warmup_runs"] == 1
+    assert config["usable_kv_tokens"] == 14464
+
+
+@pytest.mark.parametrize(
+    "framework", ["auto-infer", "omni-npu", "vllm-ascend"])
+def test_profile_configuration_accepts_supported_frameworks(framework):
+    assert profile_configuration(_manifest(), framework)["framework"] == framework
+
+
+def test_profile_configuration_rejects_unknown_framework():
+    with pytest.raises(ValueError, match="unsupported framework"):
+        profile_configuration(_manifest(), "unknown")
 
 
 def test_validate_chrome_trace_accepts_trace_events(tmp_path):
@@ -15,6 +56,18 @@ def test_validate_chrome_trace_accepts_trace_events(tmp_path):
         {"name": "GraphReplay", "ph": "X", "ts": 10, "dur": 4,
          "pid": 1, "tid": 2}
     ]}))
+
+    result = validate_chrome_trace(path)
+
+    assert result == {"event_count": 1, "size_bytes": path.stat().st_size}
+
+
+def test_validate_chrome_trace_accepts_torch_npu_event_array(tmp_path):
+    path = tmp_path / "trace.json"
+    path.write_text(json.dumps([
+        {"name": "npu_add", "ph": "X", "ts": "10.5", "dur": 4.0,
+         "pid": 1, "tid": 2, "cat": "Ascend Hardware"}
+    ]))
 
     result = validate_chrome_trace(path)
 
