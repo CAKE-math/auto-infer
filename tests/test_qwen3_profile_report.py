@@ -8,6 +8,7 @@ from benchmarks.qwen3_profile_common import (
     write_profile_metadata,
 )
 from benchmarks.profile_qwen3 import profile_configuration
+from tools.analyze_qwen3_profiles import classify_event, summarize_trace
 
 
 def _manifest():
@@ -118,3 +119,64 @@ def test_write_profile_metadata_rejects_incomplete_payload(tmp_path):
             "environment": {},
             "output_digest": "digest",
         })
+
+
+@pytest.mark.parametrize(("name", "phase"), [
+    ("GraphReplay", "graph_replay"),
+    ("npu_fused_infer_attention_score_v2", "attention_kv"),
+    ("npu_scatter_pa_kv_cache", "attention_kv"),
+    ("npu_grouped_matmul", "projection_mlp_norm"),
+    ("aten::argmax", "lm_head_sampling"),
+    ("unknown_vendor_op", "unclassified"),
+])
+def test_classify_event(name, phase):
+    assert classify_event(name) == phase
+
+
+def _event(name, duration, **extra):
+    return {
+        "name": name,
+        "ph": "X",
+        "ts": 10,
+        "dur": duration,
+        "pid": 1,
+        "tid": 2,
+        **extra,
+    }
+
+
+def test_trace_summary_aggregates_complete_events(tmp_path):
+    path = tmp_path / "trace.json"
+    path.write_text(json.dumps({"traceEvents": [
+        _event("GraphReplay", 5),
+        _event("GraphReplay", 7),
+        _event("unknown_vendor_op", 3),
+        {"name": "metadata", "ph": "M", "pid": 1, "tid": 2},
+    ]}))
+
+    summary = summarize_trace(path)
+
+    assert summary["event_count"] == 4
+    assert summary["complete_event_count"] == 3
+    assert summary["total_event_duration_us"] == 15
+    assert summary["phases"]["graph_replay"] == {
+        "count": 2, "duration_us": 12.0, "share": 0.8}
+    assert summary["phases"]["unclassified"]["duration_us"] == 3
+    assert summary["unclassified_names"] == ["unknown_vendor_op"]
+    assert summary["top_events"][0]["name"] == "GraphReplay"
+
+
+def test_trace_summary_accepts_numeric_string_duration_and_retains_identity(
+        tmp_path):
+    path = tmp_path / "trace.json"
+    path.write_text(json.dumps([
+        _event("aten::argmax", "2.5", cat="cpu_op", pid=4, tid=5),
+        _event("bad", "not-a-number"),
+    ]))
+
+    summary = summarize_trace(path)
+
+    assert summary["complete_event_count"] == 1
+    assert summary["top_events"][0]["categories"] == ["cpu_op"]
+    assert summary["top_events"][0]["pids"] == [4]
+    assert summary["top_events"][0]["tids"] == [5]
