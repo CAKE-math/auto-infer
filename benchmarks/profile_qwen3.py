@@ -60,6 +60,9 @@ def prepare_omni_compatibility(model: str) -> None:
 
 
 def _revision() -> str:
+    explicit = os.environ.get("AUTO_INFER_SOURCE_REVISION")
+    if explicit:
+        return explicit
     result = subprocess.run(
         ["git", "rev-parse", "HEAD"], check=False, capture_output=True,
         text=True)
@@ -89,6 +92,7 @@ def _environment(torch, torch_npu) -> dict:
         "vllm": _package_version("vllm"),
         "omni_plugin": os.environ.get("VLLM_PLUGINS", ""),
         "source_revision": _revision(),
+        "source_revision_origin": "capture_environment",
     }
 
 

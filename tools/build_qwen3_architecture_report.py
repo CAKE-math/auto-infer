@@ -284,6 +284,8 @@ def build_report(summary: dict, manifest: dict) -> str:
     data = summary["headline_benchmarks"]
     relative = summary["relative_to_auto_infer"]
     phases = manifest["workload"]["capture_phases"]
+    capture_revision = manifest["artifacts"]["auto-infer"]["metadata"][
+        "environment"]["source_revision"]
     profile_digest_equal = len({
         manifest["artifacts"][f]["metadata"]["output_digest"]
         for f in FRAMEWORKS}) == 1
@@ -345,7 +347,8 @@ def build_report(summary: dict, manifest: dict) -> str:
 <div class="appendix-grid" style="margin-top:24px"><article class="appendix-card"><h3>机器可读入口</h3><ul><li><a href="profiling/qwen3/manifest.json">profiling/qwen3/manifest.json</a></li><li><a href="profiling/qwen3/summary.json">profiling/qwen3/summary.json</a></li><li><a href="ARCHITECTURE-COMPARISON.md">ARCHITECTURE-COMPARISON.md</a></li><li><a href="FINAL-ARCHITECTURE-VALIDATION-2026-07-20.md">FINAL-ARCHITECTURE-VALIDATION-2026-07-20.md</a></li></ul><p>主测试原始 JSON 保留于 npu2 的 <code>/data2/auto-infer-decode-performance/results/final-20260720/</code>；其完整内容已嵌入 summary。</p></article><article class="appendix-card"><h3>复现归一化与报告</h3><pre>python tools/analyze_qwen3_profiles.py \
   --metadata AUTO_META OMNI_META VLLM_META \
   --benchmarks AUTO_JSON OMNI_JSON VLLM_JSON \
-  --output-dir docs/profiling/qwen3
+  --output-dir docs/profiling/qwen3 \
+  --capture-source-revision {_e(capture_revision)}
 
 python tools/build_qwen3_architecture_report.py
 pytest -q</pre></article></div>

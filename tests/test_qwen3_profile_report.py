@@ -10,6 +10,7 @@ from benchmarks.qwen3_profile_common import (
     write_profile_metadata,
 )
 from benchmarks.profile_qwen3 import (
+    _revision,
     prepare_omni_compatibility,
     profile_configuration,
 )
@@ -70,6 +71,12 @@ def test_prepare_omni_compatibility_supplies_model_slot(monkeypatch):
     prepare_omni_compatibility("/models/qwen3")
 
     assert __import__("sys").argv[2] == "/models/qwen3"
+
+
+def test_revision_prefers_explicit_deployed_source(monkeypatch):
+    monkeypatch.setenv("AUTO_INFER_SOURCE_REVISION", "verified-revision")
+
+    assert _revision() == "verified-revision"
 
 
 def test_validate_chrome_trace_accepts_trace_events(tmp_path):
@@ -276,3 +283,7 @@ def test_report_links_resolve_and_hashes_match(profile_evidence):
             assert (docs / href).is_file(), href
     for artifact in manifest["artifacts"].values():
         assert artifact["sha256"] in document
+        environment = artifact["metadata"]["environment"]
+        assert environment["source_revision"] != "unknown"
+        assert environment["source_revision_origin"] in {
+            "capture_environment", "content_hash_verified_deployment"}

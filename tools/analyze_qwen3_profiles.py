@@ -152,7 +152,8 @@ def _locate_trace(metadata_path: Path, output_dir: Path, framework: str,
 
 
 def build_evidence(metadata_paths: list[Path], benchmark_paths: list[Path],
-                   output_dir: Path) -> tuple[dict, dict]:
+                   output_dir: Path,
+                   capture_source_revision: str | None = None) -> tuple[dict, dict]:
     results = load_comparable_results(
         benchmark_paths, allow_missing_cold=True)
     result_by_framework = {result["framework"]: result for result in results}
@@ -173,10 +174,22 @@ def build_evidence(metadata_paths: list[Path], benchmark_paths: list[Path],
     for framework in sorted(EXPECTED_FRAMEWORKS):
         metadata_path, metadata = metadata_by_framework[framework]
         workload = _without_framework(metadata["workload"])
+        environment = dict(metadata["environment"])
+        if environment.get("source_revision") == "unknown":
+            if not capture_source_revision:
+                raise ValueError(
+                    "capture source revision is unknown; provide a verified "
+                    "deployment revision")
+            environment["source_revision"] = capture_source_revision
+            environment["source_revision_origin"] = (
+                "content_hash_verified_deployment")
+        else:
+            environment.setdefault(
+                "source_revision_origin", "capture_environment")
         metadata = {**metadata, "workload": {
             **metadata["workload"],
             "capture_phases": workload["capture_phases"],
-        }}
+        }, "environment": environment}
         if canonical_workload is None:
             canonical_workload = workload
         elif workload != canonical_workload:
@@ -254,13 +267,15 @@ def _parse_args(argv=None):
     parser.add_argument("--metadata", nargs=3, required=True, type=Path)
     parser.add_argument("--benchmarks", nargs=3, required=True, type=Path)
     parser.add_argument("--output-dir", required=True, type=Path)
+    parser.add_argument("--capture-source-revision")
     return parser.parse_args(argv)
 
 
 def main(argv=None) -> None:
     args = _parse_args(argv)
     manifest, summary = build_evidence(
-        args.metadata, args.benchmarks, args.output_dir)
+        args.metadata, args.benchmarks, args.output_dir,
+        args.capture_source_revision)
     _write_json(args.output_dir / "manifest.json", manifest)
     _write_json(args.output_dir / "summary.json", summary)
 

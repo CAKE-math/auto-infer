@@ -14,7 +14,8 @@
           "omni_plugin": "",
           "platform": "Linux-5.10.0-136.12.0.86.r1526_92.hce2.aarch64-aarch64-with-glibc2.35",
           "python": "3.11.15",
-          "source_revision": "unknown",
+          "source_revision": "74899b6f092b4d6f3227cd375f031555abbc55a0",
+          "source_revision_origin": "content_hash_verified_deployment",
           "torch": "2.10.0+cpu",
           "torch_npu": "2.10.0",
           "vllm": "0.20.2+empty"
@@ -87,7 +88,8 @@
           "omni_plugin": "omni-npu,omni_npu_patches",
           "platform": "Linux-5.10.0-136.12.0.86.r1526_92.hce2.aarch64-aarch64-with-glibc2.34",
           "python": "3.11.12",
-          "source_revision": "unknown",
+          "source_revision": "74899b6f092b4d6f3227cd375f031555abbc55a0",
+          "source_revision_origin": "content_hash_verified_deployment",
           "torch": "2.9.0+cpu",
           "torch_npu": "2.9.0",
           "vllm": "0.14.0+empty"
@@ -160,7 +162,8 @@
           "omni_plugin": "",
           "platform": "Linux-5.10.0-136.12.0.86.r1526_92.hce2.aarch64-aarch64-with-glibc2.35",
           "python": "3.11.15",
-          "source_revision": "unknown",
+          "source_revision": "74899b6f092b4d6f3227cd375f031555abbc55a0",
+          "source_revision_origin": "content_hash_verified_deployment",
           "torch": "2.10.0+cpu",
           "torch_npu": "2.10.0",
           "vllm": "0.20.2+empty"
