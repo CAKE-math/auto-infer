@@ -1,0 +1,227 @@
+{
+  "artifacts": {
+    "auto-infer": {
+      "event_count": 74744,
+      "metadata": {
+        "capture": {
+          "completed_at_utc": "2026-07-22T09:10:17.933410+00:00",
+          "started_at_utc": "2026-07-22T09:10:17.141742+00:00"
+        },
+        "environment": {
+          "captured_at_utc": "2026-07-22T09:10:24.803132+00:00",
+          "device": "Ascend910B1",
+          "hostname": "cd40b23e4602",
+          "omni_plugin": "",
+          "platform": "Linux-5.10.0-136.12.0.86.r1526_92.hce2.aarch64-aarch64-with-glibc2.35",
+          "python": "3.11.15",
+          "source_revision": "unknown",
+          "torch": "2.10.0+cpu",
+          "torch_npu": "2.10.0",
+          "vllm": "0.20.2+empty"
+        },
+        "framework": "auto-infer",
+        "output_batch_digests": [
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b"
+        ],
+        "output_digest": "9b45cd033542b04b",
+        "output_length": 16,
+        "trace": {
+          "event_count": 74744,
+          "file": "auto-infer.trace.json",
+          "sha256": "cf12511ee17180ca3e09ebe6d8831c0f5f65f59cc0ccb28998cbe79027b89440",
+          "size_bytes": 13347639
+        },
+        "workload": {
+          "batch_size": 16,
+          "dtype": "bfloat16",
+          "framework": "auto-infer",
+          "kv_block_size": 16,
+          "kv_cache_memory_bytes": 1658847232,
+          "max_model_len": 2048,
+          "model": "/data1/models/Qwen3-0.6B",
+          "output_tokens": 16,
+          "prompt": "Explain how a transformer decodes text.",
+          "seed": 0,
+          "temperature": 0.0,
+          "usable_kv_tokens": 14464,
+          "warmup_output_tokens": 8,
+          "warmup_runs": 1
+        }
+      },
+      "path": "raw/auto-infer.trace.json",
+      "sha256": "cf12511ee17180ca3e09ebe6d8831c0f5f65f59cc0ccb28998cbe79027b89440",
+      "size_bytes": 13347639
+    },
+    "omni-npu": {
+      "event_count": 59728,
+      "metadata": {
+        "capture": {
+          "completed_at_utc": "2026-07-22T09:17:34.840210+00:00",
+          "started_at_utc": "2026-07-22T09:17:34.252984+00:00"
+        },
+        "environment": {
+          "captured_at_utc": "2026-07-22T09:17:44.287845+00:00",
+          "device": "Ascend910B1",
+          "hostname": "748ca4b8533b",
+          "omni_plugin": "omni-npu,omni_npu_patches",
+          "platform": "Linux-5.10.0-136.12.0.86.r1526_92.hce2.aarch64-aarch64-with-glibc2.34",
+          "python": "3.11.12",
+          "source_revision": "unknown",
+          "torch": "2.9.0+cpu",
+          "torch_npu": "2.9.0",
+          "vllm": "0.14.0+empty"
+        },
+        "framework": "omni-npu",
+        "output_batch_digests": [
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b"
+        ],
+        "output_digest": "9b45cd033542b04b",
+        "output_length": 16,
+        "trace": {
+          "event_count": 59728,
+          "file": "omni-npu.trace.json",
+          "sha256": "bdd9b8ebea22c69cc46def34dcb976130ee1ca217d8dd726b78c0b6ec47641a3",
+          "size_bytes": 10998102
+        },
+        "workload": {
+          "batch_size": 16,
+          "dtype": "bfloat16",
+          "framework": "omni-npu",
+          "kv_block_size": 16,
+          "kv_cache_memory_bytes": 1658847232,
+          "max_model_len": 2048,
+          "model": "/data1/models/Qwen3-0.6B",
+          "output_tokens": 16,
+          "prompt": "Explain how a transformer decodes text.",
+          "seed": 0,
+          "temperature": 0.0,
+          "usable_kv_tokens": 14464,
+          "warmup_output_tokens": 8,
+          "warmup_runs": 1
+        }
+      },
+      "path": "raw/omni-npu.trace.json",
+      "sha256": "bdd9b8ebea22c69cc46def34dcb976130ee1ca217d8dd726b78c0b6ec47641a3",
+      "size_bytes": 10998102
+    },
+    "vllm-ascend": {
+      "event_count": 55352,
+      "metadata": {
+        "capture": {
+          "completed_at_utc": "2026-07-22T09:12:16.113203+00:00",
+          "started_at_utc": "2026-07-22T09:12:15.105480+00:00"
+        },
+        "environment": {
+          "captured_at_utc": "2026-07-22T09:12:22.698658+00:00",
+          "device": "Ascend910B1",
+          "hostname": "cd40b23e4602",
+          "omni_plugin": "",
+          "platform": "Linux-5.10.0-136.12.0.86.r1526_92.hce2.aarch64-aarch64-with-glibc2.35",
+          "python": "3.11.15",
+          "source_revision": "unknown",
+          "torch": "2.10.0+cpu",
+          "torch_npu": "2.10.0",
+          "vllm": "0.20.2+empty"
+        },
+        "framework": "vllm-ascend",
+        "output_batch_digests": [
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b",
+          "9b45cd033542b04b"
+        ],
+        "output_digest": "9b45cd033542b04b",
+        "output_length": 16,
+        "trace": {
+          "event_count": 55352,
+          "file": "vllm-ascend.trace.json",
+          "sha256": "e36833fd2c603195c9db5bf92b72ddd6bead284e434cbb5cb0a5bb5c407d8e7d",
+          "size_bytes": 9758924
+        },
+        "workload": {
+          "batch_size": 16,
+          "dtype": "bfloat16",
+          "framework": "vllm-ascend",
+          "kv_block_size": 16,
+          "kv_cache_memory_bytes": 1658847232,
+          "max_model_len": 2048,
+          "model": "/data1/models/Qwen3-0.6B",
+          "output_tokens": 16,
+          "prompt": "Explain how a transformer decodes text.",
+          "seed": 0,
+          "temperature": 0.0,
+          "usable_kv_tokens": 14464,
+          "warmup_output_tokens": 8,
+          "warmup_runs": 1
+        }
+      },
+      "path": "raw/vllm-ascend.trace.json",
+      "sha256": "e36833fd2c603195c9db5bf92b72ddd6bead284e434cbb5cb0a5bb5c407d8e7d",
+      "size_bytes": 9758924
+    }
+  },
+  "benchmark_sources": {
+    "auto-infer": "/tmp/qwen3-profile-evidence.KDrNO4/auto-infer.json",
+    "omni-npu": "/tmp/qwen3-profile-evidence.KDrNO4/omni-npu.json",
+    "vllm-ascend": "/tmp/qwen3-profile-evidence.KDrNO4/vllm-ascend.json"
+  },
+  "profile_timing_semantics": "Summed complete-event duration; concurrent streams overlap and values are not request wall-clock time.",
+  "schema_version": 1,
+  "workload": {
+    "batch_size": 16,
+    "dtype": "bfloat16",
+    "kv_block_size": 16,
+    "kv_cache_memory_bytes": 1658847232,
+    "max_model_len": 2048,
+    "model": "/data1/models/Qwen3-0.6B",
+    "output_tokens": 16,
+    "prompt": "Explain how a transformer decodes text.",
+    "seed": 0,
+    "temperature": 0.0,
+    "usable_kv_tokens": 14464,
+    "warmup_output_tokens": 8,
+    "warmup_runs": 1
+  }
+}
