@@ -277,14 +277,25 @@ def test_report_headline_and_attention_facts_are_json_driven(profile_evidence):
     summary, manifest = deepcopy(profile_evidence)
     summary["headline_benchmarks"]["auto-infer"][
         "throughput_tokens_per_second"]["median"] = 999.0
+    for benchmark in summary["headline_benchmarks"].values():
+        benchmark["manifest"]["throughput_batch"] = 7
+        benchmark["manifest"]["output_tokens"] = 64
+    manifest["workload"]["batch_size"] = 3
+    manifest["workload"]["output_tokens"] = 5
+    manifest["workload"]["capture_phases"]["decode_passes"] = 4
     for event in summary["profiles"]["auto-infer"]["top_events"]:
         if event["name"].startswith("npu::npu_fused_infer_attention_score"):
             event["count"] = 123
+    for share, profile in zip(
+            (0.01, 0.02, 0.03), summary["profiles"].values()):
+        profile["phases"]["unclassified"]["share"] = share
 
     document = build_report(summary, manifest)
 
-    assert "B16: 999.0 tok/s" in document
+    assert "B7: 999.0 tok/s" in document
+    assert "B3 5-token 请求范围" in document
     assert "<strong>123</strong><span>FIA host calls</span>" in document
+    assert "1.0%–3.0%" in document
 
 
 class _ReportParser(HTMLParser):

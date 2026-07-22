@@ -52,12 +52,13 @@ def _attention_calls(profile: dict) -> int:
 
 def _headline_rows(summary: dict) -> list[tuple[str, str, list[float], str]]:
     data = summary["headline_benchmarks"]
+    batch_size = data["auto-infer"]["manifest"]["throughput_batch"]
     return [
         ("Warm TTFT", "越低越好",
          [data[f]["ttft_seconds"]["median"] * 1000 for f in FRAMEWORKS], "ms"),
         ("TPOT", "越低越好",
          [data[f]["tpot_seconds"] * 1000 for f in FRAMEWORKS], "ms"),
-        ("B16 throughput", "越高越好",
+        (f"B{batch_size} throughput", "越高越好",
          [data[f]["throughput_tokens_per_second"]["median"]
           for f in FRAMEWORKS], "tok/s"),
         ("Engine load + graph", "越低越好",
@@ -89,8 +90,9 @@ def _metric_table(summary: dict) -> str:
 
 def _metric_bars(summary: dict) -> str:
     data = summary["headline_benchmarks"]
+    batch_size = data["auto-infer"]["manifest"]["throughput_batch"]
     metrics = [
-        ("B16 吞吐", [data[f]["throughput_tokens_per_second"]["median"]
+        (f"B{batch_size} 吞吐", [data[f]["throughput_tokens_per_second"]["median"]
                      for f in FRAMEWORKS], "tok/s", True),
         ("Warm TTFT", [data[f]["ttft_seconds"]["median"] * 1000
                       for f in FRAMEWORKS], "ms", False),
@@ -204,15 +206,17 @@ def _architecture_rows() -> str:
         for area, auto, omni, vllm in rows)
 
 
-def _causal_rows(summary: dict) -> str:
+def _causal_rows(summary: dict, manifest: dict) -> str:
     data = summary["headline_benchmarks"]
     relative = summary["relative_to_auto_infer"]
+    headline_workload = data["auto-infer"]["manifest"]
+    profile_workload = manifest["workload"]
     profile_ms = {
         framework: _request_duration(summary["profiles"][framework]) / 1000
         for framework in FRAMEWORKS
     }
     rows = [
-        ("实测", "B16 throughput",
+        ("实测", f'B{headline_workload["throughput_batch"]} throughput',
          f'{data["auto-infer"]["throughput_tokens_per_second"]["median"]:,.1f} tok/s；较 omni-npu {relative["omni-npu"]["throughput_speedup"]:.2f}×，较 vllm-ascend {relative["vllm-ascend"]["throughput_speedup"]:.2f}×。',
          "headline benchmark JSON"),
         ("源码观察", "Graph hot path", "graph capture、staging、replay/update、epilogue 拆成可独立测试组件；热路径不做在线 capture。", "graph_decode_runner / graph_task_pipeline"),
@@ -222,7 +226,7 @@ def _causal_rows(summary: dict) -> str:
         ("源码观察", "Packed projections", "QKV 与 gate/up 使用 packed weight；BF16 lm_head 与 greedy argmax 留在 captured epilogue。", "packed projections / decode epilogue"),
         ("因果推断", "更少 kernel 与同步边界", "projection packing 与直接 argmax 降低 launch 数；收益随模型/shape 变化，必须重做 profiling。", "机制合理但不能由相关性证明全部增益"),
         ("实测", "Profiler window",
-         f'B16 16-token 请求范围约 {profile_ms["auto-infer"]:.1f} / {profile_ms["omni-npu"]:.1f} / {profile_ms["vllm-ascend"]:.1f} ms（auto / omni / vllm）。',
+         f'B{profile_workload["batch_size"]} {profile_workload["output_tokens"]}-token 请求范围约 {profile_ms["auto-infer"]:.1f} / {profile_ms["omni-npu"]:.1f} / {profile_ms["vllm-ascend"]:.1f} ms（auto / omni / vllm）。',
          "三份 raw Chrome Trace"),
         ("实测", "Startup",
          f'{data["auto-infer"]["load_seconds"]:.3f} s vs {data["omni-npu"]["load_seconds"]:.3f} s vs {data["vllm-ascend"]["load_seconds"]:.3f} s；auto-infer 只捕获所需 gear，通用框架初始化面更宽。',
@@ -309,6 +313,14 @@ def build_report(summary: dict, manifest: dict) -> str:
     profile_digest_equal = len({
         manifest["artifacts"][f]["metadata"]["output_digest"]
         for f in FRAMEWORKS}) == 1
+    unclassified_percentages = [
+        summary["profiles"][framework]["phases"]["unclassified"]["share"] * 100
+        for framework in FRAMEWORKS
+    ]
+    capture_date = max(
+        manifest["artifacts"][framework]["metadata"]["environment"][
+            "captured_at_utc"][:10]
+        for framework in FRAMEWORKS)
     return f'''<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -327,28 +339,28 @@ def build_report(summary: dict, manifest: dict) -> str:
 <li><a href="#architecture-comparison">架构对比</a></li><li><a href="#invariants">不变与重生成</a></li>
 <li><a href="#acceptance-workflow">模型验收流程</a></li><li><a href="#evidence-appendix">证据附录</a></li></ul></nav>
 <main>
-<header class="hero"><span class="eyebrow">QWEN3 · ASCEND 910B1 · BF16 · 2026-07-22</span>
+<header class="hero"><span class="eyebrow">{_e(Path(headline_workload["model"]).name.upper())} · {_e(manifest["provenance"]["driver"]["soc"].upper())} · {_e(headline_workload["dtype"].upper())} · {_e(capture_date)}</span>
 <h1>性能领先不是一个数字，<br>而是一条可核验的因果链。</h1>
 <p class="lede">本报告把管理决策、matched benchmark、三框架原始 Chrome Trace 与源码架构放在同一条证据链上。结论严格限定在已实现、已测量的推理核心，不把模型覆盖广度误写成架构质量，也不把 profiler 时间冒充生产吞吐。</p>
 <div class="thesis-chain"><div><span>01 / CONTRACT</span><strong>同模型、同 KV、同精度</strong></div><div><span>02 / MEASURE</span><strong>{headline_workload["measured_runs"]} 次无 profiler 主测试</strong></div><div><span>03 / EXPLAIN</span><strong>{phases["prefill_passes"]} prefill + {phases["decode_passes"]} decode trace</strong></div><div><span>04 / GOVERN</span><strong>框架不变量 / 模型生成物</strong></div></div></header>
 
 <section id="executive-summary"><div class="section-head"><span class="eyebrow">EXECUTIVE DECISION</span><h2>管理结论</h2><p>在 {_e(Path(headline_workload["model"]).name)}、单张 {_e(manifest["provenance"]["driver"]["soc"])}、{_e(headline_workload["dtype"])} greedy、等 {headline_workload["usable_kv_tokens"]:,} KV tokens 的验收边界内，auto-infer 在稳态延迟、吞吐、启动、等容量内存与稳定性上全部第一。</p></div>
 <div class="decision-grid"><article class="decision"><span class="evidence measured">实测</span><strong class="big">B{headline_workload["throughput_batch"]}: {data["auto-infer"]["throughput_tokens_per_second"]["median"]:,.1f} tok/s</strong><p>对 omni-npu 为 <strong>{relative["omni-npu"]["throughput_speedup"]:.2f}×</strong>，对 vllm-ascend 为 <strong>{relative["vllm-ascend"]["throughput_speedup"]:.2f}×</strong>。auto-infer 与 vllm-ascend 的 {headline_workload["output_tokens"]}-token digest 一致。</p><ul><li>Warm TTFT：{data["auto-infer"]["ttft_seconds"]["median"]*1000:.3f} ms</li><li>TPOT：{data["auto-infer"]["tpot_seconds"]*1000:.3f} ms</li><li>Throughput CV：{data["auto-infer"]["stability"]["throughput_cv"]*100:.3f}%</li></ul></article>
-<article class="risk"><span class="evidence inferred">范围边界</span><h3>可以投资，但不能泛化过度</h3><ul><li>vllm-ascend 仍领先于模型/API/部署生态成熟度。</li><li>omni-npu 仍领先于优化模型、算子和复杂并行覆盖。</li><li>P/D 只保留接口，MLA MTP 仍明确 unsupported。</li><li>量化仅保留扩展 seam，本轮只验证 BF16。</li></ul></article></div>
+<article class="risk"><span class="evidence inferred">范围边界</span><h3>可以投资，但不能泛化过度</h3><ul><li>vllm-ascend 仍领先于模型/API/部署生态成熟度。</li><li>omni-npu 仍领先于优化模型、算子和复杂并行覆盖。</li><li>P/D 只保留接口，MLA MTP 仍明确 unsupported。</li><li>量化仅保留扩展 seam，本轮只验证 {_e(headline_workload["dtype"])}。</li></ul></article></div>
 <div class="callout"><strong>建议：</strong>保持 inference core 的短协议与单一所有权不变；新增模型时重生成 geometry、packed weights、graph gear 和性能/精度证据。不要为单个 checkpoint 在 engine 或 scheduler 增加分支。</div></section>
 
 <section id="matched-benchmark"><div class="section-head"><span class="eyebrow">UNPROFILED · AUTHORITATIVE</span><h2>Matched benchmark</h2><p>{_e(Path(headline_workload["model"]).name)}；{_e(headline_workload["dtype"])}；greedy / ignore-EOS；B1 latency；B{headline_workload["throughput_batch"]} throughput；{headline_workload["output_tokens"]} output tokens；{headline_workload["warmup_runs"]} 次 warm-up；{headline_workload["measured_runs"]} 次 measurement；每框架 {headline_workload["usable_kv_tokens"]:,} usable KV tokens。以下 headline 只来自无 profiler 原始 JSON。</p></div>
 <div class="charts">{_metric_bars(summary)}</div><div class="table-scroll"><table><thead><tr><th>指标</th>{''.join(f'<th>{_e(DISPLAY[f])}</th>' for f in FRAMEWORKS)}</tr></thead><tbody>{_metric_table(summary)}</tbody></table></div>
-<div class="callout warning"><strong>精度口径：</strong>auto-infer 与 vllm-ascend 的 128-token digest 均为 <code>{_e(data["auto-infer"]["output_digest"])}</code>。omni-npu 输出长度同为 128，但 digest 为 <code>{_e(data["omni-npu"]["output_digest"])}</code>，因此该对只做性能可比，不声明 token identity。历史 headline JSON 早于 cold-TTFT schema，本报告不补造该值。</div></section>
+<div class="callout warning"><strong>精度口径：</strong>auto-infer 与 vllm-ascend 的 {headline_workload["output_tokens"]}-token digest 均为 <code>{_e(data["auto-infer"]["output_digest"])}</code>。omni-npu 输出长度同为 {data["omni-npu"]["output_length"]}，但 digest 为 <code>{_e(data["omni-npu"]["output_digest"])}</code>，因此该对只做性能可比，不声明 token identity。历史 headline JSON 使用 {_e(manifest["benchmark_schema"])} schema，本报告不补造 cold TTFT。</div></section>
 
 <section id="profiling-deep-dive"><div class="section-head"><span class="eyebrow">RAW CHROME TRACE · DIRECTLY OPENABLE</span><h2>Qwen3 三框架 profiling</h2><p>每份 trace 捕获同一 B{profile_workload["batch_size"]}、{profile_workload["output_tokens"]}-token generate：<strong>{phases["prefill_passes"]} 次 prefill</strong> + <strong>{phases["decode_passes"]} 次连续 decode</strong>。这是连续多步 decode，<strong>不是投机 MTP</strong>。{_e(attention_evidence)}</p></div>
 <div class="callout"><strong>读取口径：</strong>captured request range 是 profiler-instrumented wall range，可用于本次短窗口对照，但不替代 headline。阶段表是 complete events 的累计事件时间；host/device、嵌套 range 与并发 stream 会重叠，因此不能把 phase duration 相加当作请求墙钟。</div>
 <div class="profile-grid">{_profile_cards(summary, manifest)}</div>
-<p class="callout">本次 16-token profile digest 三方{'一致' if profile_digest_equal else '不一致'}；这不改变 128-token headline 中 omni-npu digest 不同的事实。打开方式：在 Chromium 输入 <code>chrome://tracing</code>，选择 Load 后载入任一 JSON；文件本身未压缩、未截断。</p></section>
+<p class="callout">本次 {profile_workload["output_tokens"]}-token profile digest 三方{'一致' if profile_digest_equal else '不一致'}；这不改变 {headline_workload["output_tokens"]}-token headline 中 omni-npu digest 不同的事实。打开方式：在 Chromium 输入 <code>chrome://tracing</code>，选择 Load 后载入任一 JSON；文件本身未压缩、未截断。</p></section>
 
 <section id="why-faster"><div class="section-head"><span class="eyebrow">MEASURED → OBSERVED → INFERRED</span><h2>为什么 auto-infer 更快</h2><p>性能解释必须区分事实与因果推断。下面把每条机制连到测试结果与源码边界；没有单变量 ablation 的地方不会写成已证明因果。</p></div>
-<div class="table-scroll"><table class="evidence-table"><thead><tr><th>证据类型</th><th>环节</th><th>结论</th><th>依据 / 限制</th></tr></thead><tbody>{_causal_rows(summary)}</tbody></table></div>
-<div class="callout"><strong>核心解释：</strong>auto-infer 的优势不是“异步越多越快”。本负载下 depth-2 async 反而更慢，最终采用同步默认。领先来自更短的确定性热路径：启动期捕获恰当 gear、固定地址输入、脏 metadata 更新、event 排序、packed projection 与 captured greedy epilogue 的组合。</div></section>
+<div class="table-scroll"><table class="evidence-table"><thead><tr><th>证据类型</th><th>环节</th><th>结论</th><th>依据 / 限制</th></tr></thead><tbody>{_causal_rows(summary, manifest)}</tbody></table></div>
+<div class="callout"><strong>核心解释：</strong>auto-infer 的优势不是“异步越多越快”。本负载下 depth-{headline_workload["async_batches"]} async 反而更慢，最终采用同步默认。领先来自更短的确定性热路径：启动期捕获恰当 gear、固定地址输入、脏 metadata 更新、event 排序、packed projection 与 captured greedy epilogue 的组合。</div></section>
 
 <section id="architecture-comparison"><div class="section-head"><span class="eyebrow">SOURCE-OBSERVED · SCOPED</span><h2>架构优劣详细对比</h2><p>auto-infer 的核心优势是低间接性、明确所有权和小扩展 seam；两个对手的优势是产品宽度与成熟生态。代码行数只表示审计面，不单独构成质量结论。</p></div>
 <div class="table-scroll"><table class="architecture-table"><thead><tr><th>维度</th><th>auto-infer</th><th>omni-npu</th><th>vllm-ascend</th></tr></thead><tbody>{_architecture_rows()}</tbody></table></div>
@@ -373,7 +385,7 @@ def build_report(summary: dict, manifest: dict) -> str:
 
 python tools/build_qwen3_architecture_report.py
 pytest -q</pre></article></div>
-<div class="callout warning"><strong>限制：</strong>profile window 只有 B16、16 tokens，包含 profiler overhead；phase share 是重叠事件时间；operator-name 分类依赖当前版本且约 24–35% 事件时间保持 unclassified。没有单变量 ablation，不宣称每一毫秒都能归因于某一项优化。</div></section>
+<div class="callout warning"><strong>限制：</strong>profile window 只有 B{profile_workload["batch_size"]}、{profile_workload["output_tokens"]} tokens，包含 profiler overhead；phase share 是重叠事件时间；operator-name 分类依赖当前版本，三方各有 {min(unclassified_percentages):.1f}%–{max(unclassified_percentages):.1f}% 事件时间保持 unclassified。没有单变量 ablation，不宣称每一毫秒都能归因于某一项优化。</div></section>
 <footer>auto-infer architecture &amp; performance evidence · generated deterministically from <code>summary.json</code> and <code>manifest.json</code></footer>
 </main></div></body></html>'''
 
