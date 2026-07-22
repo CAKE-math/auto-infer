@@ -144,7 +144,8 @@ def _locate_trace(metadata_path: Path, output_dir: Path, framework: str,
 
 def build_evidence(metadata_paths: list[Path], benchmark_paths: list[Path],
                    output_dir: Path) -> tuple[dict, dict]:
-    results = load_comparable_results(benchmark_paths)
+    results = load_comparable_results(
+        benchmark_paths, allow_missing_cold=True)
     result_by_framework = {result["framework"]: result for result in results}
     metadata_by_framework = {}
     for path in metadata_paths:

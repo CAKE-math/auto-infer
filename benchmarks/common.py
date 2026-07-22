@@ -52,8 +52,12 @@ def token_digest(token_ids: list[int]) -> str:
     return hashlib.sha256(payload).hexdigest()[:16]
 
 
-def validate_comparison_result(result: dict) -> None:
-    missing = REQUIRED_RESULT_FIELDS - result.keys()
+def validate_comparison_result(
+        result: dict, *, allow_missing_cold: bool = False) -> None:
+    required_fields = REQUIRED_RESULT_FIELDS
+    if allow_missing_cold:
+        required_fields = required_fields - {"cold_ttft_seconds"}
+    missing = required_fields - result.keys()
     if missing:
         raise ValueError(f"comparison result missing fields: {sorted(missing)}")
     manifest = result["manifest"]
@@ -72,17 +76,18 @@ def validate_comparison_result(result: dict) -> None:
         raise ValueError(
             f"phase sample counts do not match measured_runs={measured_runs}: "
             f"{wrong_counts}")
-    cold_value = result["cold_ttft_seconds"]
-    cold_samples = phases.get("cold_ttft_seconds")
-    if cold_samples is None:
-        raise ValueError(
-            "phase_samples missing cold_ttft_seconds evidence")
-    if (not isinstance(cold_value, (int, float))
-            or isinstance(cold_value, bool)
-            or not math.isfinite(cold_value) or cold_value <= 0
-            or cold_samples != [cold_value]):
-        raise ValueError(
-            "cold_ttft_seconds must match one positive raw phase sample")
+    if not allow_missing_cold or "cold_ttft_seconds" in result:
+        cold_value = result["cold_ttft_seconds"]
+        cold_samples = phases.get("cold_ttft_seconds")
+        if cold_samples is None:
+            raise ValueError(
+                "phase_samples missing cold_ttft_seconds evidence")
+        if (not isinstance(cold_value, (int, float))
+                or isinstance(cold_value, bool)
+                or not math.isfinite(cold_value) or cold_value <= 0
+                or cold_samples != [cold_value]):
+            raise ValueError(
+                "cold_ttft_seconds must match one positive raw phase sample")
     for name in required_phases:
         if result[name] != summarize(phases[name]):
             raise ValueError(f"{name} summary does not match phase samples")

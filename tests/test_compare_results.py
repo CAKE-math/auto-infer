@@ -87,3 +87,21 @@ def test_aggregate_comparison_rejects_mismatched_manifests(tmp_path):
 
     with pytest.raises(ValueError, match="benchmark manifests differ"):
         load_comparable_results(paths)
+
+
+def test_aggregate_comparison_can_validate_archived_pre_cold_schema(tmp_path):
+    paths = []
+    for framework in ("auto-infer", "omni-npu", "vllm-ascend"):
+        result = _result(framework)
+        del result["cold_ttft_seconds"]
+        del result["phase_samples"]["cold_ttft_seconds"]
+        path = tmp_path / f"{framework}.json"
+        path.write_text(json.dumps(result))
+        paths.append(path)
+
+    with pytest.raises(ValueError, match="cold_ttft_seconds"):
+        load_comparable_results(paths)
+
+    results = load_comparable_results(paths, allow_missing_cold=True)
+
+    assert all("cold_ttft_seconds" not in result for result in results)
