@@ -621,6 +621,7 @@ def serve(model_path: str, host: str = "0.0.0.0", port: int = 8000,
           device_index: int = 0, mode: str = "paged", max_model_len: int = 4096,
           num_blocks: int = 4096, block_size: int = 16, max_num_seqs: int = 256,
           max_num_batched_tokens: int = 8192, max_gear: int = 32,
+          max_prefill_tokens: int = 256,
           num_speculative_tokens: int = 1,
           access_log: bool = False,
           serving_config: ServingConfig | None = None) -> None:
@@ -642,7 +643,8 @@ def serve(model_path: str, host: str = "0.0.0.0", port: int = 8000,
             max_num_batched_tokens=max_num_batched_tokens,
         ),
         execution=ExecutionConfig(
-            mode=mode, device_index=device_index, max_gear=max_gear
+            mode=mode, device_index=device_index, max_gear=max_gear,
+            max_prefill_tokens=max_prefill_tokens,
         ),
         spec_decode=(SpecDecodeConfig(num_speculative_tokens)
                      if mode == "graph_mtp" else None),

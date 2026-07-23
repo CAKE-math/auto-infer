@@ -144,7 +144,8 @@ class _PrefillGear:
 class GraphPagedRunner:
     """Executor backed by NZ-cache paged attention with ACL-graph decode."""
 
-    def __init__(self, model, num_blocks, block_size, max_gear=32, max_model_len=4096,
+    def __init__(self, model, num_blocks, block_size, max_gear=32,
+                 max_prefill_tokens=256, max_model_len=4096,
                  force_eager=False):
         self.force_eager = force_eager
         self.model = model
@@ -159,11 +160,13 @@ class GraphPagedRunner:
         # so scratch (num_blocks..) can never overlap a live request's KV — regardless
         # of the allocator's fill order (it pops the free list from the tail).
         from auto_infer.layers.attention.registry import build_attention_backend
-        self.scratch_blocks = _scratch_blocks_for_gears(max_gear)
+        self.scratch_blocks = _scratch_blocks_for_gears(
+            max(max_gear, max_prefill_tokens))
         self.backend, self.caches = build_attention_backend(
             model, "graph", num_blocks + self.scratch_blocks, block_size)
         self.max_blocks = (max_model_len + block_size - 1) // block_size
         self.max_gear = max_gear
+        self.max_prefill_tokens = max_prefill_tokens
         # bool mask for FIA-v2 (True = masked); 2048 is the CANN FIA sparse_mode=3
         # contract (compressed causal template; long seqs ride actual_seq_lengths)
         self.mask = ~torch.tril(torch.ones((2048, 2048), dtype=torch.bool, device=self.device))
@@ -262,7 +265,7 @@ class GraphPagedRunner:
         return self.prefill_gears.get(query_gear)
 
     def _prewarm_prefill_gears(self):
-        for query_gear in _prefill_capture_sizes(self.max_gear):
+        for query_gear in _prefill_capture_sizes(self.max_prefill_tokens):
             self.stats["prefill_graph_capture_attempts"] += 1
             try:
                 self.prefill_gears[query_gear] = self._capture_prefill(query_gear)
@@ -457,7 +460,7 @@ class GraphPagedRunner:
                 self.backend, "supports_prefill_graph", False):
             key = _select_prefill_gear(
                 sum(item.num_tokens_to_compute for item in plan.scheduled),
-                self.max_gear)
+                self.max_prefill_tokens)
             if key is not None:
                 gear = self._get_prefill_gear(key)
                 if gear is not None:
@@ -506,10 +509,11 @@ class GraphPagedRunner:
 
 class GraphPagedNpuExecutor(RunnerExecutor):
     def __init__(self, model_path, num_blocks, block_size, device_index=0,
-                 dtype="bfloat16", max_gear=32, max_model_len=4096,
-                 force_eager=False):
+                 dtype="bfloat16", max_gear=32, max_prefill_tokens=256,
+                 max_model_len=4096, force_eager=False):
         from auto_infer.engine.factory import load_model
         model = load_model(model_path, device_index, dtype)
         super().__init__(GraphPagedRunner(
             model, num_blocks, block_size, max_gear=max_gear,
+            max_prefill_tokens=max_prefill_tokens,
             max_model_len=max_model_len, force_eager=force_eager))

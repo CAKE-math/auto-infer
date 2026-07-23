@@ -87,6 +87,11 @@ def test_select_prefill_gear_uses_flattened_token_count(tokens, expected):
     assert _select_prefill_gear(tokens, max_gear=32) == expected
 
 
+def test_prefill_gear_is_independent_from_decode_batch_cap():
+    assert _select_gear(33, max_gear=32) is None
+    assert _select_prefill_gear(144, max_gear=256) == 144
+
+
 @pytest.mark.parametrize("max_gear,expected", [
     (1, 1), (3, 3), (16, 16), (32, 32), (64, 64),
 ])
@@ -97,6 +102,7 @@ def test_scratch_capacity_covers_every_accepted_prefill_shape(max_gear, expected
 def test_prefill_prewarm_attempts_each_token_gear_once():
     runner = GraphPagedRunner.__new__(GraphPagedRunner)
     runner.max_gear = 32
+    runner.max_prefill_tokens = 256
     runner.prefill_gears = {}
     runner.failed_prefill_gears = set()
     runner.stats = {"prefill_graph_capture_attempts": 0,
@@ -106,14 +112,15 @@ def test_prefill_prewarm_attempts_each_token_gear_once():
 
     runner._prewarm_prefill_gears()
 
-    assert attempted == [1, 2, 4, 8, 16, 24, 32]
+    assert attempted == graph_runner._prefill_capture_sizes(256)
     assert sorted(runner.prefill_gears) == attempted
-    assert runner.stats["prefill_graph_capture_attempts"] == 7
+    assert runner.stats["prefill_graph_capture_attempts"] == 35
 
 
 def test_prefill_prewarm_isolates_failed_gear():
     runner = GraphPagedRunner.__new__(GraphPagedRunner)
     runner.max_gear = 4
+    runner.max_prefill_tokens = 4
     runner.prefill_gears = {}
     runner.failed_prefill_gears = set()
     runner.stats = {"prefill_graph_capture_attempts": 0,

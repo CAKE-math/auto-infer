@@ -73,6 +73,7 @@ def _graph(config) -> dict:
     return {
         **_cached(config),
         "max_gear": config.execution.max_gear,
+        "max_prefill_tokens": config.execution.max_prefill_tokens,
         "max_model_len": config.model.max_model_len,
         "force_eager": config.execution.force_eager,
     }

@@ -35,3 +35,13 @@ def test_serve_cli_can_enable_access_log_explicitly():
     args = build_parser().parse_args(["serve", "/model", "--access-log"])
 
     assert args.access_log is True
+
+
+def test_serve_cli_exposes_independent_graph_limits():
+    args = build_parser().parse_args([
+        "serve", "/model", "--max-gear", "16",
+        "--max-prefill-tokens", "192",
+    ])
+
+    assert args.max_gear == 16
+    assert args.max_prefill_tokens == 192

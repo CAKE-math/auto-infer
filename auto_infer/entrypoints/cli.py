@@ -20,6 +20,7 @@ def build_parser() -> argparse.ArgumentParser:
     serve.add_argument("--max-num-seqs", type=int, default=256)
     serve.add_argument("--max-num-batched-tokens", type=int, default=8192)
     serve.add_argument("--max-gear", type=int, default=32)
+    serve.add_argument("--max-prefill-tokens", type=int, default=256)
     serve.add_argument("--num-speculative-tokens", type=int, default=1)
     serve.add_argument("--api-key")
     serve.add_argument("--max-http-inflight", type=int, default=512)
@@ -66,6 +67,7 @@ def main(argv=None) -> int:
               block_size=args.block_size, max_num_seqs=args.max_num_seqs,
               max_num_batched_tokens=args.max_num_batched_tokens,
               max_gear=args.max_gear,
+              max_prefill_tokens=args.max_prefill_tokens,
               num_speculative_tokens=args.num_speculative_tokens,
               access_log=args.access_log,
               serving_config=_serving_config(args))

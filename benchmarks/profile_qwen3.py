@@ -30,6 +30,7 @@ from benchmarks.qwen3_profile_common import (
 SUPPORTED_FRAMEWORKS = {"auto-infer", "omni-npu", "vllm-ascend"}
 PROFILE_OUTPUT_TOKENS = 16
 PROFILE_WARMUP_OUTPUT_TOKENS = 8
+PROFILE_MAX_PREFILL_TOKENS = 256
 
 
 def profile_configuration(manifest: dict, framework: str) -> dict:
@@ -43,6 +44,7 @@ def profile_configuration(manifest: dict, framework: str) -> dict:
         "output_tokens": PROFILE_OUTPUT_TOKENS,
         "warmup_runs": manifest["warmup_runs"],
         "warmup_output_tokens": PROFILE_WARMUP_OUTPUT_TOKENS,
+        "max_prefill_tokens": PROFILE_MAX_PREFILL_TOKENS,
         "max_model_len": manifest["max_model_len"],
         "usable_kv_tokens": manifest["usable_kv_tokens"],
         "kv_block_size": manifest["kv_block_size"],
@@ -178,6 +180,17 @@ def _vllm_call_targets(engine):
     )
 
 
+def validate_auto_prefill_path(call_stack_index: dict) -> None:
+    prefill_layers = [
+        event["layer"]
+        for event in call_stack_index.get("phases", {}).get("prefill", [])
+    ]
+    if prefill_layers.count("prefill-graph") != 1 or "eager" in prefill_layers:
+        raise ValueError(
+            "auto-infer prefill graph path mismatch: "
+            f"observed layers={prefill_layers}")
+
+
 class _AutoInferAdapter:
     def __init__(self, manifest: dict):
         from transformers import AutoTokenizer
@@ -202,7 +215,9 @@ class _AutoInferAdapter:
                 num_blocks=manifest["usable_kv_tokens"] // block_size),
             scheduler=SchedulerConfig(
                 max_num_seqs=256, max_num_batched_tokens=8192),
-            execution=ExecutionConfig(mode="graph", device_index=0, max_gear=32),
+            execution=ExecutionConfig(
+                mode="graph", device_index=0, max_gear=32,
+                max_prefill_tokens=PROFILE_MAX_PREFILL_TOKENS),
             async_scheduling=manifest["async_scheduling"],
             async_batches=manifest["async_batches"])
         self._llm = LLM(config)
@@ -213,6 +228,10 @@ class _AutoInferAdapter:
             "runtime_block_size": block_size,
             "evidence": "constructed EngineConfig CacheConfig",
         }
+
+    @property
+    def path_counters(self) -> dict:
+        return dict(self.phase_engine.executor.runner.stats)
 
     @property
     def prompt_ids(self) -> list[int]:
@@ -306,6 +325,7 @@ def capture(manifest_path: Path, framework: str, output_dir: Path) -> None:
             engine.run(
                 workload["batch_size"], workload["warmup_output_tokens"])
         torch.npu.synchronize()
+        counters_before = getattr(engine, "path_counters", {})
         started_at = datetime.now(timezone.utc).isoformat()
         with profile(
             activities=[ProfilerActivity.CPU, ProfilerActivity.NPU],
@@ -330,6 +350,18 @@ def capture(manifest_path: Path, framework: str, output_dir: Path) -> None:
         phase_index = add_visible_phase_lane(
             trace_path, workload["output_tokens"])
         call_stack_index = add_visible_call_stack_lane(trace_path)
+        counters_after = getattr(engine, "path_counters", {})
+        profiled_path_counters = {
+            name: value - counters_before.get(name, 0)
+            for name, value in counters_after.items()
+        }
+        if framework == "auto-infer":
+            validate_auto_prefill_path(call_stack_index)
+            if (profiled_path_counters.get("prefill_graph_steps") != 1
+                    or profiled_path_counters.get("eager_steps") != 0):
+                raise ValueError(
+                    "auto-infer prefill graph counters mismatch: "
+                    f"{profiled_path_counters}")
     finally:
         engine.close()
 
@@ -355,7 +387,8 @@ def capture(manifest_path: Path, framework: str, output_dir: Path) -> None:
                     "phase_counts": phase_counts,
                     "phase_index": phase_index,
                     "call_counts": call_recorder.counts,
-                    "call_stack_index": call_stack_index},
+                    "call_stack_index": call_stack_index,
+                    "profiled_path_counters": profiled_path_counters},
         "output_digest": token_digest(outputs[0]),
         "output_batch_digests": [token_digest(tokens) for tokens in outputs],
         "output_length": lengths[0],

@@ -11,6 +11,8 @@ def test_defaults_and_world_size():
     assert cfg.cache.block_size == 16
     assert cfg.scheduler.enable_chunked_prefill is True
     assert cfg.async_scheduling is False   # SP4: sync strictly faster single-card; async opt-in
+    assert cfg.execution.max_gear == 32
+    assert cfg.execution.max_prefill_tokens == 256
 
 
 def test_invalid_block_size():
@@ -39,6 +41,8 @@ def test_invalid_model_parallel_and_execution_config():
         ExecutionConfig(mode="unknown")
     with pytest.raises(ValueError, match="max_gear"):
         ExecutionConfig(max_gear=0)
+    with pytest.raises(ValueError, match="max_prefill_tokens"):
+        ExecutionConfig(max_prefill_tokens=0)
     with pytest.raises(ValueError, match="async_batches"):
         EngineConfig(model=ModelConfig("/m"), async_batches=0)
 

@@ -65,6 +65,19 @@ def test_graph_mtp_factory_propagates_speculative_depth():
     assert kwargs["num_speculative_tokens"] == 2
 
 
+def test_graph_executor_propagates_independent_graph_limits():
+    cfg = EngineConfig(
+        model=ModelConfig("/models/qwen"),
+        execution=ExecutionConfig(
+            mode="graph", max_gear=32, max_prefill_tokens=256),
+    )
+
+    _, kwargs = executor_arguments(cfg)
+
+    assert kwargs["max_gear"] == 32
+    assert kwargs["max_prefill_tokens"] == 256
+
+
 def test_graph_mtp_rejects_depth_beyond_npu_verified_boundary():
     config = EngineConfig(
         model=ModelConfig("/models/m"),

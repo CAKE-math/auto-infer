@@ -60,6 +60,7 @@ def test_profile_configuration_is_bounded_and_matched():
     assert config["output_tokens"] == 16
     assert config["warmup_runs"] == 1
     assert config["usable_kv_tokens"] == 14464
+    assert config["max_prefill_tokens"] == 256
     assert config["capture_phases"] == {
         "prefill_passes": 1,
         "decode_passes": 15,
@@ -77,6 +78,16 @@ def test_profile_configuration_accepts_supported_frameworks(framework):
 def test_profile_configuration_rejects_unknown_framework():
     with pytest.raises(ValueError, match="unsupported framework"):
         profile_configuration(_manifest(), "unknown")
+
+
+def test_auto_profile_requires_prefill_graph_path():
+    assert hasattr(qwen3_profile, "validate_auto_prefill_path")
+    qwen3_profile.validate_auto_prefill_path({
+        "phases": {"prefill": [{"layer": "prefill-graph"}]}})
+
+    with pytest.raises(ValueError, match="prefill graph"):
+        qwen3_profile.validate_auto_prefill_path({
+            "phases": {"prefill": [{"layer": "eager"}]}})
 
 
 def test_prepare_omni_compatibility_supplies_model_slot(monkeypatch):

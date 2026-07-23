@@ -101,6 +101,7 @@ class ExecutionConfig:
     mode: str = "paged"  # recompute | paged | graph | graph_mtp
     device_index: int = 0
     max_gear: int = 32
+    max_prefill_tokens: int = 256
     force_eager: bool = False
 
     def __post_init__(self) -> None:
@@ -111,6 +112,8 @@ class ExecutionConfig:
             raise ValueError("device_index must be >= 0")
         if self.max_gear <= 0:
             raise ValueError("max_gear must be > 0")
+        if self.max_prefill_tokens <= 0:
+            raise ValueError("max_prefill_tokens must be > 0")
 
 
 @dataclass
