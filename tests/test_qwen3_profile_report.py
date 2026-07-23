@@ -1,5 +1,6 @@
 import json
 import importlib
+import statistics
 from contextlib import contextmanager
 from copy import deepcopy
 from html.parser import HTMLParser
@@ -9,6 +10,7 @@ import pytest
 
 from benchmarks import qwen3_profile_common
 from benchmarks import profile_qwen3 as qwen3_profile
+from tools import analyze_qwen3_profiles as qwen3_analyzer
 from benchmarks.qwen3_profile_common import (
     StepPhaseRecorder,
     add_visible_phase_lane,
@@ -26,6 +28,7 @@ from tools.analyze_qwen3_profiles import (
     _publish_trace,
     classify_event,
     summarize_trace,
+    validate_publishable_auto_profile,
 )
 from tools.build_qwen3_architecture_report import (
     build_markdown_report,
@@ -88,6 +91,93 @@ def test_auto_profile_requires_prefill_graph_path():
     with pytest.raises(ValueError, match="prefill graph"):
         qwen3_profile.validate_auto_prefill_path({
             "phases": {"prefill": [{"layer": "eager"}]}})
+
+
+def test_auto_profile_rejects_online_prefill_capture():
+    valid = {
+        "prefill_graph_steps": 1,
+        "eager_steps": 0,
+        "prefill_graph_online_captures": 0,
+    }
+    qwen3_profile.validate_auto_prefill_counters(valid)
+
+    invalid = {**valid, "prefill_graph_online_captures": 1}
+    with pytest.raises(ValueError, match="prefill graph counters"):
+        qwen3_profile.validate_auto_prefill_counters(invalid)
+
+
+def test_analyzer_revalidates_auto_prefill_before_publication():
+    metadata = {"capture": {"profiled_path_counters": {
+        "prefill_graph_steps": 1,
+        "eager_steps": 0,
+        "prefill_graph_online_captures": 0,
+    }}}
+    graph_path = {"phases": {"prefill": [{"layer": "prefill-graph"}]}}
+    validate_publishable_auto_profile(metadata, graph_path)
+
+    eager_path = {"phases": {"prefill": [{"layer": "eager"}]}}
+    with pytest.raises(ValueError, match="prefill graph path"):
+        validate_publishable_auto_profile(metadata, eager_path)
+
+    metadata["capture"]["profiled_path_counters"][
+        "prefill_graph_online_captures"] = 1
+    with pytest.raises(ValueError, match="prefill graph counters"):
+        validate_publishable_auto_profile(metadata, graph_path)
+
+
+def test_analyzer_does_not_publish_before_auto_validation(
+        tmp_path, monkeypatch):
+    metadata_paths = []
+    for framework in ("auto-infer", "omni-npu", "vllm-ascend"):
+        metadata = {
+            "framework": framework,
+            "workload": {
+                "framework": framework,
+                "output_tokens": 1,
+                "capture_phases": {
+                    "prefill_passes": 1,
+                    "decode_passes": 0,
+                    "continuous_decode": False,
+                    "speculative_mtp": False,
+                },
+            },
+            "environment": {"source_revision": "test"},
+            "output_length": 1,
+            "trace": {"sha256": "digest", "event_count": 1,
+                      "file": f"{framework}.trace.json"},
+            "capture": {"profiled_path_counters": {
+                "prefill_graph_steps": 1,
+                "eager_steps": 0,
+                "prefill_graph_online_captures": (
+                    1 if framework == "auto-infer" else 0),
+            }},
+        }
+        path = tmp_path / f"{framework}.metadata.json"
+        path.write_text(json.dumps(metadata))
+        metadata_paths.append(path)
+
+    source = tmp_path / "source.trace.json"
+    source.write_text("[]")
+    published = []
+    monkeypatch.setattr(qwen3_analyzer, "load_comparable_results",
+                        lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(qwen3_analyzer, "_locate_trace",
+                        lambda *_args: source)
+    monkeypatch.setattr(qwen3_analyzer, "validate_chrome_trace",
+                        lambda _path: {"event_count": 1, "size_bytes": 2})
+    monkeypatch.setattr(qwen3_analyzer, "sha256_file",
+                        lambda _path: "digest")
+    monkeypatch.setattr(qwen3_analyzer, "extract_call_stack_index",
+                        lambda _path: {"phases": {"prefill": [
+                            {"layer": "prefill-graph"}]}})
+    monkeypatch.setattr(qwen3_analyzer, "_publish_trace",
+                        lambda *args: published.append(args) or source)
+
+    with pytest.raises(ValueError, match="prefill graph counters"):
+        qwen3_analyzer.build_evidence(
+            metadata_paths, [], tmp_path / "published")
+
+    assert published == []
 
 
 def test_prepare_omni_compatibility_supplies_model_slot(monkeypatch):
@@ -545,8 +635,9 @@ def test_published_traces_contain_measured_runtime_call_stack_lanes(
 
 
 def test_reports_include_call_stack_and_architecture_visuals(profile_evidence):
-    html = build_report(*profile_evidence)
-    markdown = build_markdown_report(*profile_evidence)
+    summary, manifest = profile_evidence
+    html = build_report(summary, manifest)
+    markdown = build_markdown_report(summary, manifest)
     diagrams = (
         "qwen3-trace-call-stack-comparison.svg",
         "qwen3-three-framework-architecture.png",
@@ -562,10 +653,54 @@ def test_reports_include_call_stack_and_architecture_visuals(profile_evidence):
     ):
         assert symbol in html
         assert symbol in markdown
-    for fact in ("TRACE-DERIVED", "QWEN3 CALL STACK", "7.85 ms",
-                 "3.01× slower"):
+    auto_decode = statistics.median(
+        step["duration_us"] for step in summary["profiles"]["auto-infer"][
+            "runtime_call_stack"]["phases"]["decode"])
+    vllm_decode = statistics.median(
+        step["duration_us"] for step in summary["profiles"]["vllm-ascend"][
+            "runtime_call_stack"]["phases"]["decode"])
+    for fact in ("TRACE-DERIVED", "QWEN3 CALL STACK",
+                 f"{auto_decode / 1000:.2f} ms",
+                 f"{vllm_decode / auto_decode:.2f}× slower"):
         assert fact in html
         assert fact in markdown
+    assert "prefill-graph" in html
+    assert "prefill-graph" in markdown
+    assert "prefill 则如实显示 vllm-ascend 领先" not in html
+
+
+def test_management_conclusion_reports_memory_tradeoff(profile_evidence):
+    summary, manifest = profile_evidence
+    html = build_report(summary, manifest)
+    markdown = build_markdown_report(summary, manifest)
+    data = summary["headline_benchmarks"]
+
+    assert data["auto-infer"]["peak_allocated_gib"] > data[
+        "vllm-ascend"]["peak_allocated_gib"]
+    for report in (html, markdown):
+        assert "等容量内存与稳定性上全部第一" not in report
+        assert "5.24 GiB" in report
+        assert "2.80 GiB" in report
+
+
+def test_html_print_layout_collapses_appendix_columns(profile_evidence):
+    summary, manifest = profile_evidence
+    html = build_report(summary, manifest)
+
+    assert "@media print" in html
+    assert ".appendix-grid{grid-template-columns:minmax(0,1fr)}" in html
+    assert "white-space:pre-wrap" in html
+
+
+def test_prefill_description_is_derived_from_provenance(profile_evidence):
+    summary, manifest = deepcopy(profile_evidence)
+    manifest["provenance"]["model"]["prompt_token_count"] = 7
+
+    for report in (build_report(summary, manifest),
+                   build_markdown_report(summary, manifest)):
+        assert "B16 × 7-token prompt" in report
+        assert "112 个 flattened query tokens" in report
+        assert "B16 × 9-token prompt" not in report
 
 
 def test_trace_call_stack_figure_is_generated_from_profile_summary(
@@ -581,15 +716,23 @@ def test_trace_call_stack_figure_is_generated_from_profile_summary(
         summary["profiles"]["auto-infer"]["runtime_call_stack"])
     svg = plotter.build_svg(summary)
 
-    assert representative["step"] == 11
+    durations = [
+        step["duration_us"] for step in summary["profiles"]["auto-infer"][
+            "runtime_call_stack"]["phases"]["decode"]]
+    median = statistics.median(durations)
+    assert abs(representative["duration_us"] - median) == min(
+        abs(duration - median) for duration in durations)
     assert svg.startswith("<svg")
     assert "TRACE-DERIVED HOST CALL STACK" in svg
     for framework in ("auto-infer", "omni-npu", "vllm-ascend"):
         assert framework in svg
     assert "GraphPagedRunner._graph_submit" in svg
     assert "NPUModelRunner.execute_model" in svg
-    assert "7.85 ms" in svg
-    assert "3.01× slower" in svg
+    assert f"{median / 1000:.2f} ms" in svg
+    vllm_median = statistics.median(
+        step["duration_us"] for step in summary["profiles"]["vllm-ascend"][
+            "runtime_call_stack"]["phases"]["decode"])
+    assert f"{vllm_median / median:.2f}× slower" in svg
 
 
 def test_markdown_report_is_full_and_uses_same_evidence(profile_evidence):
@@ -683,9 +826,16 @@ def test_report_links_resolve_and_hashes_match(profile_evidence):
         assert environment["capture_harness_revision_origin"] in {
             "capture_environment", "content_hash_verified_deployment"}
         assert environment["framework_source_revisions"]
-        assert environment["driver"]["physical_npu"] == 1
+        assert environment["driver"]["physical_npu"] == manifest[
+            "provenance"]["driver"]["physical_npu"]
     provenance = manifest["provenance"]
     assert provenance["model"]["prompt_token_count"] == len(
         provenance["model"]["prompt_token_ids"])
     assert provenance["model"]["config_sha256"]
     assert provenance["model"]["checkpoint_sha256"]
+    assert provenance["driver"]["physical_npu"] == 4
+    path_counters = manifest["artifacts"]["auto-infer"]["metadata"][
+        "capture"]["profiled_path_counters"]
+    assert path_counters["prefill_graph_steps"] == 1
+    assert path_counters["eager_steps"] == 0
+    assert path_counters["prefill_graph_online_captures"] == 0

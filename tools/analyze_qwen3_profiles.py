@@ -14,7 +14,8 @@ if __package__ in {None, ""}:
 from benchmarks.compare_results import EXPECTED_FRAMEWORKS, load_comparable_results
 from benchmarks.qwen3_profile_common import (
     extract_call_stack_index, extract_phase_index, load_chrome_trace_events,
-    sha256_file, validate_chrome_trace)
+    sha256_file, validate_auto_prefill_counters, validate_auto_prefill_path,
+    validate_chrome_trace)
 
 
 PHASES = (
@@ -167,6 +168,13 @@ def _publish_trace(source: Path, output_dir: Path, framework: str) -> Path:
     return destination
 
 
+def validate_publishable_auto_profile(metadata: dict,
+                                      call_stack_index: dict) -> None:
+    validate_auto_prefill_path(call_stack_index)
+    validate_auto_prefill_counters(
+        metadata.get("capture", {}).get("profiled_path_counters", {}))
+
+
 def build_evidence(metadata_paths: list[Path], benchmark_paths: list[Path],
                    output_dir: Path,
                    provenance: dict | None = None,
@@ -187,7 +195,7 @@ def build_evidence(metadata_paths: list[Path], benchmark_paths: list[Path],
     canonical_workload = None
     profiles = {}
     artifacts = {}
-    output_dir.mkdir(parents=True, exist_ok=True)
+    pending_traces = []
     for framework in sorted(EXPECTED_FRAMEWORKS):
         metadata_path, metadata = metadata_by_framework[framework]
         workload = _without_framework(metadata["workload"])
@@ -221,17 +229,19 @@ def build_evidence(metadata_paths: list[Path], benchmark_paths: list[Path],
             raise ValueError(f"profile output length mismatch for {framework}")
         source_trace = _locate_trace(
             metadata_path, output_dir, framework, metadata)
-        trace_path = _publish_trace(source_trace, output_dir, framework)
-        trace_contract = validate_chrome_trace(trace_path)
-        digest = sha256_file(trace_path)
+        trace_contract = validate_chrome_trace(source_trace)
+        digest = sha256_file(source_trace)
         if digest != metadata["trace"]["sha256"]:
             raise ValueError(f"trace hash mismatch for {framework}")
         if trace_contract["event_count"] != metadata["trace"]["event_count"]:
             raise ValueError(f"trace event count mismatch for {framework}")
+        call_stack_index = extract_call_stack_index(source_trace)
+        if framework == "auto-infer":
+            validate_publishable_auto_profile(metadata, call_stack_index)
         profiles[framework] = {
-            **summarize_trace(trace_path),
-            "execution_phases": extract_phase_index(trace_path),
-            "runtime_call_stack": extract_call_stack_index(trace_path),
+            **summarize_trace(source_trace),
+            "execution_phases": extract_phase_index(source_trace),
+            "runtime_call_stack": call_stack_index,
         }
         artifacts[framework] = {
             "path": f"raw/{framework}.trace.json",
@@ -239,6 +249,11 @@ def build_evidence(metadata_paths: list[Path], benchmark_paths: list[Path],
             **trace_contract,
             "metadata": metadata,
         }
+        pending_traces.append((source_trace, framework))
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    for source_trace, framework in pending_traces:
+        _publish_trace(source_trace, output_dir, framework)
 
     auto = result_by_framework["auto-infer"]
     relative = {}

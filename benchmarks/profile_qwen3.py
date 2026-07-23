@@ -22,6 +22,8 @@ from benchmarks.qwen3_profile_common import (
     add_visible_call_stack_lane,
     add_visible_phase_lane,
     sha256_file,
+    validate_auto_prefill_counters,
+    validate_auto_prefill_path,
     validate_chrome_trace,
     write_profile_metadata,
 )
@@ -178,17 +180,6 @@ def _vllm_call_targets(engine):
         CallTarget("worker", worker, "execute_model"),
         CallTarget("model-runner", runner, "execute_model"),
     )
-
-
-def validate_auto_prefill_path(call_stack_index: dict) -> None:
-    prefill_layers = [
-        event["layer"]
-        for event in call_stack_index.get("phases", {}).get("prefill", [])
-    ]
-    if prefill_layers.count("prefill-graph") != 1 or "eager" in prefill_layers:
-        raise ValueError(
-            "auto-infer prefill graph path mismatch: "
-            f"observed layers={prefill_layers}")
 
 
 class _AutoInferAdapter:
@@ -357,11 +348,7 @@ def capture(manifest_path: Path, framework: str, output_dir: Path) -> None:
         }
         if framework == "auto-infer":
             validate_auto_prefill_path(call_stack_index)
-            if (profiled_path_counters.get("prefill_graph_steps") != 1
-                    or profiled_path_counters.get("eager_steps") != 0):
-                raise ValueError(
-                    "auto-infer prefill graph counters mismatch: "
-                    f"{profiled_path_counters}")
+            validate_auto_prefill_counters(profiled_path_counters)
     finally:
         engine.close()
 

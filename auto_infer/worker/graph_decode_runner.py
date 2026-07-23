@@ -173,6 +173,7 @@ class GraphPagedRunner:
         self.gears: dict[int, _Gear] = {}
         self.prefill_gears: dict[int, _PrefillGear] = {}
         self.failed_prefill_gears: set[int] = set()
+        self._prefill_prewarm_active = False
         self._scratch0 = num_blocks       # scratch = the extra top region, disjoint from live KV
         self.stats = {"graph_steps": 0, "prefill_graph_steps": 0,
                       "prefill_graph_fallbacks": 0, "eager_steps": 0,
@@ -265,15 +266,21 @@ class GraphPagedRunner:
         return self.prefill_gears.get(query_gear)
 
     def _prewarm_prefill_gears(self):
-        for query_gear in _prefill_capture_sizes(self.max_prefill_tokens):
-            self.stats["prefill_graph_capture_attempts"] += 1
-            try:
-                self.prefill_gears[query_gear] = self._capture_prefill(query_gear)
-            except Exception:
-                self.failed_prefill_gears.add(query_gear)
-                self.stats["prefill_graph_capture_failures"] += 1
+        self._prefill_prewarm_active = True
+        try:
+            for query_gear in _prefill_capture_sizes(self.max_prefill_tokens):
+                self.stats["prefill_graph_capture_attempts"] += 1
+                try:
+                    self.prefill_gears[query_gear] = self._capture_prefill(query_gear)
+                except Exception:
+                    self.failed_prefill_gears.add(query_gear)
+                    self.stats["prefill_graph_capture_failures"] += 1
+        finally:
+            self._prefill_prewarm_active = False
 
     def _capture_prefill(self, query_gear):
+        if not self._prefill_prewarm_active:
+            self.stats["prefill_graph_online_captures"] += 1
         cfg = self.model.cfg
         gear = _PrefillGear(
             query_gear, self.max_blocks, cfg.vocab_size,

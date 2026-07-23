@@ -115,6 +115,19 @@ def test_prefill_prewarm_attempts_each_token_gear_once():
     assert attempted == graph_runner._prefill_capture_sizes(256)
     assert sorted(runner.prefill_gears) == attempted
     assert runner.stats["prefill_graph_capture_attempts"] == 35
+    assert runner._prefill_prewarm_active is False
+
+
+def test_prefill_capture_counts_runtime_attempts():
+    runner = GraphPagedRunner.__new__(GraphPagedRunner)
+    runner._prefill_prewarm_active = False
+    runner.stats = {"prefill_graph_online_captures": 0}
+    runner.model = object()
+
+    with pytest.raises(AttributeError):
+        runner._capture_prefill(1)
+
+    assert runner.stats["prefill_graph_online_captures"] == 1
 
 
 def test_prefill_prewarm_isolates_failed_gear():

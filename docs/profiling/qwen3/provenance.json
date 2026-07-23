@@ -10,21 +10,21 @@
       "vllm-ascend": 8
     }
   },
-  "capture_harness_revision": "085fe39afd43c7e314cfc586d3ffc6a45e0dec6f",
+  "capture_harness_revision": "db31eb7ccdcec223e5aae87641c668aa6c8cd794",
   "capture_harness_verification": {
-    "benchmarks/profile_qwen3.py": "6b1a88446d5772da7a1c5c722804be9d131367591f02a0b51cde1c1022c47399",
+    "benchmarks/profile_qwen3.py": "4bcfc5cf0a174cb918cc572713b950bb9e5c42cf3ded2f666e88ea3714a3bf0d",
     "benchmarks/qwen3_profile_common.py": "ef6f34368dfb2e16f582e67ba329c3febba69db9212354dca2d0a139919f33c1",
     "method": "remote deployed files matched git object content by SHA-256"
   },
   "driver": {
     "ascendhal_version": "7.35.23",
     "package_version": "25.5.0",
-    "physical_npu": 1,
+    "physical_npu": 4,
     "soc": "Ascend 910B1"
   },
   "framework_sources": {
     "auto-infer": {
-      "auto_infer": "1507a19ed2db3abe7cf5145c1ea0e66f9ad2cb34"
+      "auto_infer": "db31eb7ccdcec223e5aae87641c668aa6c8cd794"
     },
     "omni-npu": {
       "omni_npu": "6fc4c538e99839988e5b0dce3fadb9b1e801decb",
@@ -77,20 +77,26 @@
       }
     }
   },
+  "profile_path_contract": {
+    "auto_infer_prefill": "Exactly one prefill-graph boundary, zero eager boundaries, one prefill_graph_steps delta, zero eager_steps delta, and zero online captures for the profiled request.",
+    "decode_batch_gear": 32,
+    "flattened_prefill_tokens": 144,
+    "max_prefill_tokens": 256
+  },
   "runtime_kv_capacity": {
     "auto-infer": {
       "evidence": "EngineConfig CacheConfig plus matched runtime kv_capacity readback",
-      "log_sha256": "73bf73c3e3629608e4f537d6f06ec6fdc838b747ba224744fb941873a1248faf",
+      "log_sha256": "a01c6e14be9a96f90ef58f9cb007f25cb7d46f367995439fbcf5f606e2ed4d22",
       "usable_tokens": 14464
     },
     "omni-npu": {
       "evidence": "profile metadata runtime readback plus retained capture log",
-      "log_sha256": "1de76596ad27f47335ddff9df01763966c88b0c5af10e87a4c26022bf1c07ac1",
+      "log_sha256": "199e49c9841c619c0fcd9a2c2f56087a7b77e3c4bcef8987473abe84e519c1b6",
       "usable_tokens": 14464
     },
     "vllm-ascend": {
       "evidence": "profile metadata runtime readback plus retained capture log",
-      "log_sha256": "0c1c49fc6a9bf1e9a363398bc886a16b9044cc7b0c3d0556b6c6f4da613edfc1",
+      "log_sha256": "cf2ab100a2dabfccbbc37e788c9f98af32f001e8a220e07abea5450483708186",
       "usable_tokens": 14464
     }
   },

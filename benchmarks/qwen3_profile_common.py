@@ -9,6 +9,29 @@ from functools import wraps
 from pathlib import Path
 
 
+def validate_auto_prefill_path(call_stack_index: dict) -> None:
+    prefill_layers = [
+        event["layer"]
+        for event in call_stack_index.get("phases", {}).get("prefill", [])
+    ]
+    if prefill_layers.count("prefill-graph") != 1 or "eager" in prefill_layers:
+        raise ValueError(
+            "auto-infer prefill graph path mismatch: "
+            f"observed layers={prefill_layers}")
+
+
+def validate_auto_prefill_counters(counters: dict) -> None:
+    expected = {
+        "prefill_graph_steps": 1,
+        "eager_steps": 0,
+        "prefill_graph_online_captures": 0,
+    }
+    if any(counters.get(name) != value for name, value in expected.items()):
+        raise ValueError(
+            "auto-infer prefill graph counters mismatch: "
+            f"expected={expected}, observed={counters}")
+
+
 REQUIRED_METADATA_FIELDS = {
     "framework",
     "trace",
