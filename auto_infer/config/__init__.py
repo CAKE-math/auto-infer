@@ -123,10 +123,9 @@ class EngineConfig:
     cache: CacheConfig = field(default_factory=CacheConfig)
     scheduler: SchedulerConfig = field(default_factory=SchedulerConfig)
     execution: ExecutionConfig = field(default_factory=ExecutionConfig)
-    # Event-backed async scheduling is token-identical and can help throughput,
-    # but the July-19 Qwen3 gate was workload-sensitive: depth=3 improved B16
-    # while its five-sample B1 median regressed. Keep sync as the stable default;
-    # async remains opt-in for throughput-oriented deployments.
+    # Zero-host-bubble graph decode is opt-in because its current supported
+    # boundary is history-independent greedy and prefill uses a safe eager
+    # barrier. The July-23 Qwen3 BF16 gate passed decode TPOT/throughput.
     async_scheduling: bool = False
     async_batches: int = 2       # in-flight batch-queue depth (vLLM max_concurrent_batches)
     log_stats: bool = False           # periodic StatLogger metrics line (off by default)

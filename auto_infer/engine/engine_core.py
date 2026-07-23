@@ -329,6 +329,8 @@ class EngineCore:
                 finished, gen_toks = self._finalize(
                     oldest.sched, sampled, now)
         finally:
+            self._sampled.update(
+                self.executor.stabilize_refs(oldest.handle, self._sampled))
             self.executor.release_submission(oldest.handle)
             self._release_batch_leases(oldest.request_ids)
 

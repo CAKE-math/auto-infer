@@ -42,15 +42,18 @@ class GraphTaskPipeline:
             ctx, seqlens_kv=kv_slot, cu_seqlens_q=query_slot)
 
     def prepare(self, ctx) -> GraphTaskTicket:
-        staged = self._stage_context(ctx)
+        return GraphTaskTicket(self._stage_context(ctx))
+
+    def update(self, ticket: GraphTaskTicket) -> None:
         with self._stream_context(self.update_stream):
             if (self.registrations is not None
                     and hasattr(self.backend, "update_registrations")):
                 self.backend.update_registrations(
-                    self.registrations, staged, stream=self.update_stream)
+                    self.registrations, ticket.context,
+                    stream=self.update_stream)
             else:
-                self.backend.update(staged, stream=self.update_stream)
-        return GraphTaskTicket(staged)
+                self.backend.update(
+                    ticket.context, stream=self.update_stream)
 
     @staticmethod
     def submit(graph, ticket: GraphTaskTicket) -> None:
@@ -58,7 +61,9 @@ class GraphTaskPipeline:
 
     def replay(self, graph, ctx) -> None:
         """Compatibility for synchronous/MTP callers."""
-        self.submit(graph, self.prepare(ctx))
+        ticket = self.prepare(ctx)
+        self.submit(graph, ticket)
+        self.update(ticket)
 
     def replay_many(self, graph, contexts) -> None:
         """Replay one graph containing multiple dynamic attention tasks."""

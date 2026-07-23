@@ -1,5 +1,6 @@
 import torch
 
+from auto_infer.engine.execution import DeviceTokenBatch
 from auto_infer.spec_decode.geometry import MtpGeometry
 from auto_infer.worker.decode_input_stager import (
     ContinuationInputStager, DecodeInputStager, SpecDecodeInputStager)
@@ -106,6 +107,34 @@ def test_row_transitioning_to_padding_is_copied_once():
 
     assert stager.copied_block_rows == copied + 1
     assert staged.block_table[1].tolist() == [101, 0, 0, 0]
+
+
+def test_decode_splice_fast_path_uses_aligned_batch_without_index_tensors():
+    stager = _stager()
+    owner = DeviceTokenBatch.from_output(
+        torch.tensor([31, 37]), ("a", "b"))
+
+    prepared = stager.prepare_splice(
+        owner.refs(), ["a", "b"])
+    stager.apply_splice(prepared)
+
+    assert prepared.fast_owner is owner
+    assert stager.tid[:2].tolist() == [31, 37]
+
+
+def test_decode_splice_persistent_indices_cover_skips_and_reordering():
+    stager = _stager()
+    first = DeviceTokenBatch.from_output(
+        torch.tensor([11, 13]), ("a", "b"))
+    second = DeviceTokenBatch.from_output(
+        torch.tensor([17]), ("c",))
+    refs = {**first.refs(), **second.refs()}
+
+    prepared = stager.prepare_splice(refs, ["c", "a"])
+    stager.apply_splice(prepared)
+
+    assert prepared.fast_owner is None
+    assert stager.tid[:2].tolist() == [17, 11]
 
 
 def test_spec_stager_persists_two_token_rows_and_only_copies_dirty_blocks():

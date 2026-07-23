@@ -300,6 +300,24 @@ def test_async_sampled_refs_use_stable_token_store_without_clone():
     assert batch.tokens.data_ptr() != static.data_ptr()
 
 
+def test_async_spills_only_refs_still_owned_by_released_slot():
+    from auto_infer.worker.async_slots import DeviceTokenStore
+
+    runner = GraphPagedRunner.__new__(GraphPagedRunner)
+    runner._token_store = DeviceTokenStore(4, torch.device("cpu"))
+    old = DeviceTokenBatch.from_output(
+        torch.tensor([3, 5]), ("a", "b"))
+    newer = DeviceTokenBatch.from_output(torch.tensor([7]), ("a",))
+    refs = old.refs()
+    refs["a"] = newer.refs()["a"]
+
+    replacements = runner.stabilize_refs(
+        {"token_batch": old}, refs)
+
+    assert set(replacements) == {"b"}
+    assert int(replacements["b"].owner.tokens[replacements["b"].row]) == 5
+
+
 # ---------------------------------------------------------------------------
 # GraphGqaBackend — construction / allocation / capture toggle
 # (write_kv/attn/update call straight into torch_npu ops and are exercised by

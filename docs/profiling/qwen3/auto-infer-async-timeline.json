@@ -1,0 +1,136 @@
+{
+  "markers_present": true,
+  "ordering": [
+    {
+      "step": 1,
+      "submit_next_end_us": 1784802752710569.8,
+      "sample_end_us": 1784802752717562.5,
+      "task_update_next_end_us": 1784802752722886.8,
+      "next_sample_end_us": 1784802752723277.5,
+      "task_update_hidden": true,
+      "pass": true
+    },
+    {
+      "step": 2,
+      "submit_next_end_us": 1784802752721159.0,
+      "sample_end_us": 1784802752723277.5,
+      "task_update_next_end_us": 1784802752731487.0,
+      "next_sample_end_us": 1784802752731742.5,
+      "task_update_hidden": true,
+      "pass": true
+    },
+    {
+      "step": 3,
+      "submit_next_end_us": 1784802752727110.0,
+      "sample_end_us": 1784802752731742.5,
+      "task_update_next_end_us": 1784802752737772.8,
+      "next_sample_end_us": 1784802752737864.8,
+      "task_update_hidden": true,
+      "pass": true
+    },
+    {
+      "step": 4,
+      "submit_next_end_us": 1784802752735233.5,
+      "sample_end_us": 1784802752737864.8,
+      "task_update_next_end_us": 1784802752745965.5,
+      "next_sample_end_us": 1784802752746103.0,
+      "task_update_hidden": true,
+      "pass": true
+    },
+    {
+      "step": 5,
+      "submit_next_end_us": 1784802752741486.0,
+      "sample_end_us": 1784802752746103.0,
+      "task_update_next_end_us": 1784802752751798.8,
+      "next_sample_end_us": 1784802752751971.0,
+      "task_update_hidden": true,
+      "pass": true
+    },
+    {
+      "step": 6,
+      "submit_next_end_us": 1784802752749569.2,
+      "sample_end_us": 1784802752751971.0,
+      "task_update_next_end_us": 1784802752760084.2,
+      "next_sample_end_us": 1784802752760341.8,
+      "task_update_hidden": true,
+      "pass": true
+    },
+    {
+      "step": 7,
+      "submit_next_end_us": 1784802752756098.5,
+      "sample_end_us": 1784802752760341.8,
+      "task_update_next_end_us": 1784802752766188.2,
+      "next_sample_end_us": 1784802752766448.0,
+      "task_update_hidden": true,
+      "pass": true
+    },
+    {
+      "step": 8,
+      "submit_next_end_us": 1784802752764015.5,
+      "sample_end_us": 1784802752766448.0,
+      "task_update_next_end_us": 1784802752774703.2,
+      "next_sample_end_us": 1784802752774951.5,
+      "task_update_hidden": true,
+      "pass": true
+    },
+    {
+      "step": 9,
+      "submit_next_end_us": 1784802752769996.0,
+      "sample_end_us": 1784802752774951.5,
+      "task_update_next_end_us": 1784802752780632.8,
+      "next_sample_end_us": 1784802752780742.0,
+      "task_update_hidden": true,
+      "pass": true
+    },
+    {
+      "step": 10,
+      "submit_next_end_us": 1784802752778516.5,
+      "sample_end_us": 1784802752780742.0,
+      "task_update_next_end_us": 1784802752789361.5,
+      "next_sample_end_us": 1784802752789621.2,
+      "task_update_hidden": true,
+      "pass": true
+    },
+    {
+      "step": 11,
+      "submit_next_end_us": 1784802752784651.8,
+      "sample_end_us": 1784802752789621.2,
+      "task_update_next_end_us": 1784802752795478.0,
+      "next_sample_end_us": 1784802752795564.2,
+      "task_update_hidden": true,
+      "pass": true
+    },
+    {
+      "step": 12,
+      "submit_next_end_us": 1784802752793115.8,
+      "sample_end_us": 1784802752795564.2,
+      "task_update_next_end_us": 1784802752803721.8,
+      "next_sample_end_us": 1784802752803974.2,
+      "task_update_hidden": true,
+      "pass": true
+    },
+    {
+      "step": 13,
+      "submit_next_end_us": 1784802752799018.8,
+      "sample_end_us": 1784802752803974.2,
+      "task_update_next_end_us": 1784802752809972.0,
+      "next_sample_end_us": 1784802752810266.8,
+      "task_update_hidden": true,
+      "pass": true
+    },
+    {
+      "step": 14,
+      "submit_next_end_us": 1784802752807443.5,
+      "sample_end_us": 1784802752810266.8,
+      "task_update_next_end_us": 1784802752815027.0,
+      "next_sample_end_us": 1784802752815912.5,
+      "task_update_hidden": true,
+      "pass": true
+    }
+  ],
+  "ordering_pass": true,
+  "clone_free": true,
+  "clone_events": [],
+  "device_gap_p50_us": 6.5,
+  "device_gap_p95_us": 6.75
+}

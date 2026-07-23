@@ -6,8 +6,7 @@ import torch
 
 from auto_infer.engine.token_layout import slot_mapping
 from auto_infer.worker.staging import (
-    HostStaging, splice_device_tokens as _splice_device_tokens,
-    upload_dirty_block_table)
+    HostStaging, upload_dirty_block_table)
 
 
 @dataclass(frozen=True)
@@ -23,6 +22,13 @@ class StagedDecodeInput:
         return (
             self.token_ids.data_ptr(), self.positions.data_ptr(),
             self.slots.data_ptr(), self.block_table.data_ptr())
+
+
+@dataclass(frozen=True)
+class PreparedTokenSplice:
+    groups: tuple
+    fast_owner: object | None = None
+    fast_count: int = 0
 
 
 class DecodeInputStager:
@@ -51,6 +57,14 @@ class DecodeInputStager:
                 (self.gear,), torch.bool)
         self._bt_host, self._bt_np = host.allocate(
             (self.gear, self.max_blocks), torch.int32)
+        self._splice_src = torch.empty(
+            self.gear, dtype=torch.long, device=tid.device)
+        self._splice_dst = torch.empty(
+            self.gear, dtype=torch.long, device=tid.device)
+        self._splice_src_host, self._splice_src_np = host.allocate(
+            (self.gear,), torch.long)
+        self._splice_dst_host, self._splice_dst_np = host.allocate(
+            (self.gear,), torch.long)
         self._non_blocking = host.non_blocking
         self._bt_shadow = np.full(
             (self.gear, self.max_blocks), np.iinfo(np.int32).min, dtype=np.int32)
@@ -108,9 +122,52 @@ class DecodeInputStager:
             self.tid, self.positions, self.slots, self.block_table,
             kv_lengths, order)
 
+    def prepare_splice(self, refs, request_order) -> PreparedTokenSplice:
+        groups = {}
+        for destination, request_id in enumerate(request_order):
+            ref = refs.get(request_id)
+            if ref is None:
+                continue
+            group = groups.setdefault(id(ref.owner), [ref.owner, [], []])
+            group[1].append(destination)
+            group[2].append(ref.row)
+        values = tuple(groups.values())
+        if len(values) == 1:
+            owner, destinations, sources = values[0]
+            count = len(destinations)
+            if destinations == list(range(count)) and sources == list(range(count)):
+                return PreparedTokenSplice((), owner, count)
+
+        offset = 0
+        prepared = []
+        for owner, destinations, sources in values:
+            end = offset + len(destinations)
+            self._splice_dst_np[offset:end] = destinations
+            self._splice_src_np[offset:end] = sources
+            prepared.append((owner, offset, end))
+            offset = end
+        if offset:
+            self._splice_src[:offset].copy_(
+                self._splice_src_host[:offset],
+                non_blocking=self._non_blocking)
+            self._splice_dst[:offset].copy_(
+                self._splice_dst_host[:offset],
+                non_blocking=self._non_blocking)
+        return PreparedTokenSplice(tuple(prepared))
+
+    def apply_splice(self, prepared: PreparedTokenSplice) -> None:
+        if prepared.fast_owner is not None:
+            count = prepared.fast_count
+            self.tid[:count].copy_(prepared.fast_owner.tokens[:count])
+            return
+        for owner, start, end in prepared.groups:
+            values = owner.tokens.index_select(
+                0, self._splice_src[start:end])
+            self.tid.index_copy_(
+                0, self._splice_dst[start:end], values)
+
     def splice(self, refs, request_order) -> None:
-        _splice_device_tokens(
-            self.tid, range(len(request_order)), request_order, refs)
+        self.apply_splice(self.prepare_splice(refs, request_order))
 
 
 @dataclass(frozen=True)

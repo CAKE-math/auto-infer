@@ -88,6 +88,10 @@ class Executor:
     def release_submission(self, handle) -> None:
         """Release per-submission buffers after its host result is consumed."""
 
+    def stabilize_refs(self, handle, current_refs) -> dict:
+        """Spill refs that still point at a submission before slot reuse."""
+        return {}
+
     def release_requests(self, request_ids) -> None:
         """Release runner-owned request state after the engine reclaims KV."""
 
@@ -137,6 +141,10 @@ class RunnerExecutor(Executor):
         release = getattr(self.runner, "release_submission", None)
         if release is not None:
             release(handle)
+
+    def stabilize_refs(self, handle, current_refs) -> dict:
+        stabilize = getattr(self.runner, "stabilize_refs", None)
+        return stabilize(handle, current_refs) if stabilize is not None else {}
 
     def release_requests(self, request_ids) -> None:
         release = getattr(self.runner, "release_requests", None)

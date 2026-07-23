@@ -1,0 +1,1197 @@
+{
+  "capture": {
+    "call_counts": {
+      "decode-graph-prepare": 15,
+      "decode-graph-submit": 15,
+      "eager": 1,
+      "engine": 16,
+      "prepare": 16,
+      "scheduler": 16,
+      "submit-prepared": 16
+    },
+    "call_stack_index": {
+      "lane": "QWEN3 CALL STACK",
+      "phases": {
+        "decode": [
+          {
+            "duration_us": 8876.53,
+            "events": [
+              {
+                "depth": 0,
+                "duration_us": 8809.03,
+                "layer": "engine",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                "timestamp_us": 1784802752714340.8
+              },
+              {
+                "depth": 1,
+                "duration_us": 130.89,
+                "layer": "scheduler",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                "timestamp_us": 1784802752718196.5
+              },
+              {
+                "depth": 1,
+                "duration_us": 1470.38,
+                "layer": "prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.prepare",
+                "timestamp_us": 1784802752718821.8
+              },
+              {
+                "depth": 2,
+                "duration_us": 1401.64,
+                "layer": "decode-graph-prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._prepare_graph",
+                "timestamp_us": 1784802752718857.2
+              },
+              {
+                "depth": 1,
+                "duration_us": 764.06,
+                "layer": "submit-prepared",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit_prepared",
+                "timestamp_us": 1784802752720367.8
+              },
+              {
+                "depth": 2,
+                "duration_us": 540.23,
+                "layer": "decode-graph-submit",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._submit_graph",
+                "timestamp_us": 1784802752720505.0
+              }
+            ],
+            "step": 1
+          },
+          {
+            "duration_us": 5864.9,
+            "events": [
+              {
+                "depth": 0,
+                "duration_us": 5797.4,
+                "layer": "engine",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                "timestamp_us": 1784802752723236.2
+              },
+              {
+                "depth": 1,
+                "duration_us": 134.76,
+                "layer": "scheduler",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                "timestamp_us": 1784802752724054.0
+              },
+              {
+                "depth": 1,
+                "duration_us": 1560.4,
+                "layer": "prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.prepare",
+                "timestamp_us": 1784802752724675.0
+              },
+              {
+                "depth": 2,
+                "duration_us": 1489.89,
+                "layer": "decode-graph-prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._prepare_graph",
+                "timestamp_us": 1784802752724713.8
+              },
+              {
+                "depth": 1,
+                "duration_us": 772.02,
+                "layer": "submit-prepared",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit_prepared",
+                "timestamp_us": 1784802752726310.8
+              },
+              {
+                "depth": 2,
+                "duration_us": 546.62,
+                "layer": "decode-graph-submit",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._submit_graph",
+                "timestamp_us": 1784802752726450.8
+              }
+            ],
+            "step": 2
+          },
+          {
+            "duration_us": 8299.94,
+            "events": [
+              {
+                "depth": 0,
+                "duration_us": 8097.74,
+                "layer": "engine",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                "timestamp_us": 1784802752729257.5
+              },
+              {
+                "depth": 1,
+                "duration_us": 128.65,
+                "layer": "scheduler",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                "timestamp_us": 1784802752732341.8
+              },
+              {
+                "depth": 1,
+                "duration_us": 1538.98,
+                "layer": "prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.prepare",
+                "timestamp_us": 1784802752732840.8
+              },
+              {
+                "depth": 2,
+                "duration_us": 1352.09,
+                "layer": "decode-graph-prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._prepare_graph",
+                "timestamp_us": 1784802752732997.0
+              },
+              {
+                "depth": 1,
+                "duration_us": 752.95,
+                "layer": "submit-prepared",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit_prepared",
+                "timestamp_us": 1784802752734454.0
+              },
+              {
+                "depth": 2,
+                "duration_us": 535.24,
+                "layer": "decode-graph-submit",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._submit_graph",
+                "timestamp_us": 1784802752734588.0
+              }
+            ],
+            "step": 3
+          },
+          {
+            "duration_us": 6407.19,
+            "events": [
+              {
+                "depth": 0,
+                "duration_us": 6103.57,
+                "layer": "engine",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                "timestamp_us": 1784802752737461.5
+              },
+              {
+                "depth": 1,
+                "duration_us": 131.33,
+                "layer": "scheduler",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                "timestamp_us": 1784802752738433.5
+              },
+              {
+                "depth": 1,
+                "duration_us": 1569.1,
+                "layer": "prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.prepare",
+                "timestamp_us": 1784802752739052.2
+              },
+              {
+                "depth": 2,
+                "duration_us": 1497.27,
+                "layer": "decode-graph-prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._prepare_graph",
+                "timestamp_us": 1784802752739092.8
+              },
+              {
+                "depth": 1,
+                "duration_us": 762.68,
+                "layer": "submit-prepared",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit_prepared",
+                "timestamp_us": 1784802752740696.5
+              },
+              {
+                "depth": 2,
+                "duration_us": 536.92,
+                "layer": "decode-graph-submit",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._submit_graph",
+                "timestamp_us": 1784802752740839.0
+              }
+            ],
+            "step": 4
+          },
+          {
+            "duration_us": 7561.32,
+            "events": [
+              {
+                "depth": 0,
+                "duration_us": 7495.3,
+                "layer": "engine",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                "timestamp_us": 1784802752743896.8
+              },
+              {
+                "depth": 1,
+                "duration_us": 130.43,
+                "layer": "scheduler",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                "timestamp_us": 1784802752746639.0
+              },
+              {
+                "depth": 1,
+                "duration_us": 1562.46,
+                "layer": "prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.prepare",
+                "timestamp_us": 1784802752747143.2
+              },
+              {
+                "depth": 2,
+                "duration_us": 1492.76,
+                "layer": "decode-graph-prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._prepare_graph",
+                "timestamp_us": 1784802752747181.5
+              },
+              {
+                "depth": 1,
+                "duration_us": 754.81,
+                "layer": "submit-prepared",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit_prepared",
+                "timestamp_us": 1784802752748787.5
+              },
+              {
+                "depth": 2,
+                "duration_us": 535.47,
+                "layer": "decode-graph-submit",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._submit_graph",
+                "timestamp_us": 1784802752748923.2
+              }
+            ],
+            "step": 5
+          },
+          {
+            "duration_us": 6626.37,
+            "events": [
+              {
+                "depth": 0,
+                "duration_us": 6104.29,
+                "layer": "engine",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                "timestamp_us": 1784802752751708.0
+              },
+              {
+                "depth": 1,
+                "duration_us": 181.28,
+                "layer": "scheduler",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                "timestamp_us": 1784802752752605.2
+              },
+              {
+                "depth": 1,
+                "duration_us": 1745.42,
+                "layer": "prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.prepare",
+                "timestamp_us": 1784802752753159.8
+              },
+              {
+                "depth": 2,
+                "duration_us": 1669.06,
+                "layer": "decode-graph-prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._prepare_graph",
+                "timestamp_us": 1784802752753205.2
+              },
+              {
+                "depth": 1,
+                "duration_us": 1092.89,
+                "layer": "submit-prepared",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit_prepared",
+                "timestamp_us": 1784802752754981.2
+              },
+              {
+                "depth": 2,
+                "duration_us": 539.62,
+                "layer": "decode-graph-submit",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._submit_graph",
+                "timestamp_us": 1784802752755118.0
+              }
+            ],
+            "step": 6
+          },
+          {
+            "duration_us": 7562.69,
+            "events": [
+              {
+                "depth": 0,
+                "duration_us": 7243.48,
+                "layer": "engine",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                "timestamp_us": 1784802752758391.8
+              },
+              {
+                "depth": 1,
+                "duration_us": 131.69,
+                "layer": "scheduler",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                "timestamp_us": 1784802752760915.8
+              },
+              {
+                "depth": 1,
+                "duration_us": 1622.36,
+                "layer": "prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.prepare",
+                "timestamp_us": 1784802752761527.8
+              },
+              {
+                "depth": 2,
+                "duration_us": 1554.08,
+                "layer": "decode-graph-prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._prepare_graph",
+                "timestamp_us": 1784802752761565.2
+              },
+              {
+                "depth": 1,
+                "duration_us": 763.76,
+                "layer": "submit-prepared",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit_prepared",
+                "timestamp_us": 1784802752763223.8
+              },
+              {
+                "depth": 2,
+                "duration_us": 534.47,
+                "layer": "decode-graph-submit",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._submit_graph",
+                "timestamp_us": 1784802752763361.2
+              }
+            ],
+            "step": 7
+          },
+          {
+            "duration_us": 6090.3,
+            "events": [
+              {
+                "depth": 0,
+                "duration_us": 6019.74,
+                "layer": "engine",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                "timestamp_us": 1784802752765732.8
+              },
+              {
+                "depth": 1,
+                "duration_us": 130.25,
+                "layer": "scheduler",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                "timestamp_us": 1784802752767019.8
+              },
+              {
+                "depth": 1,
+                "duration_us": 1595.42,
+                "layer": "prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.prepare",
+                "timestamp_us": 1784802752767522.8
+              },
+              {
+                "depth": 2,
+                "duration_us": 1522.8,
+                "layer": "decode-graph-prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._prepare_graph",
+                "timestamp_us": 1784802752767562.2
+              },
+              {
+                "depth": 1,
+                "duration_us": 770.99,
+                "layer": "submit-prepared",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit_prepared",
+                "timestamp_us": 1784802752769198.8
+              },
+              {
+                "depth": 2,
+                "duration_us": 550.91,
+                "layer": "decode-graph-submit",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._submit_graph",
+                "timestamp_us": 1784802752769336.8
+              }
+            ],
+            "step": 8
+          },
+          {
+            "duration_us": 8492.91,
+            "events": [
+              {
+                "depth": 0,
+                "duration_us": 8102.83,
+                "layer": "engine",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                "timestamp_us": 1784802752772169.0
+              },
+              {
+                "depth": 1,
+                "duration_us": 246.79,
+                "layer": "scheduler",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                "timestamp_us": 1784802752775418.8
+              },
+              {
+                "depth": 1,
+                "duration_us": 1701.24,
+                "layer": "prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.prepare",
+                "timestamp_us": 1784802752776053.0
+              },
+              {
+                "depth": 2,
+                "duration_us": 1392.58,
+                "layer": "decode-graph-prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._prepare_graph",
+                "timestamp_us": 1784802752776207.5
+              },
+              {
+                "depth": 1,
+                "duration_us": 661.4,
+                "layer": "submit-prepared",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit_prepared",
+                "timestamp_us": 1784802752777827.8
+              },
+              {
+                "depth": 2,
+                "duration_us": 550.12,
+                "layer": "decode-graph-submit",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._submit_graph",
+                "timestamp_us": 1784802752777853.8
+              }
+            ],
+            "step": 9
+          },
+          {
+            "duration_us": 6422.87,
+            "events": [
+              {
+                "depth": 0,
+                "duration_us": 6249.61,
+                "layer": "engine",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                "timestamp_us": 1784802752780478.0
+              },
+              {
+                "depth": 1,
+                "duration_us": 129.69,
+                "layer": "scheduler",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                "timestamp_us": 1784802752781321.5
+              },
+              {
+                "depth": 1,
+                "duration_us": 1539.5,
+                "layer": "prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.prepare",
+                "timestamp_us": 1784802752781818.2
+              },
+              {
+                "depth": 2,
+                "duration_us": 1468.75,
+                "layer": "decode-graph-prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._prepare_graph",
+                "timestamp_us": 1784802752781856.0
+              },
+              {
+                "depth": 1,
+                "duration_us": 1189.45,
+                "layer": "submit-prepared",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit_prepared",
+                "timestamp_us": 1784802752783437.5
+              },
+              {
+                "depth": 2,
+                "duration_us": 582.82,
+                "layer": "decode-graph-submit",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._submit_graph",
+                "timestamp_us": 1784802752783572.8
+              }
+            ],
+            "step": 10
+          },
+          {
+            "duration_us": 8337.18,
+            "events": [
+              {
+                "depth": 0,
+                "duration_us": 8262.56,
+                "layer": "engine",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                "timestamp_us": 1784802752786822.8
+              },
+              {
+                "depth": 1,
+                "duration_us": 244.59,
+                "layer": "scheduler",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                "timestamp_us": 1784802752790072.2
+              },
+              {
+                "depth": 1,
+                "duration_us": 1571.11,
+                "layer": "prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.prepare",
+                "timestamp_us": 1784802752790686.5
+              },
+              {
+                "depth": 2,
+                "duration_us": 1493.16,
+                "layer": "decode-graph-prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._prepare_graph",
+                "timestamp_us": 1784802752790730.5
+              },
+              {
+                "depth": 1,
+                "duration_us": 754.98,
+                "layer": "submit-prepared",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit_prepared",
+                "timestamp_us": 1784802752792333.8
+              },
+              {
+                "depth": 2,
+                "duration_us": 649.44,
+                "layer": "decode-graph-submit",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._submit_graph",
+                "timestamp_us": 1784802752792354.8
+              }
+            ],
+            "step": 11
+          },
+          {
+            "duration_us": 5715.98,
+            "events": [
+              {
+                "depth": 0,
+                "duration_us": 5423.99,
+                "layer": "engine",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                "timestamp_us": 1784802752795410.0
+              },
+              {
+                "depth": 1,
+                "duration_us": 132.02,
+                "layer": "scheduler",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                "timestamp_us": 1784802752796021.5
+              },
+              {
+                "depth": 1,
+                "duration_us": 1528.73,
+                "layer": "prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.prepare",
+                "timestamp_us": 1784802752796633.5
+              },
+              {
+                "depth": 2,
+                "duration_us": 1454.92,
+                "layer": "decode-graph-prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._prepare_graph",
+                "timestamp_us": 1784802752796673.5
+              },
+              {
+                "depth": 1,
+                "duration_us": 755.23,
+                "layer": "submit-prepared",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit_prepared",
+                "timestamp_us": 1784802752798236.8
+              },
+              {
+                "depth": 2,
+                "duration_us": 529.1,
+                "layer": "decode-graph-submit",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._submit_graph",
+                "timestamp_us": 1784802752798381.2
+              }
+            ],
+            "step": 12
+          },
+          {
+            "duration_us": 8380.37,
+            "events": [
+              {
+                "depth": 0,
+                "duration_us": 8190.65,
+                "layer": "engine",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                "timestamp_us": 1784802752801052.2
+              },
+              {
+                "depth": 1,
+                "duration_us": 130.09,
+                "layer": "scheduler",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+                "timestamp_us": 1784802752804547.8
+              },
+              {
+                "depth": 1,
+                "duration_us": 1520.96,
+                "layer": "prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.prepare",
+                "timestamp_us": 1784802752805048.0
+              },
+              {
+                "depth": 2,
+                "duration_us": 1452.65,
+                "layer": "decode-graph-prepare",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._prepare_graph",
+                "timestamp_us": 1784802752805086.0
+              },
+              {
+                "depth": 1,
+                "duration_us": 767.89,
+                "layer": "submit-prepared",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit_prepared",
+                "timestamp_us": 1784802752806648.5
+              },
+              {
+                "depth": 2,
+                "duration_us": 531.76,
+                "layer": "decode-graph-submit",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._submit_graph",
+                "timestamp_us": 1784802752806788.5
+              }
+            ],
+            "step": 13
+          },
+          {
+            "duration_us": 1512.95,
+            "events": [
+              {
+                "depth": 0,
+                "duration_us": 1175.5,
+                "layer": "engine",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                "timestamp_us": 1784802752809622.0
+              }
+            ],
+            "step": 14
+          },
+          {
+            "duration_us": 5676.13,
+            "events": [
+              {
+                "depth": 0,
+                "duration_us": 5624.97,
+                "layer": "engine",
+                "source_pid": 212340,
+                "source_tid": 212340,
+                "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+                "timestamp_us": 1784802752810870.5
+              }
+            ],
+            "step": 15
+          }
+        ],
+        "prefill": [
+          {
+            "depth": 0,
+            "duration_us": 64233.39,
+            "layer": "engine",
+            "source_pid": 212340,
+            "source_tid": 212340,
+            "symbol": "auto_infer.engine.engine_core.EngineCore.step",
+            "timestamp_us": 1784802752650003.2
+          },
+          {
+            "depth": 1,
+            "duration_us": 297.52,
+            "layer": "scheduler",
+            "source_pid": 212340,
+            "source_tid": 212340,
+            "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+            "timestamp_us": 1784802752650073.0
+          },
+          {
+            "depth": 1,
+            "duration_us": 51040.16,
+            "layer": "prepare",
+            "source_pid": 212340,
+            "source_tid": 212340,
+            "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.prepare",
+            "timestamp_us": 1784802752650799.5
+          },
+          {
+            "depth": 2,
+            "duration_us": 50962.01,
+            "layer": "eager",
+            "source_pid": 212340,
+            "source_tid": 212340,
+            "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._eager_submit",
+            "timestamp_us": 1784802752650841.0
+          },
+          {
+            "depth": 1,
+            "duration_us": 76.02,
+            "layer": "submit-prepared",
+            "source_pid": 212340,
+            "source_tid": 212340,
+            "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit_prepared",
+            "timestamp_us": 1784802752701927.8
+          },
+          {
+            "depth": 1,
+            "duration_us": 153.8,
+            "layer": "scheduler",
+            "source_pid": 212340,
+            "source_tid": 212340,
+            "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+            "timestamp_us": 1784802752703005.2
+          },
+          {
+            "depth": 1,
+            "duration_us": 1270.59,
+            "layer": "prepare",
+            "source_pid": 212340,
+            "source_tid": 212340,
+            "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.prepare",
+            "timestamp_us": 1784802752703724.5
+          },
+          {
+            "depth": 2,
+            "duration_us": 1201.01,
+            "layer": "decode-graph-prepare",
+            "source_pid": 212340,
+            "source_tid": 212340,
+            "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._prepare_graph",
+            "timestamp_us": 1784802752703767.0
+          },
+          {
+            "depth": 1,
+            "duration_us": 462.84,
+            "layer": "submit-prepared",
+            "source_pid": 212340,
+            "source_tid": 212340,
+            "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit_prepared",
+            "timestamp_us": 1784802752705069.0
+          },
+          {
+            "depth": 2,
+            "duration_us": 295.03,
+            "layer": "decode-graph-submit",
+            "source_pid": 212340,
+            "source_tid": 212340,
+            "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._submit_graph",
+            "timestamp_us": 1784802752705091.2
+          },
+          {
+            "depth": 1,
+            "duration_us": 132.96,
+            "layer": "scheduler",
+            "source_pid": 212340,
+            "source_tid": 212340,
+            "symbol": "auto_infer.engine.scheduler.Scheduler.schedule",
+            "timestamp_us": 1784802752707127.5
+          },
+          {
+            "depth": 1,
+            "duration_us": 1883.88,
+            "layer": "prepare",
+            "source_pid": 212340,
+            "source_tid": 212340,
+            "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.prepare",
+            "timestamp_us": 1784802752707767.8
+          },
+          {
+            "depth": 2,
+            "duration_us": 1814.88,
+            "layer": "decode-graph-prepare",
+            "source_pid": 212340,
+            "source_tid": 212340,
+            "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._prepare_graph",
+            "timestamp_us": 1784802752707805.5
+          },
+          {
+            "depth": 1,
+            "duration_us": 809.72,
+            "layer": "submit-prepared",
+            "source_pid": 212340,
+            "source_tid": 212340,
+            "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner.submit_prepared",
+            "timestamp_us": 1784802752709732.5
+          },
+          {
+            "depth": 2,
+            "duration_us": 551.54,
+            "layer": "decode-graph-submit",
+            "source_pid": 212340,
+            "source_tid": 212340,
+            "symbol": "auto_infer.worker.graph_decode_runner.GraphPagedRunner._submit_graph",
+            "timestamp_us": 1784802752709883.8
+          }
+        ],
+        "runtime": []
+      },
+      "schema_version": 1
+    },
+    "completed_at_utc": "2026-07-23T10:32:33.344460+00:00",
+    "phase_counts": {
+      "decode_passes": 15,
+      "prefill_passes": 1,
+      "runtime_drains": 0
+    },
+    "phase_index": {
+      "lane": "QWEN3 PHASES",
+      "schema_version": 1,
+      "steps": [
+        {
+          "duration_us": 64290.32,
+          "label": "PREFILL",
+          "phase": "prefill",
+          "step": 0,
+          "timestamp_us": 1784802752649977.2
+        },
+        {
+          "duration_us": 8876.53,
+          "label": "DECODE 001",
+          "phase": "decode",
+          "step": 1,
+          "timestamp_us": 1784802752714305.0
+        },
+        {
+          "duration_us": 5864.9,
+          "label": "DECODE 002",
+          "phase": "decode",
+          "step": 2,
+          "timestamp_us": 1784802752723209.8
+        },
+        {
+          "duration_us": 8299.94,
+          "label": "DECODE 003",
+          "phase": "decode",
+          "step": 3,
+          "timestamp_us": 1784802752729103.8
+        },
+        {
+          "duration_us": 6407.19,
+          "label": "DECODE 004",
+          "phase": "decode",
+          "step": 4,
+          "timestamp_us": 1784802752737432.5
+        },
+        {
+          "duration_us": 7561.32,
+          "label": "DECODE 005",
+          "phase": "decode",
+          "step": 5,
+          "timestamp_us": 1784802752743868.5
+        },
+        {
+          "duration_us": 6626.37,
+          "label": "DECODE 006",
+          "phase": "decode",
+          "step": 6,
+          "timestamp_us": 1784802752751457.5
+        },
+        {
+          "duration_us": 7562.69,
+          "label": "DECODE 007",
+          "phase": "decode",
+          "step": 7,
+          "timestamp_us": 1784802752758114.5
+        },
+        {
+          "duration_us": 6090.3,
+          "label": "DECODE 008",
+          "phase": "decode",
+          "step": 8,
+          "timestamp_us": 1784802752765705.8
+        },
+        {
+          "duration_us": 8492.91,
+          "label": "DECODE 009",
+          "phase": "decode",
+          "step": 9,
+          "timestamp_us": 1784802752771823.2
+        },
+        {
+          "duration_us": 6422.87,
+          "label": "DECODE 010",
+          "phase": "decode",
+          "step": 10,
+          "timestamp_us": 1784802752780344.0
+        },
+        {
+          "duration_us": 8337.18,
+          "label": "DECODE 011",
+          "phase": "decode",
+          "step": 11,
+          "timestamp_us": 1784802752786794.5
+        },
+        {
+          "duration_us": 5715.98,
+          "label": "DECODE 012",
+          "phase": "decode",
+          "step": 12,
+          "timestamp_us": 1784802752795159.5
+        },
+        {
+          "duration_us": 8380.37,
+          "label": "DECODE 013",
+          "phase": "decode",
+          "step": 13,
+          "timestamp_us": 1784802752800901.8
+        },
+        {
+          "duration_us": 1512.95,
+          "label": "DECODE 014",
+          "phase": "decode",
+          "step": 14,
+          "timestamp_us": 1784802752809308.8
+        },
+        {
+          "duration_us": 5676.13,
+          "label": "DECODE 015",
+          "phase": "decode",
+          "step": 15,
+          "timestamp_us": 1784802752810845.0
+        }
+      ]
+    },
+    "profiled_path_counters": {
+      "captured_greedy_steps": 15,
+      "eager_steps": 1,
+      "external_sampler_steps": 0,
+      "graph_steps": 15,
+      "prefill_graph_capture_attempts": 0,
+      "prefill_graph_capture_failures": 0,
+      "prefill_graph_fallbacks": 0,
+      "prefill_graph_online_captures": 0,
+      "prefill_graph_steps": 0
+    },
+    "started_at_utc": "2026-07-23T10:32:32.554460+00:00"
+  },
+  "environment": {
+    "capture_harness_revision": "unknown",
+    "capture_harness_revision_origin": "capture_environment",
+    "captured_at_utc": "2026-07-23T10:32:44.805759+00:00",
+    "device": "Ascend910B1",
+    "driver": {
+      "Version": "25.5.0",
+      "ascendhal_version": "7.35.23",
+      "package_version": "25.5.0"
+    },
+    "framework_source_revisions": {},
+    "hostname": "cd40b23e4602",
+    "omni_plugin": "",
+    "platform": "Linux-5.10.0-136.12.0.86.r1526_92.hce2.aarch64-aarch64-with-glibc2.35",
+    "python": "3.11.15",
+    "torch": "2.10.0+cpu",
+    "torch_npu": "2.10.0",
+    "visible_npus": "4",
+    "vllm": "0.20.2+empty"
+  },
+  "framework": "auto-infer",
+  "model_identity": {
+    "checkpoint_sha256": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b",
+    "config_sha256": "660db3b73d788119c04535e48cf9be5f55bc3100841a718637ae695b442f27dd",
+    "path": "/data1/models/Qwen3-0.6B",
+    "prompt_token_count": 9,
+    "prompt_token_ids": [
+      840,
+      20772,
+      1246,
+      264,
+      42578,
+      1622,
+      2539,
+      1467,
+      13
+    ]
+  },
+  "output_batch_digests": [
+    "9b45cd033542b04b",
+    "9b45cd033542b04b",
+    "9b45cd033542b04b",
+    "9b45cd033542b04b",
+    "9b45cd033542b04b",
+    "9b45cd033542b04b",
+    "9b45cd033542b04b",
+    "9b45cd033542b04b",
+    "9b45cd033542b04b",
+    "9b45cd033542b04b",
+    "9b45cd033542b04b",
+    "9b45cd033542b04b",
+    "9b45cd033542b04b",
+    "9b45cd033542b04b",
+    "9b45cd033542b04b",
+    "9b45cd033542b04b"
+  ],
+  "output_digest": "9b45cd033542b04b",
+  "output_length": 16,
+  "runtime_kv_capacity": {
+    "evidence": "constructed EngineConfig CacheConfig",
+    "runtime_block_size": 16,
+    "usable_tokens": 14464
+  },
+  "trace": {
+    "event_count": 82678,
+    "file": "auto-infer.trace.json",
+    "sha256": "a27acd346bae473d4aae333cd7dba03cdf28f2eaee242e95bd33c9b47e3adcc3",
+    "size_bytes": 13893322
+  },
+  "workload": {
+    "batch_size": 16,
+    "capture_phases": {
+      "continuous_decode": true,
+      "decode_passes": 15,
+      "prefill_passes": 1,
+      "speculative_mtp": false
+    },
+    "dtype": "bfloat16",
+    "framework": "auto-infer",
+    "kv_block_size": 16,
+    "kv_cache_memory_bytes": 1658847232,
+    "max_model_len": 2048,
+    "max_prefill_tokens": 256,
+    "model": "/data1/models/Qwen3-0.6B",
+    "output_tokens": 16,
+    "prompt": "Explain how a transformer decodes text.",
+    "seed": 0,
+    "temperature": 0.0,
+    "usable_kv_tokens": 14464,
+    "warmup_output_tokens": 8,
+    "warmup_runs": 1
+  }
+}

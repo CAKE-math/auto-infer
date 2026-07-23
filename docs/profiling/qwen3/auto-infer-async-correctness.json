@@ -1,0 +1,12 @@
+{
+  "pass": true,
+  "digest": "e1a2b08c3149731b",
+  "cases": {
+    "b1": [32],
+    "b16": [32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32],
+    "staggered": [17, 11, 7, 5],
+    "eos": [1, 1],
+    "abort_survivor": 12
+  },
+  "remote_log": "/data2/auto-infer-zero-host-async-20260723/logs/verify-task-thread.log"
+}

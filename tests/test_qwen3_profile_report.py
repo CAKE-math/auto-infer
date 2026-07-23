@@ -428,9 +428,12 @@ def test_framework_call_targets_follow_live_runtime_objects():
         def execute(self): pass
         def execute_model(self): pass
         def get_output(self): pass
+        def prepare(self): pass
         def submit(self): pass
+        def submit_prepared(self): pass
         def _eager_submit(self): pass
-        def _graph_submit(self): pass
+        def _prepare_graph(self): pass
+        def _submit_graph(self): pass
         def _prefill_graph_submit(self): pass
 
     auto = Node()
@@ -438,8 +441,9 @@ def test_framework_call_targets_follow_live_runtime_objects():
     auto.executor = Node()
     auto.executor.runner = Node()
     assert [target.layer for target in _auto_call_targets(auto)] == [
-        "engine", "scheduler", "executor", "runner", "submit",
-        "eager", "decode-graph", "prefill-graph"]
+        "engine", "scheduler", "executor", "runner", "prepare", "submit",
+        "submit-prepared", "eager", "decode-graph-prepare",
+        "decode-graph-submit", "prefill-graph"]
 
     llm_engine = Node()
     client = llm_engine.engine_core = Node()

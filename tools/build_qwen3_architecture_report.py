@@ -531,6 +531,7 @@ def build_markdown_report(summary: dict, manifest: dict) -> str:
     vllm_peak_gib = data["vllm-ascend"]["peak_allocated_gib"]
     omni_peak_gib = data["omni-npu"]["peak_allocated_gib"]
     phases = workload["capture_phases"]
+    decode_total_label = f"{phases['decode_passes']} 个 DECODE 合计"
     driver = manifest["provenance"]["driver"]
 
     benchmark_rows = []
@@ -622,7 +623,7 @@ def build_markdown_report(summary: dict, manifest: dict) -> str:
 
 ![Qwen3 三框架 phase 时序](../figures/qwen3-profile-phase-sequence.png)
 
-{_md_table(['框架', '请求范围', 'PREFILL host range', f'{phases['decode_passes']} 个 DECODE 合计', '原生 complete events', '原始 Trace'], profile_rows)}
+{_md_table(['框架', '请求范围', 'PREFILL host range', decode_total_label, '原生 complete events', '原始 Trace'], profile_rows)}
 
 ### 逐步 phase 索引
 

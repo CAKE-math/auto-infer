@@ -155,9 +155,12 @@ def _auto_call_targets(engine):
         CallTarget("scheduler", engine.scheduler, "schedule"),
         CallTarget("executor", executor, "execute"),
         CallTarget("runner", runner, "execute"),
+        CallTarget("prepare", runner, "prepare"),
         CallTarget("submit", runner, "submit"),
+        CallTarget("submit-prepared", runner, "submit_prepared"),
         CallTarget("eager", runner, "_eager_submit"),
-        CallTarget("decode-graph", runner, "_graph_submit"),
+        CallTarget("decode-graph-prepare", runner, "_prepare_graph"),
+        CallTarget("decode-graph-submit", runner, "_submit_graph"),
         CallTarget("prefill-graph", runner, "_prefill_graph_submit"),
     )
 
@@ -299,6 +302,8 @@ def capture(manifest_path: Path, framework: str, output_dir: Path) -> None:
     import torch_npu
     from torch.profiler import record_function
     from torch_npu.profiler import ProfilerActivity, profile
+    from auto_infer.engine.async_timeline import (
+        add_async_events_to_trace, clear_async_events)
 
     manifest = load_manifest(manifest_path)
     workload = profile_configuration(manifest, framework)
@@ -317,6 +322,7 @@ def capture(manifest_path: Path, framework: str, output_dir: Path) -> None:
                 workload["batch_size"], workload["warmup_output_tokens"])
         torch.npu.synchronize()
         counters_before = getattr(engine, "path_counters", {})
+        clear_async_events()
         started_at = datetime.now(timezone.utc).isoformat()
         with profile(
             activities=[ProfilerActivity.CPU, ProfilerActivity.NPU],
@@ -337,6 +343,8 @@ def capture(manifest_path: Path, framework: str, output_dir: Path) -> None:
             torch.npu.synchronize()
         completed_at = datetime.now(timezone.utc).isoformat()
         profiler.export_chrome_trace(str(trace_path))
+        if framework == "auto-infer" and manifest["async_scheduling"]:
+            add_async_events_to_trace(trace_path)
         phase_counts = phase_recorder.validate(workload["output_tokens"])
         phase_index = add_visible_phase_lane(
             trace_path, workload["output_tokens"])
@@ -347,8 +355,9 @@ def capture(manifest_path: Path, framework: str, output_dir: Path) -> None:
             for name, value in counters_after.items()
         }
         if framework == "auto-infer":
-            validate_auto_prefill_path(call_stack_index)
-            validate_auto_prefill_counters(profiled_path_counters)
+            if not manifest["async_scheduling"]:
+                validate_auto_prefill_path(call_stack_index)
+                validate_auto_prefill_counters(profiled_path_counters)
     finally:
         engine.close()
 

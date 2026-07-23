@@ -64,10 +64,14 @@ def main():
     median_ttft = summarize(ttft_samples)["median"]
     median_full = summarize(full_samples)["median"]
     runner = llm.engine.executor.runner
+    slot_gears = getattr(runner, "_slot_gears", (runner.gears,))
+    decode_gears = [
+        gear for gears in slot_gears for gear in gears.values()]
+    decode_stagers = [gear.stager for gear in decode_gears]
     decode_copied_block_rows = sum(
-        gear.stager.copied_block_rows for gear in runner.gears.values())
+        stager.copied_block_rows for stager in decode_stagers)
     decode_copied_block_elements = sum(
-        gear.stager.copied_block_elements for gear in runner.gears.values())
+        stager.copied_block_elements for stager in decode_stagers)
     prefill_copied_block_rows = sum(
         gear.stager.copied_block_rows for gear in runner.prefill_gears.values())
     prefill_copied_block_elements = sum(
@@ -75,7 +79,8 @@ def main():
         for gear in runner.prefill_gears.values())
     path_counters = dict(runner.stats)
     path_counters.update(
-        captured_gears=sorted(runner.gears),
+        captured_gears=sorted({
+            size for gears in slot_gears for size in gears}),
         captured_prefill_gears=sorted(runner.prefill_gears),
         decode_copied_block_rows=decode_copied_block_rows,
         decode_copied_block_elements=decode_copied_block_elements,

@@ -29,7 +29,7 @@ class _Backend:
         self.trace.append(f"update:{stream}")
 
 
-def test_pipeline_prepares_update_before_replay_submission():
+def test_pipeline_replays_before_side_stream_update():
     trace = []
     backend = _Backend(trace)
     pipeline = GraphTaskPipeline(
@@ -38,8 +38,9 @@ def test_pipeline_prepares_update_before_replay_submission():
 
     ticket = pipeline.prepare(_Context([7, 11]))
     pipeline.submit(_Graph(trace), ticket)
+    pipeline.update(ticket)
 
-    assert trace == ["update:side", "replay"]
+    assert trace == ["replay", "update:side"]
     assert backend.contexts[0].seqlens_kv == [7, 11]
 
 
@@ -51,11 +52,13 @@ def test_pipeline_rotates_without_mutating_inflight_metadata():
         stream_context=lambda stream: nullcontext())
 
     first_ticket = pipeline.prepare(_Context([7, 11], [3, 5]))
-    first = backend.contexts[-1]
+    first = first_ticket.context
     second_ticket = pipeline.prepare(_Context([8, 12], [4, 6]))
-    second = backend.contexts[-1]
+    second = second_ticket.context
     pipeline.submit(_Graph(trace), first_ticket)
+    pipeline.update(first_ticket)
     pipeline.submit(_Graph(trace), second_ticket)
+    pipeline.update(second_ticket)
 
     assert first.seqlens_kv == [7, 11]
     assert first.cu_seqlens_q == [3, 5]

@@ -48,7 +48,9 @@ def build(path, depth):
         async_batches=max(1, depth),
     )
     return LLM(cfg, executor=GraphPagedNpuExecutor(
-        path, NUM_BLOCKS, BLOCK_SIZE, max_gear=64))
+        path, NUM_BLOCKS, BLOCK_SIZE, max_gear=64,
+        async_slots=max(1, depth),
+        max_num_seqs=cfg.scheduler.max_num_seqs))
 
 
 def bench(llm, prompt_ids, batch, max_tokens):

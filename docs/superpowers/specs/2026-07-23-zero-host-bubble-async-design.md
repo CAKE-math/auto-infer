@@ -5,7 +5,9 @@
 Make asynchronous decode a real device pipeline rather than an asynchronous
 API wrapper. In steady state, when device sampling for step `N` completes,
 step `N+1` must already have completed host scheduling, plan construction,
-input staging, graph-task update, and graph submission.
+input staging, and graph submission. Its late-bound graph-task update may still
+be running, but must finish before the dependent attention node and therefore
+cannot open a device bubble.
 
 “Zero host time” means zero host work on the steady-state device critical path;
 the CPU still performs work, but that work must be hidden under the preceding
@@ -15,13 +17,18 @@ NPU step.
 
 ```text
 Host:
-  schedule N+1 ─ plan N+1 ─ stage N+1 ─ task-update N+1 ─ submit N+1
+  schedule N+1 ─ plan N+1 ─ stage N+1 ─ submit N+1
+                                               └─ dispatch task-update N+1
 
 Compute stream:
-  graph N ─ sample N ─ device-token splice N→N+1 ─ graph N+1
+  graph N ─ sample N ─ device-token splice N→N+1 ─ graph N+1 early ops
+                                                    └─ event wait ─ attention
 
 Copy stream:
                          D2H N ─ client/output finalization
+
+Update stream:
+                   graph-task-update N+1 ─ record external event
 ```
 
 The following ordering conditions are release gates:
@@ -30,6 +37,7 @@ The following ordering conditions are release gates:
 schedule_done(N+1) < sample_done(N)
 stage_done(N+1)    < sample_done(N)
 submit_done(N+1)   < sample_done(N)
+task_update_done(N+1) < sample_done(N+1)
 device_gap(N,N+1) < 1% of median TPOT
 ```
 
@@ -81,12 +89,15 @@ prepared = executor.prepare(plan, previous_device_tokens)
 handle = executor.submit_prepared(prepared)
 ```
 
-`prepare` performs host planning and queues fixed-buffer updates into the
-leased slot. `submit_prepared` performs no scheduling and only places already
-prepared device work into the compute stream.
+`prepare` performs host planning and queues fixed-buffer H2D updates on the
+leased slot's staging stream. `submit_prepared` places the prepared replay on
+the compute stream, then dispatches graph-task updates to a dedicated host
+worker and slot-owned update stream.
 
-Graph-task metadata is updated for the leased slot before its graph replay is
-submitted. The captured graph’s external events preserve device ordering.
+Replay is deliberately submitted before the dynamic task update. Captured
+external events make the graph wait at the affected attention operations,
+while early graph work and the preceding step continue on device. The update
+must finish before its own graph samples; it need not block replay submission.
 
 ### 3. Device-Resident Token Handoff
 
@@ -124,7 +135,8 @@ Add host markers for:
 - `finalize`.
 
 The analyzer pairs step `N+1` host markers with step `N` sampling markers and
-rejects an async performance artifact unless the ordering contract passes.
+rejects an async performance artifact unless replay submission precedes the
+current sample and the late-bound task update precedes its own sample.
 It also reports inter-graph device gaps and refuses to describe async as
 zero-host-bubble when the evidence is unavailable.
 

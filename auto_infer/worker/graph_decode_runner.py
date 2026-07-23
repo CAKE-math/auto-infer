@@ -12,8 +12,9 @@ graph backend uses:
     variant — no workspace sync, unlike the plain FIA which breaks capture).
   * whole-model decode forward captured once per *gear* batch size into an
     NPUGraph; each layer's FIA wrapped in graph_task_group_begin/end -> handle.
-  * per step: fill static buffers (token/pos/slot/block_table), graph_task_update
-    every layer handle with the batch's per-seq actual_seq_kvlen, then g.replay().
+  * per step: stage static buffers, submit graph replay, then dispatch each
+    layer's graph-task update on a dedicated host worker/update stream. Captured
+    external events delay only the dependent attention nodes.
   * TND rule: actual_seq_qlen is CUMULATIVE, actual_seq_kvlen is PER-SEQUENCE.
 
 The runner is model-agnostic: it resolves its graph backend through the central
@@ -30,6 +31,9 @@ shapes fall back to eager FIA-v2;
 decode-only batches with B <= max_gear use the decode graph family.
 """
 from concurrent.futures import Future, ThreadPoolExecutor
+from contextlib import nullcontext
+import os
+import time
 
 import torch
 
@@ -110,12 +114,6 @@ class _Gear:
             g, dtype=torch.bool, device=device)
         self.logits = torch.zeros(g, vocab, dtype=dtype, device=device)
         self.sampled = torch.zeros(g, dtype=torch.long, device=device)
-        self.token_store_rows = torch.zeros(
-            g, dtype=torch.long, device=device)
-        self.token_store_rows_host = torch.empty(g, dtype=torch.long)
-        if device.type != "cpu":
-            self.token_store_rows_host = self.token_store_rows_host.pin_memory()
-        self.token_store_rows_np = self.token_store_rows_host.numpy()
         self.qlen_cum = list(range(1, g + 1))
         self.reg = []
         self.graph = None
@@ -181,9 +179,13 @@ class GraphPagedRunner:
         self._slot_pool = ExecutionSlotPool(async_slots)
         self._slot_gears: list[dict[int, _Gear]] = [
             {} for _ in range(async_slots)]
-        # Public compatibility view: synchronous callers and architecture tests
-        # inspect the first slot's captured gears.
         self.gears = self._slot_gears[0]
+        self._stage_streams = [
+            torch.npu.Stream() for _ in range(async_slots)]
+        self._stage_dependencies = [
+            torch.npu.Event() for _ in range(async_slots)]
+        self._stage_ready = [
+            torch.npu.Event() for _ in range(async_slots)]
         self._token_store = DeviceTokenStore(
             max_num_seqs * (async_slots + 1), self.device)
         self._async_slots = async_slots
@@ -200,13 +202,16 @@ class GraphPagedRunner:
         # Single-worker output thread for the D2H `.tolist()`, created lazily. Same
         # default-stream-ordering assumption as NpuModelRunner.collect_async.
         self._output_thread: ThreadPoolExecutor | None = None
+        self._task_update_pool = ThreadPoolExecutor(
+            max_workers=async_slots, thread_name_prefix="GraphTaskUpdate")
         self._copy_stream = None
         self._copy_pool = PinnedTokenBufferPool(pin_memory=self.device.type != "cpu")
-        if (not self.force_eager
+        if (self._async_slots == 1 and not self.force_eager
                 and getattr(self.backend, "supports_prefill_graph", False)):
             self._prewarm_prefill_gears()
 
     def close(self) -> None:
+        self._task_update_pool.shutdown(wait=True)
         if self._output_thread is not None:
             self._output_thread.shutdown(wait=True)
             self._output_thread = None
@@ -398,13 +403,24 @@ class GraphPagedRunner:
         return gear
 
     def _prepare_graph(self, plan, gear, prev_sampled, slot):
-        """Stage immutable slot state and graph-task updates before replay."""
+        """Stage immutable slot state and prepare metadata for replay."""
         reqs = plan.scheduled; B = len(reqs)
-        staged = gear.stager.stage(plan)
+        compute_stream = torch.npu.current_stream()
+        stage_stream = self._stage_streams[slot.slot_id]
+        dependency = self._stage_dependencies[slot.slot_id]
+        ready = self._stage_ready[slot.slot_id]
+        # Record after all previously submitted compute. Metadata H2D can run
+        # immediately on the slot stream; only the sampled-token splice waits
+        # for the preceding graph's device result.
+        dependency.record(compute_stream)
+        with torch.npu.stream(stage_stream):
+            staged = gear.stager.stage(plan)
+            splice = gear.stager.prepare_splice(
+                prev_sampled, staged.order)
+            dependency.wait(stage_stream)
+            gear.stager.apply_splice(splice)
+            ready.record(stage_stream)
         kvlens, order = staged.kv_lengths, staged.order
-        # async decode-splice (see _eager_submit) — device-to-device scalar
-        # assignment from `prev_sampled`, no host sync.
-        gear.stager.splice(prev_sampled, order)
         ctx = self._make_ctx(gear.tid, gear.ppos, gear.pslot, gear.bt,
                              gear.qlen_cum, kvlens, is_decode=True,
                              active_token_mask=gear.active_token_mask)
@@ -420,19 +436,20 @@ class GraphPagedRunner:
             sampler_tensors, _ = build_sampling_tensors(
                 reqs_o, logits.shape[-1], logits.device)
             toks = None
-        rows = self._token_store.reserve(order)
-        gear.token_store_rows_np[:B] = rows
-        gear.token_store_rows.copy_(
-            gear.token_store_rows_host, non_blocking=self.device.type != "cpu")
         return {
             "kind": "graph", "slot": slot, "gear": gear, "ticket": ticket,
             "submission_id": slot.sequence,
+            "input_ready": ready,
             "tokens": toks, "logits": logits, "sampler_tensors": sampler_tensors,
-            "order": order, "store_rows": rows}
+            "order": order}
 
     def _submit_graph(self, prepared):
         gear = prepared["gear"]
+        prepared["input_ready"].wait(torch.npu.current_stream())
         gear.pipeline.submit(gear.graph, prepared["ticket"])
+        prepared["task_update"] = self._task_update_pool.submit(
+            self._update_graph_task, prepared["submission_id"],
+            gear.pipeline, prepared["ticket"])
         toks = prepared["tokens"]
         if toks is None:
             from auto_infer.layers.sampler import sample_batched
@@ -443,10 +460,26 @@ class GraphPagedRunner:
             self.stats["captured_greedy_steps"] += 1
         self.stats["graph_steps"] += 1
         prepared["tokens"] = toks
-        prepared["token_batch"] = self._token_store.commit(
-            toks, prepared["order"], prepared["store_rows"],
-            gear.token_store_rows)
+        prepared["token_batch"] = DeviceTokenBatch.from_output(
+            toks, prepared["order"])
         return prepared
+
+    @staticmethod
+    def _update_graph_task(sequence, pipeline, ticket):
+        span = nullcontext()
+        if os.getenv("AUTO_INFER_ASYNC_TRACE", "") == "1":
+            span = torch.profiler.record_function(
+                f"auto_infer.async/{sequence}/task_update")
+        started = time.time_ns()
+        try:
+            with span:
+                pipeline.update(ticket)
+        finally:
+            if os.getenv("AUTO_INFER_ASYNC_TRACE", "") == "1":
+                from auto_infer.engine.async_timeline import (
+                    record_async_interval)
+                record_async_interval(
+                    sequence, "task_update", started, time.time_ns())
 
     def _prefill_graph_submit(self, plan, gear, prev_sampled):
         staged = gear.stager.stage(plan)
@@ -546,7 +579,7 @@ class GraphPagedRunner:
                 return self._submit_graph(prepared)
             tokens = prepared["tokens"]
             if tokens is not None:
-                prepared["token_batch"] = self._token_store.write(
+                prepared["token_batch"] = DeviceTokenBatch.from_output(
                     tokens, prepared["order"])
             return prepared
         except Exception:
@@ -594,8 +627,28 @@ class GraphPagedRunner:
             self.release_submission(handle)
 
     def release_submission(self, handle) -> None:
+        if handle is not None and handle.get("task_update") is not None:
+            handle["task_update"].result()
         if handle is not None and handle.get("slot") is not None:
             self._slot_pool.release(handle["slot"])
+
+    def stabilize_refs(self, handle, current_refs) -> dict:
+        """Spill only requests skipped since this output slot was produced."""
+        if handle is None or handle.get("token_batch") is None:
+            return {}
+        owner = handle["token_batch"]
+        request_ids = []
+        source_rows = []
+        for rid, ref in current_refs.items():
+            if ref.owner is owner:
+                request_ids.append(rid)
+                source_rows.append(ref.row)
+        if not request_ids:
+            return {}
+        indices = torch.as_tensor(
+            source_rows, dtype=torch.long, device=owner.tokens.device)
+        tokens = owner.tokens.index_select(0, indices)
+        return self._token_store.write(tokens, request_ids).refs()
 
     def release_requests(self, request_ids) -> None:
         self._token_store.release(request_ids)
