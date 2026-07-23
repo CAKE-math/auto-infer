@@ -76,6 +76,9 @@ def _graph(config) -> dict:
         "max_prefill_tokens": config.execution.max_prefill_tokens,
         "max_model_len": config.model.max_model_len,
         "force_eager": config.execution.force_eager,
+        "async_slots": (
+            config.async_batches if config.async_scheduling else 1),
+        "max_num_seqs": config.scheduler.max_num_seqs,
     }
 
 

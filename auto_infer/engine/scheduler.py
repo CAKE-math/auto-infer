@@ -58,7 +58,13 @@ class Scheduler:
     def has_unfinished(self) -> bool:
         return bool(self.waiting or self.running)
 
-    def free_request(self, request_id: str) -> None:
+    def retire_request(self, request_id: str) -> None:
+        """Stop admitting a request while preserving its KV for in-flight work."""
+        self.running = [r for r in self.running if r.request_id != request_id]
+        self.waiting = [r for r in self.waiting if r.request_id != request_id]
+
+    def reclaim_request(self, request_id: str) -> None:
+        """Release a retired request after all submitted batches drop their lease."""
         req = self._requests.get(request_id)
         bt = self.block_tables.get(request_id, [])
         if req is not None and bt and self.config.enable_prefix_caching:
@@ -68,6 +74,11 @@ class Scheduler:
         self._requests.pop(request_id, None)
         self.running = [r for r in self.running if r.request_id != request_id]
         self.waiting = [r for r in self.waiting if r.request_id != request_id]
+
+    def free_request(self, request_id: str) -> None:
+        """Synchronous convenience for callers with no in-flight leases."""
+        self.retire_request(request_id)
+        self.reclaim_request(request_id)
 
     def schedule(self) -> SchedulerOutput:
         scheduled: list[ScheduledRequest] = []

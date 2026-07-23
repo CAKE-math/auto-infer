@@ -1,5 +1,7 @@
 import time
 from collections import deque
+from collections import defaultdict
+from dataclasses import dataclass
 
 from auto_infer.config import EngineConfig
 from auto_infer.engine.executor import Executor
@@ -9,10 +11,25 @@ from auto_infer.engine.kv_cache_manager import KVCacheManager
 from auto_infer.engine.request import Request, RequestStatus
 from auto_infer.engine.scheduler import Scheduler, SchedulerOutput
 from auto_infer.engine.metrics import StatLogger
+from auto_infer.engine.async_timeline import AsyncTimeline
+
+
+@dataclass
+class InFlightBatch:
+    sequence: int
+    sched: SchedulerOutput
+    handle: object
+    future: object
+    request_ids: tuple[str, ...]
+    prefill_tokens: int
 
 
 class EngineCore:
     def __init__(self, config: EngineConfig, executor: Executor):
+        if config.async_scheduling and not executor.supports_async():
+            raise ValueError(
+                "async_scheduling requires an executor with isolated "
+                "in-flight submission slots")
         self.config = config
         self.kv = KVCacheManager(config.cache.num_blocks, config.cache.block_size)
         speculative_tokens = (
@@ -22,9 +39,13 @@ class EngineCore:
             config.scheduler, self.kv, speculative_tokens)
         self.executor = executor
         # vLLM-aligned async pipeline state
-        self._queue: deque = deque()               # in-flight (sched, handle)
+        self._queue: deque[InFlightBatch] = deque()
         self._sampled = {}                         # rid -> last sampled token (device tensor/int)
         self._pending_idx: dict[str, deque] = {}   # rid -> placeholder output indices to backfill
+        self._inflight_refs: dict[str, int] = defaultdict(int)
+        self._retired: set[str] = set()
+        self._async_sequence = 0
+        self._async_timeline = AsyncTimeline()
         self.stat_logger = (StatLogger(config.log_stats_interval_s)
                             if config.log_stats else None)
         self.spec = config.spec_decode      # MTP spec-decode; drafts come from the runner's
@@ -40,6 +61,11 @@ class EngineCore:
             raise RequestRejectedError(
                 "MTP speculative decoding is greedy-only; sampling filters, "
                 "penalties, and logit constraints are not supported")
+        if self.config.async_scheduling and not self._supports_async_sampling(req):
+            raise RequestRejectedError(
+                "async scheduling currently requires history-independent greedy "
+                "sampling; penalties, filters, and logit constraints need "
+                "device-resident sampling history")
         # The current allocator has no KV offload. Admit only requests whose
         # complete worst-case sequence can fit by itself; otherwise no amount
         # of preemption can make progress once the sole request reaches the
@@ -73,6 +99,10 @@ class EngineCore:
             and sampling.bad_words_token_ids is None
             and sampling.allowed_token_ids is None
         )
+
+    @staticmethod
+    def _supports_async_sampling(req: Request) -> bool:
+        return EngineCore._supports_spec_sampling(req)
 
     def _log_step(self, now, prefill_toks, gen_toks, finished) -> None:
         sl = self.stat_logger
@@ -201,7 +231,26 @@ class EngineCore:
             request.status = RequestStatus.FINISHED
             self._pending_idx.pop(request.request_id, None)
             self._sampled.pop(request.request_id, None)
-            self.scheduler.free_request(request.request_id)
+            self._retire(request)
+            self._reclaim_if_idle(request.request_id)
+
+    def _retire(self, request: Request) -> None:
+        rid = request.request_id
+        request.status = RequestStatus.FINISHED
+        request.num_computed_tokens = min(
+            request.num_computed_tokens, max(0, request.num_tokens - 1))
+        self.scheduler.retire_request(rid)
+        self._retired.add(rid)
+
+    def _reclaim_if_idle(self, request_id: str) -> None:
+        if request_id not in self._retired or self._inflight_refs.get(request_id, 0):
+            return
+        self._retired.remove(request_id)
+        self._inflight_refs.pop(request_id, None)
+        self.scheduler.reclaim_request(request_id)
+        release = getattr(self.executor, "release_requests", None)
+        if release is not None:
+            release((request_id,))
 
     @staticmethod
     def _raise_result_errors(result) -> None:
@@ -264,17 +313,49 @@ class EngineCore:
     # overlaps the queued batches' device compute and their already-issued host work.
     def _step_async(self) -> list[Request]:
         sl = self.stat_logger
-        now = time.monotonic() if sl else 0.0
-        prefill_toks = gen_toks = 0
         depth = max(1, self.config.async_batches)
+        self._fill_async_queue(depth)
+        if not self._queue:
+            return []
+
+        oldest = self._queue.popleft()
+        try:
+            with self._async_timeline.span(oldest.sequence, "collect"):
+                result = self.executor.collect_result(oldest.future)
+            self._raise_result_errors(result)
+            sampled = result.single_tokens()
+            now = time.monotonic() if sl else 0.0
+            with self._async_timeline.span(oldest.sequence, "finalize"):
+                finished, gen_toks = self._finalize(
+                    oldest.sched, sampled, now)
+        finally:
+            self.executor.release_submission(oldest.handle)
+            self._release_batch_leases(oldest.request_ids)
+
+        # Refill before returning externally-visible results. This keeps the
+        # device queue full even when serving post-processing takes time.
+        self._fill_async_queue(depth)
+        if sl:
+            self._log_step(
+                now, oldest.prefill_tokens, gen_toks, len(finished))
+        return finished
+
+    def _fill_async_queue(self, depth: int) -> None:
         while len(self._queue) < depth and self._schedulable():
-            sched = self._schedule_with_preemption(defer_if_inflight=True)
+            sequence = self._async_sequence
+            with self._async_timeline.span(sequence, "schedule"):
+                sched = self._schedule_with_preemption(defer_if_inflight=True)
             if sched.needs_preemption:
                 break
             if not sched.scheduled:
                 break
-            plan = BatchPlan.from_scheduler(sched, self.scheduler)
-            handle = self.executor.submit(plan, self._sampled)
+            with self._async_timeline.span(sequence, "plan"):
+                plan = BatchPlan.from_scheduler(sched, self.scheduler)
+            with self._async_timeline.span(sequence, "prepare"):
+                prepared = self.executor.prepare(plan, self._sampled)
+            with self._async_timeline.span(sequence, "submit"):
+                handle = self.executor.submit_prepared(prepared)
+            self._async_sequence += 1
             # MERGE (not replace): a running decode request skipped this batch
             # (decode loop hit num_seqs >= max_num_seqs or budget < 1) keeps its
             # last-sampled token so the NEXT batch that does schedule it can
@@ -283,27 +364,23 @@ class EngineCore:
             sampled_batch = self.executor.sampled_of(handle)
             if sampled_batch is not None:
                 self._sampled.update(sampled_batch.refs())          # owners retain storage
-            if sl:
-                prefill_toks += sum(sr.num_tokens_to_compute
-                                    for sr in sched.scheduled if sr.is_prefill)
-            gen_toks += self._advance_optimistic(sched, now)
+            self._advance_optimistic(sched)
             # Hand the D2H off to the output thread and keep going — `handle`
             # is not touched again on this thread (its device tensor is only
             # ever read, never mutated, by the output thread's `.tolist()`).
-            future = self.executor.collect_async(handle)
-            self._queue.append((sched, future))
-            if len(self._queue) < depth:
-                continue
-        if not self._queue:
-            return []
-        sched_old, future_old = self._queue.popleft()
-        result = self.executor.collect_result(future_old)
-        self._raise_result_errors(result)
-        sampled = result.single_tokens()
-        finished = self._finalize(sched_old, sampled)
-        if sl:
-            self._log_step(now, prefill_toks, gen_toks, len(finished))
-        return finished
+            try:
+                future = self.executor.collect_async(handle)
+            except Exception:
+                self.executor.release_submission(handle)
+                raise
+            request_ids = tuple(sr.request_id for sr in sched.scheduled)
+            for rid in request_ids:
+                self._inflight_refs[rid] += 1
+            prefill_tokens = sum(
+                sr.num_tokens_to_compute for sr in sched.scheduled
+                if sr.is_prefill)
+            self._queue.append(InFlightBatch(
+                sequence, sched, handle, future, request_ids, prefill_tokens))
 
     def _schedulable(self) -> bool:
         for r in self.scheduler.waiting + self.scheduler.running:
@@ -311,21 +388,16 @@ class EngineCore:
                 return True
         return False
 
-    def _advance_optimistic(self, sched, now=0.0) -> int:
+    def _advance_optimistic(self, sched) -> int:
         """Returns the number of requests that produced their (placeholder) first/
         next output token this batch — the step's generated-token count."""
-        sl = self.stat_logger
         gen = 0
         for sr in sched.scheduled:
             req = self.scheduler.get_request(sr.request_id)
             prompt_done = req.num_computed_tokens + sr.num_tokens_to_compute >= req.num_prefill_tokens
             req.num_computed_tokens += sr.num_tokens_to_compute
             if prompt_done:
-                if sl:
-                    gen += 1
-                    if not req.output_token_ids and req.arrival_time is not None:
-                        req.first_token_time = now
-                        sl.record_ttft(now - req.arrival_time)
+                gen += 1
                 req.append_output_token(0)                     # placeholder, backfilled at finalize
                 self._pending_idx.setdefault(req.request_id, deque()).append(len(req.output_token_ids) - 1)
                 self._promote(req)
@@ -343,12 +415,15 @@ class EngineCore:
             return True
         return tok in sp.stop_token_ids
 
-    def _finalize(self, sched, sampled) -> list[Request]:
+    def _finalize(self, sched, sampled, now=0.0) -> tuple[list[Request], int]:
         finished: list[Request] = []
+        generated = 0
         for sr in sched.scheduled:
             rid = sr.request_id
             req = self.scheduler.get_request_or_none(rid)
             if req is None:                                     # already finished this drain
+                continue
+            if rid in self._retired:
                 continue
             if self._pending_idx.get(rid) and rid not in sampled:
                 raise EngineStalledError(
@@ -357,10 +432,17 @@ class EngineCore:
                 idx = self._pending_idx[rid].popleft()
                 tok = sampled[rid]
                 req.output_token_ids[idx] = tok                 # backfill real token
+                generated += 1
+                if (self.stat_logger is not None and idx == 0
+                        and req.arrival_time is not None):
+                    req.first_token_time = now
+                    self.stat_logger.record_ttft(now - req.arrival_time)
                 if self._stops_at(req, tok, idx):               # EOS/stop lands mid-lookahead
                     del req.output_token_ids[idx + 1:]          # drop placeholders past the stop
                     self._pending_idx.pop(rid, None)
                     req.status = RequestStatus.FINISHED
+                    req.num_computed_tokens = min(
+                        req.num_computed_tokens, max(0, req.num_tokens - 1))
                     finished.append(req)
                     continue
             # otherwise finish only once ALL in-flight backfills are applied
@@ -368,8 +450,22 @@ class EngineCore:
             if req.is_finished() and not self._pending_idx.get(rid):
                 req.status = RequestStatus.FINISHED
                 finished.append(req)
-        self._release_finished(finished)
-        return finished
+        for request in finished:
+            self._pending_idx.pop(request.request_id, None)
+            self._sampled.pop(request.request_id, None)
+            self._retire(request)
+        return finished, generated
+
+    def _release_batch_leases(self, request_ids) -> None:
+        for rid in request_ids:
+            remaining = self._inflight_refs[rid] - 1
+            if remaining < 0:
+                raise RuntimeError(f"negative in-flight lease count for {rid}")
+            if remaining:
+                self._inflight_refs[rid] = remaining
+            else:
+                self._inflight_refs.pop(rid, None)
+            self._reclaim_if_idle(rid)
 
     def _promote(self, req: Request) -> None:
         self.scheduler.promote(req)
@@ -381,4 +477,8 @@ class EngineCore:
         `get_request_or_none is None` guard in _finalize."""
         self._pending_idx.pop(request_id, None)
         self._sampled.pop(request_id, None)
-        self.scheduler.free_request(request_id)
+        request = self.scheduler.get_request_or_none(request_id)
+        if request is None:
+            return
+        self._retire(request)
+        self._reclaim_if_idle(request_id)

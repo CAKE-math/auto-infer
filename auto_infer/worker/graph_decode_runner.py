@@ -110,6 +110,12 @@ class _Gear:
             g, dtype=torch.bool, device=device)
         self.logits = torch.zeros(g, vocab, dtype=dtype, device=device)
         self.sampled = torch.zeros(g, dtype=torch.long, device=device)
+        self.token_store_rows = torch.zeros(
+            g, dtype=torch.long, device=device)
+        self.token_store_rows_host = torch.empty(g, dtype=torch.long)
+        if device.type != "cpu":
+            self.token_store_rows_host = self.token_store_rows_host.pin_memory()
+        self.token_store_rows_np = self.token_store_rows_host.numpy()
         self.qlen_cum = list(range(1, g + 1))
         self.reg = []
         self.graph = None
@@ -146,7 +152,7 @@ class GraphPagedRunner:
 
     def __init__(self, model, num_blocks, block_size, max_gear=32,
                  max_prefill_tokens=256, max_model_len=4096,
-                 force_eager=False):
+                 force_eager=False, async_slots=1, max_num_seqs=256):
         self.force_eager = force_eager
         self.model = model
         self.device = model.device
@@ -170,7 +176,17 @@ class GraphPagedRunner:
         # bool mask for FIA-v2 (True = masked); 2048 is the CANN FIA sparse_mode=3
         # contract (compressed causal template; long seqs ride actual_seq_lengths)
         self.mask = ~torch.tril(torch.ones((2048, 2048), dtype=torch.bool, device=self.device))
-        self.gears: dict[int, _Gear] = {}
+        from auto_infer.worker.async_slots import (
+            DeviceTokenStore, ExecutionSlotPool)
+        self._slot_pool = ExecutionSlotPool(async_slots)
+        self._slot_gears: list[dict[int, _Gear]] = [
+            {} for _ in range(async_slots)]
+        # Public compatibility view: synchronous callers and architecture tests
+        # inspect the first slot's captured gears.
+        self.gears = self._slot_gears[0]
+        self._token_store = DeviceTokenStore(
+            max_num_seqs * (async_slots + 1), self.device)
+        self._async_slots = async_slots
         self.prefill_gears: dict[int, _PrefillGear] = {}
         self.failed_prefill_gears: set[int] = set()
         self._prefill_prewarm_active = False
@@ -194,6 +210,9 @@ class GraphPagedRunner:
         if self._output_thread is not None:
             self._output_thread.shutdown(wait=True)
             self._output_thread = None
+
+    def supports_async(self) -> bool:
+        return True
 
     def _make_ctx(self, tid, ppos, slot, bt, cu_q, kv_lens, is_decode,
                   active_token_mask=None):
@@ -253,13 +272,14 @@ class GraphPagedRunner:
         return {"tokens": toks, "order": order}
 
     # ---------- graph (decode-only) ----------
-    def _get_gear(self, B):
+    def _get_gear(self, B, slot_id=0):
         g = _select_gear(B, self.max_gear)
         if g is None:
             return None
-        if g not in self.gears:
-            self.gears[g] = self._capture(g)
-        return self.gears[g]
+        gears = self._slot_gears[slot_id]
+        if g not in gears:
+            gears[g] = self._capture(g)
+        return gears[g]
 
     def _get_prefill_gear(self, query_gear):
         """Runtime lookup only: online requests never pay graph capture cost."""
@@ -322,7 +342,10 @@ class GraphPagedRunner:
         gear.reg = self.backend.reg
         gear.graph = graph
         from auto_infer.worker.graph_task_pipeline import GraphTaskPipeline
-        gear.pipeline = GraphTaskPipeline(self.backend, torch.npu.Stream())
+        gear.pipeline = GraphTaskPipeline(
+            self.backend, torch.npu.Stream(),
+            metadata_slots=max(2, self._async_slots),
+            registrations=gear.reg)
         from auto_infer.worker.prefill_input_stager import PrefillInputStager
         gear.stager = PrefillInputStager(
             token_ids=gear.token_ids, positions=gear.positions,
@@ -362,7 +385,10 @@ class GraphPagedRunner:
         gear.reg = self.backend.reg
         gear.graph = graph
         from auto_infer.worker.graph_task_pipeline import GraphTaskPipeline
-        gear.pipeline = GraphTaskPipeline(self.backend, torch.npu.Stream())
+        gear.pipeline = GraphTaskPipeline(
+            self.backend, torch.npu.Stream(),
+            metadata_slots=max(2, self._async_slots),
+            registrations=gear.reg)
         from auto_infer.worker.decode_input_stager import DecodeInputStager
         gear.stager = DecodeInputStager(
             tid=gear.tid, positions=gear.ppos, slots=gear.pslot,
@@ -371,9 +397,8 @@ class GraphPagedRunner:
             active_token_mask=gear.active_token_mask)
         return gear
 
-    def _graph_submit(self, plan, gear, prev_sampled):
-        """Fill gears + graph.replay(), returning a handle holding the on-device
-        sampled tensor (NO `.tolist()` D2H)."""
+    def _prepare_graph(self, plan, gear, prev_sampled, slot):
+        """Stage immutable slot state and graph-task updates before replay."""
         reqs = plan.scheduled; B = len(reqs)
         staged = gear.stager.stage(plan)
         kvlens, order = staged.kv_lengths, staged.order
@@ -383,23 +408,45 @@ class GraphPagedRunner:
         ctx = self._make_ctx(gear.tid, gear.ppos, gear.pslot, gear.bt,
                              gear.qlen_cum, kvlens, is_decode=True,
                              active_token_mask=gear.active_token_mask)
-        self.backend.reg = gear.reg                         # swap this gear's handles in
-        gear.pipeline.replay(gear.graph, ctx)
+        ticket = gear.pipeline.prepare(ctx)
         logits = gear.logits[:B]
         from auto_infer.worker.decode_epilogue import is_capturable_greedy
         reqs_o = [plan.get_request(rid) for rid in order]
         if is_capturable_greedy(reqs_o):
             toks = gear.sampled[:B]
+            sampler_tensors = None
+        else:
+            from auto_infer.layers.sampling_meta import build_sampling_tensors
+            sampler_tensors, _ = build_sampling_tensors(
+                reqs_o, logits.shape[-1], logits.device)
+            toks = None
+        rows = self._token_store.reserve(order)
+        gear.token_store_rows_np[:B] = rows
+        gear.token_store_rows.copy_(
+            gear.token_store_rows_host, non_blocking=self.device.type != "cpu")
+        return {
+            "kind": "graph", "slot": slot, "gear": gear, "ticket": ticket,
+            "submission_id": slot.sequence,
+            "tokens": toks, "logits": logits, "sampler_tensors": sampler_tensors,
+            "order": order, "store_rows": rows}
+
+    def _submit_graph(self, prepared):
+        gear = prepared["gear"]
+        gear.pipeline.submit(gear.graph, prepared["ticket"])
+        toks = prepared["tokens"]
+        if toks is None:
+            from auto_infer.layers.sampler import sample_batched
+            toks = sample_batched(
+                prepared["logits"], prepared["sampler_tensors"])
+            self.stats["external_sampler_steps"] += 1
+        else:
             self.stats["captured_greedy_steps"] += 1
-            self.stats["graph_steps"] += 1
-            return {"tokens": toks, "order": order, "reused_output": True}
-        from auto_infer.layers.sampling_meta import build_sampling_tensors
-        from auto_infer.layers.sampler import sample_batched
-        t, _ = build_sampling_tensors(reqs_o, logits.shape[-1], logits.device)
-        toks = sample_batched(logits, t)                     # (B,) device, NO D2H here
-        self.stats["external_sampler_steps"] += 1
         self.stats["graph_steps"] += 1
-        return {"tokens": toks, "order": order}
+        prepared["tokens"] = toks
+        prepared["token_batch"] = self._token_store.commit(
+            toks, prepared["order"], prepared["store_rows"],
+            gear.token_store_rows)
+        return prepared
 
     def _prefill_graph_submit(self, plan, gear, prev_sampled):
         staged = gear.stager.stage(plan)
@@ -409,7 +456,6 @@ class GraphPagedRunner:
             gear.token_ids, gear.positions, gear.slots, staged.block_table,
             staged.cumulative_query_lengths, staged.kv_lengths,
             is_decode=False, active_token_mask=gear.active_token_mask)
-        self.backend.reg = gear.reg
         gear.pipeline.replay(gear.graph, ctx)
         self.stats["prefill_graph_steps"] += 1
         if not staged.sample_order:
@@ -422,8 +468,7 @@ class GraphPagedRunner:
             self.stats["captured_greedy_steps"] += 1
             return {
                 "tokens": gear.sampled[:count],
-                "order": staged.sample_order,
-                "reused_output": True}
+                "order": staged.sample_order}
 
         from auto_infer.layers.sampling_meta import build_sampling_tensors
         from auto_infer.layers.sampler import sample_batched
@@ -450,41 +495,72 @@ class GraphPagedRunner:
         return self._output_thread
 
     # ---------- Executor protocol (submit/sampled_of/collect*) ----------
-    def submit(self, plan: BatchPlan, prev_sampled=None):
+    def prepare(self, plan: BatchPlan, prev_sampled=None):
         if not plan.scheduled:
             return None
         prev_sampled = prev_sampled or {}
+        slot = self._slot_pool.acquire()
+        try:
+            return self._prepare_in_slot(plan, prev_sampled, slot)
+        except Exception:
+            self._slot_pool.release(slot)
+            raise
+
+    def _prepare_in_slot(self, plan, prev_sampled, slot):
         all_decode = all(
             sr.num_tokens_to_compute == 1
             and plan.get_request(sr.request_id).num_computed_tokens
             >= plan.get_request(sr.request_id).num_prefill_tokens
             for sr in plan.scheduled)
         B = len(plan.scheduled)
-        gear = self._get_gear(B) if (all_decode and not self.force_eager) else None
+        gear = (self._get_gear(B, slot.slot_id)
+                if (all_decode and not self.force_eager) else None)
         if gear is not None:
-            return self._graph_submit(plan, gear, prev_sampled)
-        if not all_decode and not self.force_eager and getattr(
-                self.backend, "supports_prefill_graph", False):
+            return self._prepare_graph(plan, gear, prev_sampled, slot)
+        # Prefill graphs have one fixed-buffer family. Async execution uses the
+        # private-tensor eager path as a correctness barrier until prefill owns
+        # the same replicated slot contract as decode.
+        if (self._async_slots == 1 and not all_decode and not self.force_eager
+                and getattr(
+                    self.backend, "supports_prefill_graph", False)):
             key = _select_prefill_gear(
                 sum(item.num_tokens_to_compute for item in plan.scheduled),
                 self.max_prefill_tokens)
             if key is not None:
                 gear = self._get_prefill_gear(key)
                 if gear is not None:
-                    return self._prefill_graph_submit(plan, gear, prev_sampled)
+                    handle = self._prefill_graph_submit(
+                        plan, gear, prev_sampled)
+                    handle.update(kind="ready", slot=slot)
+                    return handle
             self.stats["prefill_graph_fallbacks"] += 1
-        return self._eager_submit(plan, prev_sampled)
+        handle = self._eager_submit(plan, prev_sampled)
+        handle.update(kind="ready", slot=slot)
+        return handle
+
+    def submit_prepared(self, prepared):
+        if prepared is None:
+            return None
+        try:
+            if prepared["kind"] == "graph":
+                return self._submit_graph(prepared)
+            tokens = prepared["tokens"]
+            if tokens is not None:
+                prepared["token_batch"] = self._token_store.write(
+                    tokens, prepared["order"])
+            return prepared
+        except Exception:
+            self._slot_pool.release(prepared["slot"])
+            prepared["slot"] = None
+            raise
+
+    def submit(self, plan: BatchPlan, prev_sampled=None):
+        return self.submit_prepared(self.prepare(plan, prev_sampled))
 
     def sampled_of(self, handle) -> DeviceTokenBatch | None:
         if not handle or handle["tokens"] is None:
             return None
-        tokens = handle["tokens"]
-        if handle.get("reused_output"):
-            # One batch copy (not per-row clones) gives retained refs stable
-            # ownership after this gear's next captured replay overwrites its
-            # fixed sampled buffer.
-            tokens = tokens.clone()
-        return DeviceTokenBatch.from_output(tokens, handle["order"])
+        return handle["token_batch"]
 
     def collect(self, handle) -> ExecutionResult:
         return ExecutionResult.from_single_tokens(self._collect_handle(handle))
@@ -504,23 +580,36 @@ class GraphPagedRunner:
             self._copy_stream = torch.npu.Stream()
         copy = enqueue_host_copy(
             handle["tokens"], handle["order"], self._copy_stream,
-            self._copy_pool, protect_source=handle.get("reused_output", False))
+            self._copy_pool)
         return self._get_output_thread().submit(copy.result)
 
     def collect_result(self, future: Future) -> ExecutionResult:
         return future.result()
 
     def execute(self, plan: BatchPlan) -> ExecutionResult:
-        return self.collect(self.submit(plan, {}))
+        handle = self.submit(plan, {})
+        try:
+            return self.collect(handle)
+        finally:
+            self.release_submission(handle)
+
+    def release_submission(self, handle) -> None:
+        if handle is not None and handle.get("slot") is not None:
+            self._slot_pool.release(handle["slot"])
+
+    def release_requests(self, request_ids) -> None:
+        self._token_store.release(request_ids)
 
 
 class GraphPagedNpuExecutor(RunnerExecutor):
     def __init__(self, model_path, num_blocks, block_size, device_index=0,
                  dtype="bfloat16", max_gear=32, max_prefill_tokens=256,
-                 max_model_len=4096, force_eager=False):
+                 max_model_len=4096, force_eager=False,
+                 async_slots=1, max_num_seqs=256):
         from auto_infer.engine.factory import load_model
         model = load_model(model_path, device_index, dtype)
         super().__init__(GraphPagedRunner(
             model, num_blocks, block_size, max_gear=max_gear,
             max_prefill_tokens=max_prefill_tokens,
-            max_model_len=max_model_len, force_eager=force_eager))
+            max_model_len=max_model_len, force_eager=force_eager,
+            async_slots=async_slots, max_num_seqs=max_num_seqs))

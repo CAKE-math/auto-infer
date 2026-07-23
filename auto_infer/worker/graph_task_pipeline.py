@@ -1,10 +1,11 @@
-"""Overlap dynamic ACL graph-task updates with graph replay.
-
-The update API consumes Python sequence-length metadata while the graph is
-already queued on the main stream.  Two host slots keep the metadata passed to
-one update immutable until the following submission has been staged.
-"""
+"""Prepare dynamic ACL graph-task metadata before graph replay submission."""
 from dataclasses import replace
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class GraphTaskTicket:
+    context: object
 
 
 class GraphTaskPipeline:
@@ -15,13 +16,14 @@ class GraphTaskPipeline:
     """
 
     def __init__(self, backend, update_stream, metadata_slots: int = 2,
-                 stream_context=None):
+                 stream_context=None, registrations=None):
         if metadata_slots < 2:
             raise ValueError("metadata_slots must be at least 2")
         if stream_context is None:
             import torch
             stream_context = torch.npu.stream
         self.backend = backend
+        self.registrations = registrations
         self.update_stream = update_stream
         self._stream_context = stream_context
         self._kv_slots = [[] for _ in range(metadata_slots)]
@@ -39,11 +41,24 @@ class GraphTaskPipeline:
         return replace(
             ctx, seqlens_kv=kv_slot, cu_seqlens_q=query_slot)
 
-    def replay(self, graph, ctx) -> None:
+    def prepare(self, ctx) -> GraphTaskTicket:
         staged = self._stage_context(ctx)
-        graph.replay()
         with self._stream_context(self.update_stream):
-            self.backend.update(staged, stream=self.update_stream)
+            if (self.registrations is not None
+                    and hasattr(self.backend, "update_registrations")):
+                self.backend.update_registrations(
+                    self.registrations, staged, stream=self.update_stream)
+            else:
+                self.backend.update(staged, stream=self.update_stream)
+        return GraphTaskTicket(staged)
+
+    @staticmethod
+    def submit(graph, ticket: GraphTaskTicket) -> None:
+        graph.replay()
+
+    def replay(self, graph, ctx) -> None:
+        """Compatibility for synchronous/MTP callers."""
+        self.submit(graph, self.prepare(ctx))
 
     def replay_many(self, graph, contexts) -> None:
         """Replay one graph containing multiple dynamic attention tasks."""
@@ -61,6 +76,6 @@ class GraphTaskPipeline:
                 ctx, seqlens_kv=kv_bank[index],
                 cu_seqlens_q=query_bank[index]))
         self._next_slot = (slot + 1) % len(self._multi_kv_slots)
-        graph.replay()
         with self._stream_context(self.update_stream):
             self.backend.update_many(staged, stream=self.update_stream)
+        graph.replay()

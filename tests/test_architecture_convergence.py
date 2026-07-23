@@ -114,6 +114,15 @@ def test_verification_helpers_do_not_live_in_production_packages():
 
 def test_runner_executor_delegates_the_execution_protocol():
     class Runner:
+        def supports_async(self):
+            return True
+
+        def prepare(self, plan, previous):
+            return "prepared", plan, previous
+
+        def submit_prepared(self, prepared):
+            return "submitted", prepared
+
         def submit(self, plan, previous):
             return plan, previous
 
@@ -141,6 +150,10 @@ def test_runner_executor_delegates_the_execution_protocol():
     runner = Runner()
     executor = RunnerExecutor(runner)
     assert executor.supports_async()
+    assert executor.prepare("plan", "previous") == (
+        "prepared", "plan", "previous")
+    assert executor.submit_prepared("prepared") == (
+        "submitted", "prepared")
     assert executor.submit("plan", "previous") == ("plan", "previous")
     assert executor.sampled_of("handle") == ("sampled", "handle")
     assert executor.collect("handle") == ("collected", "handle")

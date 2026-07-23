@@ -23,6 +23,7 @@ import torch
 from safetensors.torch import save_file
 
 import auto_infer.worker.graph_decode_runner as graph_runner
+from auto_infer.engine.execution import DeviceTokenBatch
 from auto_infer.layers.attention.gqa import GraphGqaBackend
 from auto_infer.layers.attention.mla import GraphMlaBackend
 from auto_infer.worker.graph_decode_runner import (
@@ -283,15 +284,19 @@ def test_prefill_gear_owns_fixed_query_and_sample_buffers():
     assert gear.logits.dtype == torch.bfloat16
 
 
-def test_async_owner_copies_one_reused_graph_output_batch():
+def test_async_sampled_refs_use_stable_token_store_without_clone():
     runner = GraphPagedRunner.__new__(GraphPagedRunner)
     static = torch.tensor([3, 5, 7])
+    stable = torch.tensor([3, 5, 7, 0])
+    token_batch = DeviceTokenBatch.from_rows(
+        stable, ("a", "b", "c"), (0, 1, 2))
 
     batch = runner.sampled_of({
-        "tokens": static, "order": ["a", "b", "c"], "reused_output": True})
+        "tokens": static, "order": ["a", "b", "c"],
+        "token_batch": token_batch})
     static.fill_(99)
 
-    assert batch.tokens.tolist() == [3, 5, 7]
+    assert batch.tokens.tolist() == [3, 5, 7, 0]
     assert batch.tokens.data_ptr() != static.data_ptr()
 
 

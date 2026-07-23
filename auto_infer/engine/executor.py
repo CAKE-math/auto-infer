@@ -5,6 +5,14 @@ import torch
 from auto_infer.engine.execution import BatchPlan, DeviceTokenBatch, ExecutionResult
 
 
+class PreparedExecution:
+    """Default prepare/submit split for backends without separate staging."""
+
+    def __init__(self, plan, prev_sampled):
+        self.plan = plan
+        self.prev_sampled = prev_sampled
+
+
 class Executor:
     """Abstract execution backend.
 
@@ -44,6 +52,12 @@ class Executor:
     def submit(self, plan: BatchPlan, prev_sampled=None):
         raise NotImplementedError
 
+    def prepare(self, plan: BatchPlan, prev_sampled=None):
+        return PreparedExecution(plan, prev_sampled)
+
+    def submit_prepared(self, prepared):
+        return self.submit(prepared.plan, prepared.prev_sampled)
+
     def sampled_of(self, handle) -> DeviceTokenBatch | None:
         sampled = handle.get("sampled", {}) if handle else {}
         if not sampled:
@@ -71,6 +85,12 @@ class Executor:
     def collect_result(self, future: Future) -> ExecutionResult:
         return future.result()
 
+    def release_submission(self, handle) -> None:
+        """Release per-submission buffers after its host result is consumed."""
+
+    def release_requests(self, request_ids) -> None:
+        """Release runner-owned request state after the engine reclaims KV."""
+
     def execute(self, plan: BatchPlan) -> ExecutionResult:
         return self.collect(self.submit(plan, {}))
 
@@ -89,7 +109,14 @@ class RunnerExecutor(Executor):
         self.runner = runner
 
     def supports_async(self) -> bool:
-        return True
+        supports = getattr(self.runner, "supports_async", None)
+        return bool(supports and supports())
+
+    def prepare(self, plan: BatchPlan, prev_sampled=None):
+        return self.runner.prepare(plan, prev_sampled)
+
+    def submit_prepared(self, prepared):
+        return self.runner.submit_prepared(prepared)
 
     def submit(self, plan: BatchPlan, prev_sampled=None):
         return self.runner.submit(plan, prev_sampled)
@@ -105,6 +132,16 @@ class RunnerExecutor(Executor):
 
     def collect_result(self, future) -> ExecutionResult:
         return self.runner.collect_result(future)
+
+    def release_submission(self, handle) -> None:
+        release = getattr(self.runner, "release_submission", None)
+        if release is not None:
+            release(handle)
+
+    def release_requests(self, request_ids) -> None:
+        release = getattr(self.runner, "release_requests", None)
+        if release is not None:
+            release(request_ids)
 
     def execute(self, plan: BatchPlan) -> ExecutionResult:
         return self.runner.execute(plan)

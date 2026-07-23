@@ -79,8 +79,38 @@ def test_engine_core_queue_carries_futures_not_handles():
                             sampling=SamplingParams(max_tokens=5)))
     eng.step()
     assert eng._queue, "queue should have at least one in-flight entry after one step"
-    for _, entry in eng._queue:
-        assert isinstance(entry, Future)
+    for entry in eng._queue:
+        assert isinstance(entry.future, Future)
+
+
+def test_next_batch_is_prepared_and_submitted_before_oldest_collect():
+    events = []
+
+    class RecordingExecutor(MockExecutor):
+        def prepare(self, plan, prev_sampled=None):
+            events.append("prepare")
+            return super().prepare(plan, prev_sampled)
+
+        def submit_prepared(self, prepared):
+            events.append("submit")
+            return super().submit_prepared(prepared)
+
+        def collect_result(self, future):
+            events.append("collect")
+            return super().collect_result(future)
+
+    cfg = EngineConfig(
+        model=ModelConfig("/mock"),
+        cache=CacheConfig(block_size=4, num_blocks=100),
+        scheduler=SchedulerConfig(max_num_batched_tokens=64),
+        async_scheduling=True,
+        async_batches=2)
+    engine = LLM(cfg, executor=RecordingExecutor()).engine
+    engine.add_request(Request("r", [1, 2, 3], SamplingParams(max_tokens=4)))
+
+    engine.step()
+
+    assert events[:5] == ["prepare", "submit", "prepare", "submit", "collect"]
 
 
 def test_engine_retains_batch_row_references_not_scalar_tokens():

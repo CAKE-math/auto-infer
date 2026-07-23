@@ -76,11 +76,21 @@ class DeviceTokenBatch:
         order = tuple(order)
         if tokens.ndim != 1 or tokens.shape[0] != len(order):
             raise ValueError("sampled tokens and request order must have equal length")
-        rows = {rid: row for row, rid in enumerate(order)}
-        if len(rows) != len(order):
+        return cls.from_rows(tokens, order, range(len(order)))
+
+    @classmethod
+    def from_rows(cls, tokens: torch.Tensor, order, rows) -> "DeviceTokenBatch":
+        order = tuple(order)
+        rows = tuple(rows)
+        if tokens.ndim != 1 or len(rows) != len(order):
+            raise ValueError("sampled rows and request order must have equal length")
+        if any(row < 0 or row >= tokens.shape[0] for row in rows):
+            raise ValueError("sampled token row is out of bounds")
+        row_by_request = dict(zip(order, rows))
+        if len(row_by_request) != len(order):
             raise ValueError("sampled request order contains duplicate IDs")
         return cls(tokens=tokens, order=order,
-                   row_by_request=MappingProxyType(rows))
+                   row_by_request=MappingProxyType(row_by_request))
 
     def refs(self) -> dict[str, DeviceTokenRef]:
         return {rid: DeviceTokenRef(self, row)

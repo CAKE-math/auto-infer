@@ -258,3 +258,57 @@ def test_release_finished_owns_all_engine_and_scheduler_cleanup():
     assert engine.scheduler.get_request_or_none(request.request_id) is None
     assert request.request_id not in engine._sampled
     assert request.request_id not in engine._pending_idx
+
+
+def test_async_rejects_history_dependent_sampling():
+    llm = _llm(num_blocks=100, async_scheduling=True)
+
+    with pytest.raises(
+            RequestRejectedError, match="history-independent greedy"):
+        llm.engine.add_request(Request(
+            "r", [1, 2], SamplingParams(
+                max_tokens=2, repetition_penalty=1.1)))
+
+
+def test_async_rejects_executor_without_isolated_submission_slots():
+    cfg = EngineConfig(
+        model=ModelConfig("/mock"), async_scheduling=True)
+
+    with pytest.raises(ValueError, match="isolated in-flight submission slots"):
+        LLM(cfg, executor=Executor())
+
+
+def test_async_eos_defers_kv_reclaim_until_last_submission_drains():
+    llm = _llm(num_blocks=100, async_scheduling=True)
+    engine = llm.engine
+    engine.add_request(Request(
+        "r", [1, 2, 3], SamplingParams(max_tokens=4, eos_token_id=4)))
+
+    finished = engine.step()
+
+    assert [request.request_id for request in finished] == ["r"]
+    assert engine._queue
+    assert engine.scheduler.get_request_or_none("r") is not None
+    assert engine.scheduler.block_tables["r"]
+
+    engine.step()
+
+    assert engine.scheduler.get_request_or_none("r") is None
+    assert "r" not in engine.scheduler.block_tables
+
+
+def test_async_abort_defers_kv_reclaim_until_last_submission_drains():
+    llm = _llm(num_blocks=100, async_scheduling=True)
+    engine = llm.engine
+    engine.add_request(Request(
+        "r", [1, 2, 3], SamplingParams(max_tokens=4)))
+    engine.step()
+    assert engine._queue
+
+    engine.abort("r")
+
+    assert engine.scheduler.get_request_or_none("r") is not None
+    assert engine.scheduler.block_tables["r"]
+    while engine._queue:
+        engine.step()
+    assert engine.scheduler.get_request_or_none("r") is None

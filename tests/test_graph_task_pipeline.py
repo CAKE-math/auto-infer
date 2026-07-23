@@ -29,16 +29,17 @@ class _Backend:
         self.trace.append(f"update:{stream}")
 
 
-def test_pipeline_enqueues_replay_before_side_stream_update():
+def test_pipeline_prepares_update_before_replay_submission():
     trace = []
     backend = _Backend(trace)
     pipeline = GraphTaskPipeline(
         backend, update_stream="side",
         stream_context=lambda stream: nullcontext())
 
-    pipeline.replay(_Graph(trace), _Context([7, 11]))
+    ticket = pipeline.prepare(_Context([7, 11]))
+    pipeline.submit(_Graph(trace), ticket)
 
-    assert trace == ["replay", "update:side"]
+    assert trace == ["update:side", "replay"]
     assert backend.contexts[0].seqlens_kv == [7, 11]
 
 
@@ -49,10 +50,12 @@ def test_pipeline_rotates_without_mutating_inflight_metadata():
         backend, update_stream="side", metadata_slots=2,
         stream_context=lambda stream: nullcontext())
 
-    pipeline.replay(_Graph(trace), _Context([7, 11], [3, 5]))
+    first_ticket = pipeline.prepare(_Context([7, 11], [3, 5]))
     first = backend.contexts[-1]
-    pipeline.replay(_Graph(trace), _Context([8, 12], [4, 6]))
+    second_ticket = pipeline.prepare(_Context([8, 12], [4, 6]))
     second = backend.contexts[-1]
+    pipeline.submit(_Graph(trace), first_ticket)
+    pipeline.submit(_Graph(trace), second_ticket)
 
     assert first.seqlens_kv == [7, 11]
     assert first.cu_seqlens_q == [3, 5]

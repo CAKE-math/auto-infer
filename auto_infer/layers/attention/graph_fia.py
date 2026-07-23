@@ -85,10 +85,13 @@ class GraphFiaLifecycle:
         )
 
     def update(self, ctx, stream=None) -> None:
+        self.update_registrations(self.reg, ctx, stream)
+
+    def update_registrations(self, registrations, ctx, stream=None) -> None:
         import torch
 
         stream = stream or torch.npu.current_stream()
-        for registration in self.reg:
+        for registration in registrations:
             self._update_registration(registration, ctx, stream)
 
     def update_many(self, contexts, stream=None) -> None:
