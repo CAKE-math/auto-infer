@@ -36,6 +36,7 @@ def test_generated_gqa_package_declares_bf16_tensor_parallel_support(
             "status": "supported",
             "dtype": "bfloat16",
             "max_size": 8,
+            "modes": ["recompute", "paged"],
         },
         "expert": {"status": "unsupported"},
     }

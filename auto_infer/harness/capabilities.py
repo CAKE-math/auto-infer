@@ -92,6 +92,7 @@ def match_capabilities(manifest: dict) -> dict:
                 "status": "supported",
                 "dtype": "bfloat16",
                 "max_size": 8,
+                "modes": ["recompute", "paged"],
             },
             "expert": {"status": "unsupported"},
         }

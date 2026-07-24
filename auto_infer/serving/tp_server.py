@@ -29,9 +29,9 @@ class TpServingConfig:
             raise ValueError("devices must be unique")
         if self.mode not in {"recompute", "paged", "graph", "graph_mtp"}:
             raise ValueError(f"unsupported TP mode: {self.mode}")
-        if self.mode == "graph_mtp":
+        if self.mode in {"graph", "graph_mtp"}:
             raise ValueError(
-                "graph_mtp tensor parallelism is not numerically gated")
+                f"{self.mode} tensor parallelism is not numerically gated")
         if self.master_port <= 0:
             raise ValueError("master_port must be > 0")
         if self.watchdog_timeout_s <= 0:
@@ -63,8 +63,6 @@ def _worker_environment(rank: int, config: TpServingConfig) -> dict[str, str]:
         "HCCL_ASYNC_ERROR_HANDLING": "1",
         "PYTORCH_NPU_ALLOC_CONF": "expandable_segments:True",
     }
-    if config.mode == "graph":
-        environment["HCCL_OP_EXPANSION_MODE"] = "AIV"
     return environment
 
 
