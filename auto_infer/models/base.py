@@ -34,6 +34,7 @@ from auto_infer.layers.norm import rms_norm as _rms_norm
 class BaseCausalLM:
     USES_FORWARD_CONTEXT = True
     ATTENTION_FAMILY = None
+    SUPPORTS_TENSOR_PARALLEL = False
     #: per-layer weight-name prefix (model/checkpoint convention). Fed to the
     #: attention backends + FFN so they index `self.w` by name.
     LAYER_PREFIX = "model.layers.{}."

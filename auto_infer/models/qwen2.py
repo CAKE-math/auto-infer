@@ -88,6 +88,7 @@ class Qwen2Config:
 
 class Qwen2Model(BaseCausalLM):
     ATTENTION_FAMILY = "gqa"
+    SUPPORTS_TENSOR_PARALLEL = True
     _CONFIG_CLS = Qwen2Config     # subclasses (Qwen3Model) override to parse their config
 
     def __init__(self, config: Qwen2Config, device: torch.device, dtype: torch.dtype):
@@ -144,10 +145,11 @@ class Qwen2Model(BaseCausalLM):
         model.n_q_local = cfg.num_heads // tp_size
         model.n_kv_local = cfg.num_kv_heads // tp_size
         start_prefetch(path)
+        from auto_infer.models.parallel import TensorParallelPlan
+        plan = TensorParallelPlan.for_qwen(cfg, tp_rank, tp_size)
         w = load_sharded(path, wanted=lambda n: True, device=device, dtype=dtype,
-                          max_workers=8)
-        if tp_size > 1:
-            w = model._shard_tp(w, cfg, tp_rank, tp_size)
+                          max_workers=8,
+                          slicer=(plan.slice_spec if tp_size > 1 else None))
         # The model configuration, rather than redundant checkpoint storage,
         # owns the tying contract. Some checkpoints serialize both tensors
         # even when they are tied; retaining both wastes one vocabulary-sized
@@ -164,34 +166,6 @@ class Qwen2Model(BaseCausalLM):
         model.w = w
         model.prepare_packed_projections()
         return model
-
-    @staticmethod
-    def _shard_tp(w, cfg, r, tp):
-        hd = cfg.head_dim
-        qh, kvh = cfg.num_heads // tp, cfg.num_kv_heads // tp
-        inter = cfg.intermediate_size // tp
-
-        def rows(t, n):  # column-parallel: slice output rows
-            return t[r * n:(r + 1) * n]
-
-        def cols(t, n):  # row-parallel: slice input cols
-            return t[:, r * n:(r + 1) * n]
-
-        for i in range(cfg.num_layers):
-            p = f"model.layers.{i}.self_attn."
-            w[p + "q_proj.weight"] = rows(w[p + "q_proj.weight"], qh * hd)
-            w[p + "k_proj.weight"] = rows(w[p + "k_proj.weight"], kvh * hd)
-            w[p + "v_proj.weight"] = rows(w[p + "v_proj.weight"], kvh * hd)
-            for name, size in (("q", qh * hd), ("k", kvh * hd), ("v", kvh * hd)):
-                bias = p + f"{name}_proj.bias"
-                if bias in w:
-                    w[bias] = rows(w[bias], size)
-            w[p + "o_proj.weight"] = cols(w[p + "o_proj.weight"], qh * hd)
-            m = f"model.layers.{i}.mlp."
-            w[m + "gate_proj.weight"] = rows(w[m + "gate_proj.weight"], inter)
-            w[m + "up_proj.weight"] = rows(w[m + "up_proj.weight"], inter)
-            w[m + "down_proj.weight"] = cols(w[m + "down_proj.weight"], inter)
-        return w
 
     def _rope_cos_sin(self, positions: torch.Tensor):
         hd = self.cfg.head_dim

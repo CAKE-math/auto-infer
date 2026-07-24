@@ -81,7 +81,8 @@ def start_prefetch(path: str, num_threads: int = 8, chunk_size: int = 8 * 1024 *
     return t
 
 
-def load_sharded(path, wanted, device="cpu", dtype=None, max_workers: int = 8) -> dict:
+def load_sharded(path, wanted, device="cpu", dtype=None, max_workers: int = 8,
+                 slicer=None) -> dict:
     """Load only tensors for which ``wanted(name)`` is True.
 
     Reads are grouped by shard file so each file is opened once and only the
@@ -97,6 +98,11 @@ def load_sharded(path, wanted, device="cpu", dtype=None, max_workers: int = 8) -
     so there is no cross-thread race merging into ``out``). ``max_workers=1``
     (or a single matched file) falls back to the original sequential loop, so
     both paths are always available and return identical results.
+
+    ``slicer(name)`` may return ``(dimension, start, length)`` to read only a
+    tensor-parallel range directly from Safetensors. ``None`` keeps the tensor
+    replicated. Slicing happens before device transfer and projection packing,
+    so a rank never materializes the full parallel tensor.
     """
     index = build_weight_index(path)
     names = [n for n in index if wanted(n)]
@@ -109,7 +115,19 @@ def load_sharded(path, wanted, device="cpu", dtype=None, max_workers: int = 8) -
         result: dict = {}
         with safe_open(f, framework="pt", device=str(device)) as sf:
             for n in ns:
-                t = sf.get_tensor(n)
+                spec = slicer(n) if slicer is not None else None
+                if spec is None:
+                    t = sf.get_tensor(n)
+                else:
+                    dimension, start, length = spec
+                    if dimension not in (0, 1):
+                        raise ValueError(
+                            f"unsupported slice dimension {dimension} for {n}")
+                    view = sf.get_slice(n)
+                    stop = start + length
+                    t = (view[start:stop] if dimension == 0
+                         else view[:, start:stop]).contiguous()
+                    t = t.to(device=device)
                 if dtype is not None and t.is_floating_point():
                     t = t.to(dtype)
                 result[n] = t
