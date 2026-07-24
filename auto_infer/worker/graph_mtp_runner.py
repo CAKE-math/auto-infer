@@ -15,6 +15,7 @@ from auto_infer.engine.executor import Executor
 from auto_infer.engine.execution import BatchPlan, ExecutionResult, ExecutionStats
 from auto_infer.engine.token_layout import slot_mapping
 from auto_infer.layers.mtp import RecurrentMtpHead
+from auto_infer.layers.sampler import stable_greedy
 from auto_infer.spec_decode.geometry import (
     MtpGeometry, validate_graph_mtp_depth)
 from auto_infer.forward_context import ForwardContext
@@ -217,7 +218,9 @@ class GraphMtpPagedRunner:
         cos, sin = model._compute_cos_sin(gear.ppos)
         ctx.cos, ctx.sin = cos.unsqueeze(1), sin.unsqueeze(1)
         hn, h_pre = model.forward_with_prenorm(ctx)
-        preds = model.logits(hn).argmax(-1).view(gear.g, width)
+        logits = model.logits(hn)
+        preds = stable_greedy(
+            hn, logits, model.w["lm_head.weight"]).view(gear.g, width)
         accepted = torch.cumprod(
             (gear.drafts == preds[:, :-1]).to(torch.int32), 1).sum(1)
         accepted = accepted * gear.active_mask
@@ -254,8 +257,10 @@ class GraphMtpPagedRunner:
             block_table, cu, kvlens)
         selected = h.index_select(0, gear.sample_rows)
         gear.state_buf.copy_(selected)
-        gear.draft_buf[:, 0].copy_(
-            self.model.logits(selected).argmax(-1))
+        logits = self.model.logits(selected)
+        stable_greedy(
+            selected, logits, self.model.w["lm_head.weight"],
+            out=gear.draft_buf[:, 0])
         width = target.geometry.query_width
         target.result_buf[:, :width].copy_(target.p_buf)
         target.result_buf[:, width].copy_(target.na_buf)
@@ -268,7 +273,9 @@ class GraphMtpPagedRunner:
             hidden = self._mtp_hidden(
                 hidden, token, gear.positions[index], gear.slots[index],
                 gear.block_table, gear.cu, kv_lengths)
-            token = self.model.logits(hidden).argmax(-1)
+            logits = self.model.logits(hidden)
+            token = stable_greedy(
+                hidden, logits, self.model.w["lm_head.weight"])
             gear.draft_out[:, index].copy_(token)
 
     # ---------------- two-stage startup capture ----------------
@@ -461,7 +468,9 @@ class GraphMtpPagedRunner:
                 [row for _, row in complete_rows], dtype=torch.long,
                 device=self.dev)
             selected = h_norm.index_select(0, sample_rows)
-            sampled = self.model.logits(selected).argmax(-1).tolist()
+            logits = self.model.logits(selected)
+            sampled = stable_greedy(
+                selected, logits, self.model.w["lm_head.weight"]).tolist()
             first_tokens = {
                 request_row: token
                 for (request_row, _), token in zip(complete_rows, sampled)}

@@ -279,12 +279,12 @@ class GraphPagedRunner:
             return {"tokens": None, "order": []}
         selected = _gather_sample_hidden(hidden, rows)
         logits = self.model.logits(selected)
-        from auto_infer.worker.decode_epilogue import (
-            is_capturable_greedy, stable_greedy_argmax)
+        from auto_infer.layers.sampler import stable_greedy
+        from auto_infer.worker.decode_epilogue import is_capturable_greedy
         if is_capturable_greedy(reqs):
             self.stats["captured_greedy_steps"] += 1
             return {
-                "tokens": stable_greedy_argmax(
+                "tokens": stable_greedy(
                     selected, logits, self.model.w["lm_head.weight"]),
                 "order": [request.request_id for request in reqs],
             }
@@ -355,8 +355,8 @@ class GraphPagedRunner:
         hidden = self.model.forward(ctx)
         selected = hidden.index_select(0, gear.sample_rows)
         self.model.logits(selected, out=gear.logits)
-        from auto_infer.worker.decode_epilogue import stable_greedy_argmax
-        stable_greedy_argmax(
+        from auto_infer.layers.sampler import stable_greedy
+        stable_greedy(
             selected, gear.logits, self.model.w["lm_head.weight"],
             out=gear.sampled)
         torch.npu.synchronize()
@@ -368,7 +368,7 @@ class GraphPagedRunner:
                 hidden = self.model.forward(ctx)
                 selected = hidden.index_select(0, gear.sample_rows)
                 self.model.logits(selected, out=gear.logits)
-                stable_greedy_argmax(
+                stable_greedy(
                     selected, gear.logits, self.model.w["lm_head.weight"],
                     out=gear.sampled)
         finally:
@@ -408,8 +408,8 @@ class GraphPagedRunner:
         self.backend.capturing = False
         hidden = self.model.forward(ctx)          # warmup (not captured)
         self.model.logits(hidden, out=gear.logits)
-        from auto_infer.worker.decode_epilogue import stable_greedy_argmax
-        stable_greedy_argmax(
+        from auto_infer.layers.sampler import stable_greedy
+        stable_greedy(
             hidden, gear.logits, self.model.w["lm_head.weight"],
             out=gear.sampled)
         torch.npu.synchronize()
@@ -418,7 +418,7 @@ class GraphPagedRunner:
         with torch.npu.graph(graph):
             hidden = self.model.forward(ctx)
             self.model.logits(hidden, out=gear.logits)
-            stable_greedy_argmax(
+            stable_greedy(
                 hidden, gear.logits, self.model.w["lm_head.weight"],
                 out=gear.sampled)
         self.backend.end_capture()

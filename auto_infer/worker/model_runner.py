@@ -214,10 +214,10 @@ class NpuModelRunner:
         from auto_infer.layers.sampler import sample_batched
         indices = torch.tensor(rows, device=logits.device)
         sel = logits[indices]
-        from auto_infer.worker.decode_epilogue import (
-            is_capturable_greedy, stable_greedy_argmax)
+        from auto_infer.layers.sampler import stable_greedy
+        from auto_infer.worker.decode_epilogue import is_capturable_greedy
         if is_capturable_greedy(reqs):
-            tokens = stable_greedy_argmax(
+            tokens = stable_greedy(
                 hidden[indices], sel, self.model.w["lm_head.weight"])
             order = [request.request_id for request in reqs]
         else:
@@ -285,8 +285,8 @@ class NpuModelRunner:
         ctx, _, _ = self._build(plan)
         h_norm, h_pre = self.model.forward_with_prenorm(ctx)
         logits = self.model.logits(h_norm)
-        from auto_infer.worker.decode_epilogue import stable_greedy_argmax
-        preds = stable_greedy_argmax(
+        from auto_infer.layers.sampler import stable_greedy
+        preds = stable_greedy(
             h_norm, logits, self.model.w["lm_head.weight"])
 
         emitted: dict[str, list[int]] = {}

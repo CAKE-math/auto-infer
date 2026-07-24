@@ -15,6 +15,32 @@ def greedy(logits: torch.Tensor) -> torch.Tensor:
     return logits.argmax(dim=-1)
 
 
+def stable_greedy(
+    hidden: torch.Tensor,
+    logits: torch.Tensor,
+    weight: torch.Tensor,
+    *,
+    out: torch.Tensor | None = None,
+    candidate_count: int = 4,
+) -> torch.Tensor:
+    """Re-score BF16 top candidates with transient FP32 dot products."""
+    if candidate_count <= 0:
+        raise ValueError("candidate_count must be > 0")
+    count = min(candidate_count, logits.shape[-1])
+    candidates = torch.topk(logits, count, dim=-1).indices
+    rows = weight.index_select(0, candidates.flatten()).view(
+        *candidates.shape, hidden.shape[-1])
+    scores = torch.sum(
+        rows.float() * hidden.float().unsqueeze(-2), dim=-1)
+    best = scores.max(dim=-1, keepdim=True).values
+    sampled = torch.where(
+        scores == best, candidates, logits.shape[-1]).min(dim=-1).values
+    if out is not None:
+        out.copy_(sampled)
+        return out
+    return sampled
+
+
 def sample(logits: torch.Tensor, temperature: float = 1.0,
            top_k: int = 0, top_p: float = 1.0,
            generator: "torch.Generator | None" = None) -> torch.Tensor:

@@ -4,6 +4,7 @@ import torch
 
 from auto_infer.engine.token_layout import slot_mapping
 from auto_infer.layers.mtp import RecurrentMtpHead
+from auto_infer.layers.sampler import stable_greedy
 
 
 @dataclass(frozen=True)
@@ -73,7 +74,10 @@ class MtpDrafter:
         for item in items:
             offset += len(item.positions)
             if item.generate_drafts:
-                token = int(logits[offset - 1].argmax())
+                row = slice(offset - 1, offset)
+                token = int(stable_greedy(
+                    hidden[row], logits[row],
+                    self.head.model.w["lm_head.weight"])[0])
                 drafts[item.request_id] = [token]
                 active.append((item, hidden[offset - 1:offset], token))
         for step in range(1, depth):
@@ -86,7 +90,9 @@ class MtpDrafter:
             hidden, logits = self._forward(continuation)
             next_active = []
             for row, (item, _, _) in enumerate(active):
-                token = int(logits[row].argmax())
+                token = int(stable_greedy(
+                    hidden[row:row + 1], logits[row:row + 1],
+                    self.head.model.w["lm_head.weight"])[0])
                 drafts[item.request_id].append(token)
                 next_active.append((item, hidden[row:row + 1], token))
             active = next_active

@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import pytest
 import torch
 
@@ -10,11 +12,15 @@ from auto_infer.worker.mtp_runner import MtpDrafter, MtpItem
 
 
 class _FakeHead:
+    model = SimpleNamespace(w={
+        "lm_head.weight": torch.eye(32, dtype=torch.bfloat16)})
+
     def forward(self, hidden, token_ids, positions, slots, block_table, cu, kvlens):
-        del positions, slots, block_table, cu, kvlens
-        state = hidden + token_ids.unsqueeze(1)
-        logits = torch.full((len(token_ids), 32), -1.0)
-        logits.scatter_(1, ((token_ids + 1) % 32).unsqueeze(1), 1.0)
+        del hidden, positions, slots, block_table, cu, kvlens
+        next_ids = (token_ids + 1) % 32
+        state = torch.nn.functional.one_hot(
+            next_ids, num_classes=32).to(torch.bfloat16)
+        logits = state.clone()
         return state, logits
 
 
@@ -48,6 +54,21 @@ def test_eager_drafter_recurs_for_requested_depth():
     item = MtpItem("a", torch.tensor([[1.0], [2.0]]),
                    [4, 5], [0, 1], [3])
     assert _drafter().draft([item], 3) == {"a": (6, 7, 8)}
+
+
+def test_eager_drafter_uses_stable_greedy_for_bf16_ties():
+    head = _FakeHead()
+    head.model = SimpleNamespace(w={"lm_head.weight": torch.tensor([
+        [1.0, 0.0], [2.0, 0.0], [0.0, 0.0]], dtype=torch.bfloat16)})
+    head.forward = lambda *args: (
+        torch.tensor([[1.0, 0.0]], dtype=torch.bfloat16),
+        torch.tensor([[10.0, 10.0, 0.0]], dtype=torch.bfloat16))
+    drafter = MtpDrafter(
+        head, device=torch.device("cpu"), block_size=4)
+    item = MtpItem("a", torch.tensor([[1.0, 0.0]]),
+                   [4], [0], [3])
+
+    assert drafter.draft([item], 1) == {"a": (1,)}
 
 
 def test_graph_buffers_and_result_decode_follow_depth():

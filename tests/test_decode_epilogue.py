@@ -3,10 +3,8 @@ from types import SimpleNamespace
 import torch
 
 from auto_infer.models.base import BaseCausalLM
-from auto_infer.worker.decode_epilogue import (
-    is_capturable_greedy,
-    stable_greedy_argmax,
-)
+from auto_infer.layers.sampler import stable_greedy
+from auto_infer.worker.decode_epilogue import is_capturable_greedy
 
 
 def _request(**overrides):
@@ -84,7 +82,7 @@ def test_stable_greedy_resolves_bf16_top_tie_with_fp32_candidate_scores():
         [0.0, 0.0],
     ], dtype=torch.bfloat16)
 
-    sampled = stable_greedy_argmax(hidden, logits, weight)
+    sampled = stable_greedy(hidden, logits, weight)
 
     assert sampled.tolist() == [1]
     assert sampled.dtype == torch.long
@@ -96,7 +94,7 @@ def test_stable_greedy_writes_to_persistent_output_buffer():
     weight = torch.tensor([[3.0, 0.0], [2.0, 0.0]], dtype=torch.bfloat16)
     output = torch.full((1,), -1, dtype=torch.long)
 
-    returned = stable_greedy_argmax(
+    returned = stable_greedy(
         hidden, logits, weight, out=output, candidate_count=4)
 
     assert returned is output
