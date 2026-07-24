@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import time
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 
@@ -100,6 +101,22 @@ def _npu_snapshot() -> str | None:
     return result.stdout + result.stderr
 
 
+def _run_batch(
+    base_url: str,
+    prompts: list[str],
+    max_tokens: int,
+    timeout_s: float,
+) -> list[dict]:
+    with ThreadPoolExecutor(max_workers=len(prompts)) as pool:
+        futures = [
+            pool.submit(
+                _generate, base_url, prompt, max_tokens, timeout_s
+            )
+            for prompt in prompts
+        ]
+        return [future.result() for future in futures]
+
+
 def _prompts(args) -> list[str]:
     prompts = list(args.prompt)
     if args.prompts_file is not None:
@@ -122,6 +139,7 @@ def parse_args(argv=None):
     parser.add_argument("--prompt", action="append", default=[])
     parser.add_argument("--prompts-file", type=Path)
     parser.add_argument("--max-tokens", type=int, default=32)
+    parser.add_argument("--batch-size", action="append", type=int, default=[])
     parser.add_argument("--timeout", type=float, default=300)
     parser.add_argument("--output", type=Path, required=True)
     return parser.parse_args(argv)
@@ -141,6 +159,7 @@ def main(argv=None) -> int:
     for url in endpoints.values():
         _get(url.rstrip("/") + "/health", args.timeout)
     cases = []
+    batch_cases = []
     all_match = True
     before = _npu_snapshot()
     for prompt in _prompts(args):
@@ -162,6 +181,58 @@ def main(argv=None) -> int:
             "token_exact_match": match,
             **results,
         })
+    for batch_size in args.batch_size or [4, 16]:
+        prompts = [
+            f"Tensor parallel continuous batching request {index}:"
+            for index in range(batch_size)
+        ]
+        results = {
+            name: _run_batch(
+                url, prompts, args.max_tokens, args.timeout
+            )
+            for name, url in endpoints.items()
+        }
+        matches = []
+        for reference, candidate in zip(
+            results["reference"], results["candidate"]
+        ):
+            reference["token_ids"] = tokenizer.encode(
+                reference["text"], add_special_tokens=False
+            )
+            candidate["token_ids"] = tokenizer.encode(
+                candidate["text"], add_special_tokens=False
+            )
+            matches.append(
+                reference["token_ids"] == candidate["token_ids"]
+            )
+        all_match &= all(matches)
+        batch_cases.append({
+            "batch_size": batch_size,
+            "token_exact_match": all(matches),
+            "per_request_match": matches,
+            **results,
+        })
+    prefix_prompt = (
+        "AutoInfer tensor parallel prefix-cache validation context. " * 24
+        + "Conclude in one sentence:"
+    )
+    prefix_cases = {
+        name: [
+            _generate(url, prefix_prompt, args.max_tokens, args.timeout)
+            for _ in range(2)
+        ]
+        for name, url in endpoints.items()
+    }
+    for results in prefix_cases.values():
+        for result in results:
+            result["token_ids"] = tokenizer.encode(
+                result["text"], add_special_tokens=False
+            )
+    prefix_match = (
+        prefix_cases["reference"][1]["token_ids"]
+        == prefix_cases["candidate"][1]["token_ids"]
+    )
+    all_match &= prefix_match
     artifact = {
         "schema_version": 1,
         "created_at_unix": time.time(),
@@ -179,6 +250,11 @@ def main(argv=None) -> int:
         },
         "token_exact_match": all_match,
         "cases": cases,
+        "continuous_batching": batch_cases,
+        "prefix_cache_repeat": {
+            "token_exact_match": prefix_match,
+            **prefix_cases,
+        },
         "prefix_cache_metrics": {
             name: _metrics(url, args.timeout)
             for name, url in endpoints.items()
