@@ -42,6 +42,7 @@ class EngineService:
         self._close_timeout_s = close_timeout_s
         self._closed = False
         self._load_snapshot = (0, 0, 0.0)
+        self._prefix_cache_snapshot = (0, 0)
         self.thread = threading.Thread(
             target=self._run, name="AutoInferEngineService", daemon=True)
         self.thread.start()
@@ -57,6 +58,10 @@ class EngineService:
     @property
     def load_snapshot(self) -> tuple[int, int, float]:
         return self._load_snapshot
+
+    @property
+    def prefix_cache_snapshot(self) -> tuple[int, int]:
+        return self._prefix_cache_snapshot
 
     def submit(self, ids, sampling):
         rid = f"r{next(self._counter)}"
@@ -129,6 +134,9 @@ class EngineService:
         )
         self._load_snapshot = (
             len(scheduler.running), len(scheduler.waiting), utilization
+        )
+        self._prefix_cache_snapshot = (
+            kv.prefix_queried_blocks, kv.prefix_hit_blocks
         )
 
     def _drain_control(self) -> None:

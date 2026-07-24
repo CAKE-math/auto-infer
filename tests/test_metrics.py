@@ -132,3 +132,22 @@ def test_serving_metrics_use_isolated_registries():
 
     assert 'stage="http"' in first.render()
     assert 'stage="http"' not in second.render()
+
+
+def test_serving_metrics_render_prefix_cache_block_counters_and_rate():
+    metrics = ServingMetrics()
+
+    metrics.set_prefix_cache(queried_blocks=8, hit_blocks=3)
+    text = metrics.render()
+
+    assert "auto_infer_serving_prefix_cache_queried_blocks 8.0" in text
+    assert "auto_infer_serving_prefix_cache_hit_blocks 3.0" in text
+    assert "auto_infer_serving_prefix_cache_hit_rate 0.375" in text
+
+
+def test_serving_metrics_render_zero_prefix_hit_rate_before_first_query():
+    metrics = ServingMetrics()
+
+    metrics.set_prefix_cache(queried_blocks=0, hit_blocks=0)
+
+    assert "auto_infer_serving_prefix_cache_hit_rate 0.0" in metrics.render()

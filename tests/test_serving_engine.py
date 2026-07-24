@@ -45,6 +45,17 @@ def test_serving_engine_single_request():
     eng.close()
 
 
+def test_serving_engine_snapshots_prefix_cache_counters():
+    eng = EngineService(_cfg(), MockExecutor(vocab_size=1000))
+    eng.engine.kv.prefix_queried_blocks = 8
+    eng.engine.kv.prefix_hit_blocks = 3
+
+    eng._refresh_load_snapshot()
+
+    assert eng.prefix_cache_snapshot == (8, 3)
+    eng.close()
+
+
 def test_serving_engine_continuous_batching():
     # Several concurrent submits are batched by the ONE background loop; each
     # stream is independent and deterministic.

@@ -33,13 +33,13 @@
 - Produces: `AsyncEngine.prefix_cache_snapshot -> tuple[int, int]`
 - Produces: `ServingMetrics.set_prefix_cache(*, queried_blocks: int, hit_blocks: int) -> None`
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 Add tests asserting exact Prometheus samples for zero queries and for
 `queried_blocks=8, hit_blocks=3`; assert service and AsyncEngine snapshot
 delegation; assert `/metrics` contains all three values.
 
-- [ ] **Step 2: Verify tests fail**
+- [x] **Step 2: Verify tests fail**
 
 Run:
 
@@ -49,13 +49,13 @@ pytest -q tests/test_metrics.py tests/test_text_serving_api.py
 
 Expected: failures because the snapshot and metrics do not exist.
 
-- [ ] **Step 3: Implement the minimal data path**
+- [x] **Step 3: Implement the minimal data path**
 
 Cache `(queried_blocks, hit_blocks)` in `EngineService._refresh_load_snapshot`,
 delegate it from `AsyncEngine`, add three gauges and validated rate calculation
 to `ServingMetrics`, and update them in the `/metrics` handler.
 
-- [ ] **Step 4: Verify focused and full suites**
+- [x] **Step 4: Verify focused and full suites**
 
 Run:
 
@@ -66,16 +66,15 @@ pytest -q
 
 Expected: all tests pass.
 
-- [ ] **Step 5: Verify on npu2**
+- [x] **Step 5: Verify on npu2**
 
 Run the existing BF16 prefix-cache equivalence script and serving-related tests
 inside the Ascend container. Expected: cache hit/output parity pass and the
 Prometheus tests pass.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add auto_infer/serving tests docs/superpowers
 git commit -m "fix: expose prefix cache hit metrics"
 ```
-

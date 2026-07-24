@@ -42,6 +42,14 @@ def test_slow_consumer_has_one_pending_slot_and_does_not_block_fast_request():
     asyncio.run(scenario())
 
 
+def test_async_engine_delegates_prefix_cache_snapshot():
+    engine = AsyncEngine(_cfg(), MockExecutor(vocab_size=1000))
+    engine.service._prefix_cache_snapshot = (8, 3)
+
+    assert engine.prefix_cache_snapshot == (8, 3)
+    asyncio.run(engine.aclose())
+
+
 def test_sse_coalescer_flushes_on_deadline_without_waiting_for_next_token():
     async def events():
         yield _CountedEvent("a", 1, 1)

@@ -208,6 +208,12 @@ def create_app(runtime: ApiRuntime) -> FastAPI:
             running=running, waiting=waiting,
             kv_utilization=kv_utilization,
         )
+        queried_blocks, hit_blocks = getattr(
+            runtime.engine, "prefix_cache_snapshot", (0, 0)
+        )
+        runtime.metrics.set_prefix_cache(
+            queried_blocks=queried_blocks, hit_blocks=hit_blocks
+        )
         return Response(
             runtime.metrics.render(),
             media_type="text/plain; version=0.0.4",

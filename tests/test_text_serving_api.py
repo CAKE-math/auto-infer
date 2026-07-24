@@ -47,6 +47,10 @@ class FakeAsyncEngine:
     def load_snapshot(self):
         return (2, 3, 0.25)
 
+    @property
+    def prefix_cache_snapshot(self):
+        return (8, 3)
+
 
 async def _runtime(*, api_key=None, engine=None, max_model_len=128,
                    max_http_inflight=8, sse_coalesce_ms=0):
@@ -149,6 +153,9 @@ def test_chat_models_health_and_metrics_endpoints():
         assert "auto_infer_serving_running_requests 2.0" in metrics.text
         assert "auto_infer_serving_waiting_requests 3.0" in metrics.text
         assert "auto_infer_serving_kv_cache_utilization 0.25" in metrics.text
+        assert "auto_infer_serving_prefix_cache_queried_blocks 8.0" in metrics.text
+        assert "auto_infer_serving_prefix_cache_hit_blocks 3.0" in metrics.text
+        assert "auto_infer_serving_prefix_cache_hit_rate 0.375" in metrics.text
         assert 'auto_infer_serving_tokens_total{kind="prompt"} 2.0' in metrics.text
         assert 'auto_infer_serving_tokens_total{kind="generated"} 3.0' in metrics.text
         assert "auto_infer_serving_process_cpu_seconds" in metrics.text

@@ -72,6 +72,21 @@ class ServingMetrics:
             "Fraction of KV blocks currently in use.",
             registry=self.registry,
         )
+        self._prefix_queried_blocks = Gauge(
+            "auto_infer_serving_prefix_cache_queried_blocks",
+            "Cumulative full prompt blocks queried for prefix reuse.",
+            registry=self.registry,
+        )
+        self._prefix_hit_blocks = Gauge(
+            "auto_infer_serving_prefix_cache_hit_blocks",
+            "Cumulative full prompt blocks reused from the prefix cache.",
+            registry=self.registry,
+        )
+        self._prefix_hit_rate = Gauge(
+            "auto_infer_serving_prefix_cache_hit_rate",
+            "Fraction of queried full prompt blocks reused from prefix cache.",
+            registry=self.registry,
+        )
         self._tokens = Counter(
             "auto_infer_serving_tokens_total",
             "Serving tokens processed by kind.",
@@ -119,6 +134,14 @@ class ServingMetrics:
         self._running.set(running)
         self._waiting.set(waiting)
         self._kv_utilization.set(kv_utilization)
+
+    def set_prefix_cache(self, *, queried_blocks: int,
+                         hit_blocks: int) -> None:
+        self._prefix_queried_blocks.set(queried_blocks)
+        self._prefix_hit_blocks.set(hit_blocks)
+        self._prefix_hit_rate.set(
+            hit_blocks / queried_blocks if queried_blocks else 0.0
+        )
 
     def render(self) -> str:
         peak_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss

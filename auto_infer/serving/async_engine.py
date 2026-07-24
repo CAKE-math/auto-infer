@@ -53,6 +53,10 @@ class AsyncEngine:
     def load_snapshot(self) -> tuple[int, int, float]:
         return self.service.load_snapshot
 
+    @property
+    def prefix_cache_snapshot(self) -> tuple[int, int]:
+        return self.service.prefix_cache_snapshot
+
     async def generate(self, ids, sampling: SamplingParams | None = None):
         if self._closed:
             raise RuntimeError("async engine is closed")
