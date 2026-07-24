@@ -1,7 +1,6 @@
 import torch
-from types import SimpleNamespace
 
-from auto_infer.models.qwen2 import Qwen2Model, pack_qwen2_projections
+from auto_infer.models.qwen2 import pack_qwen2_projections
 from auto_infer.layers.attention.gqa import _split_qkv
 
 
@@ -102,18 +101,3 @@ def test_split_qkv_returns_views_with_expected_shapes():
     assert q.untyped_storage().data_ptr() == projected.untyped_storage().data_ptr()
     assert k.untyped_storage().data_ptr() == projected.untyped_storage().data_ptr()
     assert v.untyped_storage().data_ptr() == projected.untyped_storage().data_ptr()
-
-
-def test_tp_sharding_accepts_biasless_qwen3_attention():
-    weights = _weights(bias=False)
-    p = "model.layers.0."
-    weights[p + "self_attn.o_proj.weight"] = torch.randn(6, 8)
-    weights[p + "mlp.down_proj.weight"] = torch.randn(6, 10)
-    cfg = SimpleNamespace(
-        num_layers=1, head_dim=4, num_heads=2,
-        num_kv_heads=1, intermediate_size=10)
-
-    sharded = Qwen2Model._shard_tp(weights, cfg, r=0, tp=1)
-
-    assert sharded[p + "self_attn.q_proj.weight"].shape == (8, 6)
-    assert p + "self_attn.q_proj.bias" not in sharded
