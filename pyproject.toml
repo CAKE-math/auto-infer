@@ -24,6 +24,7 @@ test = ["httpx", "pytest"]
 
 [project.scripts]
 auto-infer = "auto_infer.entrypoints.cli:main"
+inferctl = "auto_infer.harness.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

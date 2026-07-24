@@ -20,6 +20,30 @@ def register(architecture: str, cls) -> None:
     _REGISTRY[architecture] = cls
 
 
+def register_package(package_dir: str, model_path: str) -> None:
+    """Register an explicit, fingerprint-checked generated model package."""
+    from pathlib import Path
+    from auto_infer.harness.package import (
+        load_entrypoint,
+        validate_package,
+    )
+    root = Path(package_dir)
+    package = validate_package(root, Path(model_path))
+    model_class = load_entrypoint(root, package["implementation"]["entrypoint"])
+    expected_family = package["execution"]["attention"]
+    if expected_family in {"mha", "mqa"}:
+        expected_family = "gqa"
+    if model_class.ATTENTION_FAMILY != expected_family:
+        raise ValueError(
+            "model package attention mismatch: "
+            f"{model_class.ATTENTION_FAMILY} != {expected_family}")
+    for architecture in package["architectures"]:
+        existing = _REGISTRY.get(architecture)
+        if existing is model_class:
+            continue
+        register(architecture, model_class)
+
+
 register("Qwen2ForCausalLM", Qwen2Model)
 register("Qwen3ForCausalLM", Qwen3Model)
 register("DeepseekV2ForCausalLM", DeepseekV2Model)

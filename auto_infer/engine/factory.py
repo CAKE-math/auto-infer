@@ -28,6 +28,10 @@ def executor_arguments(config: EngineConfig) -> tuple[str, dict]:
 
 def build_executor(config: EngineConfig):
     mode, kwargs = executor_arguments(config)
+    if config.model.model_package is not None:
+        from auto_infer.models.registry import register_package
+        register_package(
+            config.model.model_package, config.model.model_path)
     from auto_infer.distributed.parallel_state import init_distributed
     init_distributed(config.parallel)
     return get_executor_backend(mode).load()(**kwargs)

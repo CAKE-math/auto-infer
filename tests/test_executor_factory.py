@@ -161,6 +161,45 @@ def test_build_executor_initializes_parallel_before_model_construction(
     assert events == [("distributed", cfg.parallel), "executor"]
 
 
+def test_build_executor_registers_model_package_before_distributed(
+        monkeypatch):
+    events = []
+
+    class PackageExecutor:
+        pass
+
+    register_executor_backend(
+        "package-order-test",
+        ExecutorBackend(
+            validate=lambda config: None,
+            arguments=lambda config: {},
+            load=lambda: PackageExecutor,
+        ),
+    )
+    cfg = EngineConfig(
+        model=ModelConfig(
+            "/models/package",
+            model_package="/packages/example",
+        ),
+        execution=ExecutionConfig(mode="package-order-test"),
+    )
+    monkeypatch.setattr(
+        "auto_infer.models.registry.register_package",
+        lambda package, model: events.append(("package", package, model)),
+    )
+    monkeypatch.setattr(
+        "auto_infer.distributed.parallel_state.init_distributed",
+        lambda parallel: events.append("distributed"),
+    )
+
+    build_executor(cfg)
+
+    assert events == [
+        ("package", "/packages/example", "/models/package"),
+        "distributed",
+    ]
+
+
 def test_engine_core_has_no_distributed_bootstrap_side_effect(monkeypatch):
     calls = []
     config = EngineConfig(model=ModelConfig("/models/injected"))

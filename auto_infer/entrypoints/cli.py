@@ -8,6 +8,7 @@ def build_parser() -> argparse.ArgumentParser:
     subcommands = parser.add_subparsers(dest="command", required=True)
     serve = subcommands.add_parser("serve", help="start the OpenAI-compatible server")
     serve.add_argument("model")
+    serve.add_argument("--model-package")
     serve.add_argument("--host", default="0.0.0.0")
     serve.add_argument("--port", type=int, default=8000)
     serve.add_argument("--device", type=int, default=0)
@@ -62,6 +63,7 @@ def main(argv=None) -> int:
     if args.command == "serve":
         from auto_infer.serving.api_server import serve
         serve(model_path=args.model, host=args.host, port=args.port,
+              model_package=args.model_package,
               device_index=args.device, mode=args.mode,
               max_model_len=args.max_model_len, num_blocks=args.num_blocks,
               block_size=args.block_size, max_num_seqs=args.max_num_seqs,

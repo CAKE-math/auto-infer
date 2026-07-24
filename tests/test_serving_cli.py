@@ -45,3 +45,11 @@ def test_serve_cli_exposes_independent_graph_limits():
 
     assert args.max_gear == 16
     assert args.max_prefill_tokens == 192
+
+
+def test_serve_cli_accepts_explicit_model_package():
+    args = build_parser().parse_args([
+        "serve", "/model", "--model-package", "/packages/example",
+    ])
+
+    assert args.model_package == "/packages/example"

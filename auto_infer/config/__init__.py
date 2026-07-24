@@ -6,12 +6,15 @@ class ModelConfig:
     model_path: str
     max_model_len: int = 4096
     dtype: str = "bfloat16"
+    model_package: str | None = None
 
     def __post_init__(self) -> None:
         if not self.model_path:
             raise ValueError("model_path must not be empty")
         if self.max_model_len <= 0:
             raise ValueError("max_model_len must be > 0")
+        if self.model_package == "":
+            raise ValueError("model_package must not be empty")
 
 
 @dataclass

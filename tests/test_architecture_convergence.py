@@ -40,6 +40,19 @@ def test_low_level_packages_do_not_import_orchestration_layers():
     assert violations == []
 
 
+def test_model_package_boundary_stays_out_of_engine_and_runners():
+    root = Path(__file__).parents[1]
+    for relative in (
+        "auto_infer/engine/engine_core.py",
+        "auto_infer/worker/model_runner.py",
+        "auto_infer/worker/graph_decode_runner.py",
+        "auto_infer/worker/graph_mtp_runner.py",
+    ):
+        source = (root / relative).read_text()
+        assert "model_package" not in source
+        assert "auto_infer.harness" not in source
+
+
 def test_production_modules_have_no_retired_implementations():
     assert not hasattr(DeepseekV2Model, "_forward_paged_legacy")
     assert not hasattr(graph_decode_runner, "_marshal_decode_batch")

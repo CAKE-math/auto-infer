@@ -624,6 +624,7 @@ def _request_id(chat: bool) -> str:
 
 
 def serve(model_path: str, host: str = "0.0.0.0", port: int = 8000,
+          model_package: str | None = None,
           device_index: int = 0, mode: str = "paged", max_model_len: int = 4096,
           num_blocks: int = 4096, block_size: int = 16, max_num_seqs: int = 256,
           max_num_batched_tokens: int = 8192, max_gear: int = 32,
@@ -642,7 +643,9 @@ def serve(model_path: str, host: str = "0.0.0.0", port: int = 8000,
 
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     engine_config = EngineConfig(
-        model=ModelConfig(model_path=model_path, max_model_len=max_model_len),
+        model=ModelConfig(
+            model_path=model_path, max_model_len=max_model_len,
+            model_package=model_package),
         cache=CacheConfig(block_size=block_size, num_blocks=num_blocks),
         scheduler=SchedulerConfig(
             max_num_seqs=max_num_seqs,
