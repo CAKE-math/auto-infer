@@ -1,0 +1,14 @@
+model: qwen3-auto-infer
+axis: mode
+forward_order:
+  - embed_tokens.out
+  - layer{layer}.attn.o_proj.out
+  - layer{layer}.mlp.out
+  - final_norm.out
+  - lm_head.logits
+notes:
+  - Hidden states are replicated after each TP all-reduce, so rank-zero
+    captures are directly comparable between paged and graph TP2.
+  - Graph K=1 files contain the final replay for the requested max_tokens.
+  - The reproducer uses max_tokens=29 to capture the forward producing token
+    index 28, the first divergent token.

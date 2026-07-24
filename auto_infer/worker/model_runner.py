@@ -212,9 +212,18 @@ class NpuModelRunner:
             return {"tokens": None, "order": []}
         from auto_infer.layers.sampling_meta import build_sampling_tensors
         from auto_infer.layers.sampler import sample_batched
-        sel = logits[torch.tensor(rows, device=logits.device)]
-        t, order = build_sampling_tensors(reqs, logits.shape[-1], logits.device)
-        tokens = sample_batched(sel, t)                       # (B,) device, no sync
+        indices = torch.tensor(rows, device=logits.device)
+        sel = logits[indices]
+        from auto_infer.worker.decode_epilogue import (
+            is_capturable_greedy, stable_greedy_argmax)
+        if is_capturable_greedy(reqs):
+            tokens = stable_greedy_argmax(
+                hidden[indices], sel, self.model.w["lm_head.weight"])
+            order = [request.request_id for request in reqs]
+        else:
+            t, order = build_sampling_tensors(
+                reqs, logits.shape[-1], logits.device)
+            tokens = sample_batched(sel, t)                   # (B,) device, no sync
         return {"tokens": tokens, "order": order}
 
     def sampled_of(self, handle) -> DeviceTokenBatch | None:
@@ -275,7 +284,10 @@ class NpuModelRunner:
                 self.model, self.num_blocks, self.block_size, geometry)
         ctx, _, _ = self._build(plan)
         h_norm, h_pre = self.model.forward_with_prenorm(ctx)
-        preds = self.model.logits(h_norm).argmax(-1)                       # (T,) greedy
+        logits = self.model.logits(h_norm)
+        from auto_infer.worker.decode_epilogue import stable_greedy_argmax
+        preds = stable_greedy_argmax(
+            h_norm, logits, self.model.w["lm_head.weight"])
 
         emitted: dict[str, list[int]] = {}
         next_drafts: dict[str, list[int]] = {}

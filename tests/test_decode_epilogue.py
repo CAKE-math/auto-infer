@@ -3,7 +3,10 @@ from types import SimpleNamespace
 import torch
 
 from auto_infer.models.base import BaseCausalLM
-from auto_infer.worker.decode_epilogue import is_capturable_greedy
+from auto_infer.worker.decode_epilogue import (
+    is_capturable_greedy,
+    stable_greedy_argmax,
+)
 
 
 def _request(**overrides):
@@ -70,3 +73,31 @@ def test_fp32_reference_logits_are_transient_and_do_not_change_default_policy():
     assert not hasattr(model, "_lm_head_fp32")
     torch.testing.assert_close(
         reference, hidden.float() @ model.w["lm_head.weight"].float().t())
+
+
+def test_stable_greedy_resolves_bf16_top_tie_with_fp32_candidate_scores():
+    hidden = torch.tensor([[1.0, 0.0]], dtype=torch.bfloat16)
+    logits = torch.tensor([[10.0, 10.0, 0.0]], dtype=torch.bfloat16)
+    weight = torch.tensor([
+        [1.0, 0.0],
+        [2.0, 0.0],
+        [0.0, 0.0],
+    ], dtype=torch.bfloat16)
+
+    sampled = stable_greedy_argmax(hidden, logits, weight)
+
+    assert sampled.tolist() == [1]
+    assert sampled.dtype == torch.long
+
+
+def test_stable_greedy_writes_to_persistent_output_buffer():
+    hidden = torch.tensor([[1.0, 0.0]], dtype=torch.bfloat16)
+    logits = torch.tensor([[3.0, 2.0]], dtype=torch.bfloat16)
+    weight = torch.tensor([[3.0, 0.0], [2.0, 0.0]], dtype=torch.bfloat16)
+    output = torch.full((1,), -1, dtype=torch.long)
+
+    returned = stable_greedy_argmax(
+        hidden, logits, weight, out=output, candidate_count=4)
+
+    assert returned is output
+    assert output.tolist() == [0]
