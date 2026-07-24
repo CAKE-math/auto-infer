@@ -104,6 +104,7 @@ class _Process:
         self.alive = alive
         self.exitcode = exitcode
         self.terminated = False
+        self.killed = False
 
     def is_alive(self):
         return self.alive
@@ -115,6 +116,11 @@ class _Process:
 
     def join(self, timeout=None):
         return None
+
+    def kill(self):
+        self.killed = True
+        self.alive = False
+        self.exitcode = -9
 
 
 def test_supervisor_terminates_every_rank_after_fatal_status():
@@ -142,6 +148,24 @@ def test_supervisor_treats_one_unexpected_exit_as_replica_failure():
             poll_interval_s=0)
 
     assert processes[1].terminated
+
+
+def test_supervisor_kills_worker_that_ignores_graceful_termination():
+    class StubbornProcess(_Process):
+        def terminate(self):
+            self.terminated = True
+
+    processes = [StubbornProcess(), StubbornProcess()]
+    statuses = queue.Queue()
+    statuses.put(ReplicaStatus(1, "fatal", "collective failed"))
+
+    with pytest.raises(RuntimeError, match="collective failed"):
+        supervise_replica(
+            processes, statuses, watchdog_timeout_s=1,
+            poll_interval_s=0)
+
+    assert all(process.terminated for process in processes)
+    assert all(process.killed for process in processes)
 
 
 def test_supervisor_watchdog_terminates_unresponsive_replica():

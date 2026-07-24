@@ -94,6 +94,11 @@ def _terminate_processes(processes) -> None:
         if process.is_alive():
             process.terminate()
     for process in processes:
+        process.join(timeout=0.2)
+    for process in processes:
+        if process.is_alive():
+            process.kill()
+    for process in processes:
         process.join(timeout=1.0)
 
 
