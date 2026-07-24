@@ -33,12 +33,12 @@
 - Produces: `write_result(result: HarnessResult, path: Path) -> None`
 - Produces: `exit_code(status: str) -> int`
 
-- [ ] **Step 1: Write failing envelope tests**
+- [x] **Step 1: Write failing envelope tests**
 
 Cover StepEnvelope base keys, UTC timestamp format, provenance with framework
 commit/config SHA, stable JSON formatting, and status-to-exit-code mapping.
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run:
 
@@ -48,12 +48,12 @@ pytest -q tests/test_harness_artifacts.py
 
 Expected: import failure because `auto_infer.harness.artifacts` does not exist.
 
-- [ ] **Step 3: Implement the artifact primitives**
+- [x] **Step 3: Implement the artifact primitives**
 
 Use a frozen dataclass, UTC ISO-8601 timestamps with `Z`, sorted/indented JSON,
 and subprocess-free git revision lookup from `.git` only when available.
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run:
 
@@ -77,14 +77,14 @@ Expected: all tests pass.
 - Produces: `match_capabilities(manifest: dict) -> dict`
 - Consumes: `config.json`, optional `model.safetensors.index.json`
 
-- [ ] **Step 1: Write failing model-fixture tests**
+- [x] **Step 1: Write failing model-fixture tests**
 
 Create temporary fixtures for Qwen2-like GQA, Qwen3-like explicit head
 dimension/QK norm, DeepSeek-like MLA+MoE, unknown attention, missing required
 fields, and absent weight evidence. Assert exact attention/features/cache
 facts and supported/partial verdicts.
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run:
 
@@ -94,13 +94,13 @@ pytest -q tests/test_harness_inspect.py
 
 Expected: import failure for the missing inspector.
 
-- [ ] **Step 3: Implement inspection**
+- [x] **Step 3: Implement inspection**
 
 Read config once, fingerprint its bytes, derive attention without model-name
 branching, inspect weight-index keys without tensor reads, and emit sorted
 required/missing capability lists.
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run the Task 2 test file and Task 1 regression.
 
@@ -126,14 +126,14 @@ Run the Task 2 test file and Task 1 regression.
 - Adds: `ModelConfig.model_package: str | None`
 - Adds: `auto-infer serve --model-package PATH`
 
-- [ ] **Step 1: Write failing package tests**
+- [x] **Step 1: Write failing package tests**
 
 Assert deterministic GQA/Qwen3-like/MLA entrypoint selection, BF16 policy,
 reserved quantization interface, rejection of partial manifests, config
 fingerprint drift, relative custom entrypoint loading, duplicate registration,
 and composition-root registration before executor construction.
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run:
 
@@ -143,14 +143,14 @@ pytest -q tests/test_model_package.py tests/test_executor_factory.py tests/test_
 
 Expected: failures for missing package APIs and CLI/config fields.
 
-- [ ] **Step 3: Implement package lifecycle**
+- [x] **Step 3: Implement package lifecycle**
 
 Generate only from a supported capability verdict. Validate schema version,
 source SHA, architecture list, entrypoint, and model contract. Support
 `module:Class` and package-relative `./file.py:Class`. Register before the
 executor backend loads.
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run the Task 3 test set and ensure architecture convergence still proves no
 engine/runner model branch.
@@ -169,13 +169,13 @@ engine/runner model branch.
 - Adds commands: `capabilities`, `inspect model`, `adapt model`,
   `validate package`
 
-- [ ] **Step 1: Write failing CLI tests**
+- [x] **Step 1: Write failing CLI tests**
 
 Invoke `main(argv)` for all commands. Assert fixed artifact names, JSON on
 stdout, non-interactive behavior, exit codes 0/2/1, unchanged checkpoint
 contents, and failed validation diagnostics.
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run:
 
@@ -185,13 +185,13 @@ pytest -q tests/test_inferctl.py
 
 Expected: import failure for `auto_infer.harness.cli`.
 
-- [ ] **Step 3: Implement thin command handlers**
+- [x] **Step 3: Implement thin command handlers**
 
 Handlers compose Tasks 1–3 and contain no inspection, matching, or package
 logic. `--artifacts` defaults to `.inferctl-artifacts`; commands write
 `inspect-model.json`, `adapt-model.json`, or `validate-package.json`.
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run Task 4 tests, all Harness tests, `python -m compileall -q auto_infer`, and
 the full auto-infer suite.
@@ -219,14 +219,14 @@ the full auto-infer suite.
 - Produces: `.ci-state/<model>/adapt-auto-infer.json`
 - Adds orchestrator input: `target_framework: auto-infer | vllm-ascend`
 
-- [ ] **Step 1: Write failing PIE repository tests**
+- [x] **Step 1: Write failing PIE repository tests**
 
 Assert skill metadata declares auto-infer/Ascend support, every workflow
 invocation uses `inferctl`, checkpoint protocol is present, stable-core edits
 are prohibited, result fields are StepEnvelope-compatible, framework knowledge
 is routable, and the orchestrator dispatches by `target_framework`.
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run from PIE:
 
@@ -236,14 +236,14 @@ pytest -q tests/test_adapt_auto_infer_contract.py
 
 Expected: failures because the skill and routing do not exist.
 
-- [ ] **Step 3: Implement the PIE skill**
+- [x] **Step 3: Implement the PIE skill**
 
 Define inspect → adapt/Agent gap resolution → static validate → remote runtime
 validate → final envelope. PIE may edit candidate package files; reusable
 runtime capability work is an explicit escalation and separate auto-infer
 change.
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run the PIE test, knowledge-link checker, and existing envelope validation
 examples. Do not modify `contract/`, which is generated externally.
@@ -261,17 +261,17 @@ examples. Do not modify `contract/`, which is generated externally.
 - Consumes: a generated package plus a model checkpoint
 - Produces: built-in/package output digests and equality verdict
 
-- [ ] **Step 1: Add a host-testable verification script test**
+- [x] **Step 1: Add a host-testable verification script test**
 
 Assert argument parsing, deterministic digest construction, and structured
 failure when outputs differ.
 
-- [ ] **Step 2: Implement the verification script and operator document**
+- [x] **Step 2: Implement the verification script and operator document**
 
 Document responsibilities, commands, artifact layout, promotion gates, and
 the unsupported-capability escalation path.
 
-- [ ] **Step 3: Run final local verification**
+- [x] **Step 3: Run final local verification**
 
 Run:
 
@@ -282,14 +282,14 @@ pytest -q
 
 Run PIE tests and `python scripts/check-knowledge-links.py`.
 
-- [ ] **Step 4: Run npu2 acceptance**
+- [x] **Step 4: Run npu2 acceptance**
 
 Generate a package that aliases a new architecture name to the Qwen3-compatible
 implementation, point a copied config at that architecture without copying
 weights, and run built-in versus package BF16 greedy generation. Require equal
 token digest and a passing static package artifact.
 
-- [ ] **Step 5: Commit each repository**
+- [x] **Step 5: Commit each repository**
 
 Commit auto-infer implementation and PIE plugin changes independently. Preserve
 PIE's pre-existing untracked `.claude-plugin/marketplace.json`.
