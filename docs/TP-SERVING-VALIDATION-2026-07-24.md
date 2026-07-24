@@ -73,6 +73,14 @@ artifacts are:
 
 Model: `/data1/models/Qwen2.5-72B-Instruct`
 
+The initial deployment smoke below has now been followed by a matched
+three-framework online-serving comparison against vllm-ascend and Omni-NPU.
+See
+[`QWEN25-72B-TP8-THREE-FRAMEWORK-COMPARISON-2026-07-24.md`](QWEN25-72B-TP8-THREE-FRAMEWORK-COMPARISON-2026-07-24.md).
+The larger-model result does not preserve auto-infer's earlier single-card
+Qwen3 ranking: the current paged-eager TP path trails both graph-enabled
+baselines in steady decode throughput.
+
 The eight-rank paged replica reached `/health` and completed the production
 `/v1/completions` path. Per-rank process HBM was 24.5–25.7 GiB. All eight ranks
 were active.
