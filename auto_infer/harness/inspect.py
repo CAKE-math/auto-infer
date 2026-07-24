@@ -93,6 +93,12 @@ def _has_mtp(config: dict, keys: set[str]) -> bool:
     )
 
 
+def _has_sliding_window(config: dict) -> bool:
+    window = config.get("sliding_window")
+    enabled = config.get("use_sliding_window")
+    return bool(window) if enabled is None else bool(enabled and window)
+
+
 def _standard_layout(attention: str, config: dict,
                      keys: set[str]) -> tuple[bool, list[str]]:
     if attention in {"mha", "mqa", "gqa"}:
@@ -161,7 +167,7 @@ def inspect_model(model_path: Path) -> dict:
         "features": {
             "moe": _has_moe(config),
             "mtp": _has_mtp(config, keys),
-            "sliding_window": bool(config.get("sliding_window")),
+            "sliding_window": _has_sliding_window(config),
         },
         "cache": {
             "type": "paged_latent" if attention == "mla" else "paged_kv",
@@ -179,4 +185,3 @@ def inspect_model(model_path: Path) -> dict:
             "qk_norm": qk_norm,
         },
     }
-

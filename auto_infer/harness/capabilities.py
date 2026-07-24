@@ -61,7 +61,9 @@ def match_capabilities(manifest: dict) -> dict:
             and isinstance(config.get("num_attention_heads"), int)
             and config["num_attention_heads"] else None
         )
-        if explicit is not None and explicit != derived:
+        if weights["qk_norm"] or (
+            explicit is not None and explicit != derived
+        ):
             template = "gqa-qknorm-v1"
             entrypoint = "auto_infer.models.qwen3:Qwen3Model"
         else:

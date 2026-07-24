@@ -102,6 +102,20 @@ def test_inspect_selects_qwen3_contract_from_head_dim_and_qk_norm(tmp_path):
     assert match["entrypoint"] == "auto_infer.models.qwen3:Qwen3Model"
 
 
+def test_inspect_selects_qwen3_when_explicit_head_dim_is_derived(tmp_path):
+    config = _gqa_config(
+        model_type="example_qwen3",
+        architectures=["ExampleQwen3ForCausalLM"],
+        head_dim=64,
+    )
+    model = _write_model(tmp_path, config, _gqa_keys(qk_norm=True))
+
+    match = match_capabilities(inspect_model(model))
+
+    assert match["template"] == "gqa-qknorm-v1"
+    assert match["entrypoint"] == "auto_infer.models.qwen3:Qwen3Model"
+
+
 def test_inspect_and_match_deepseek_style_mla_moe(tmp_path):
     config = {
         "model_type": "example_mla",
@@ -177,3 +191,22 @@ def test_capability_match_requires_weight_layout_evidence(tmp_path):
     assert manifest["weights"]["evidence"] == "absent"
     assert match["status"] == "partial"
     assert "weights.standard_layout" in match["missing"]
+
+
+@pytest.mark.parametrize(
+    "config,expected",
+    [
+        ({"sliding_window": 32768, "use_sliding_window": False}, False),
+        ({"sliding_window": 32768, "use_sliding_window": True}, True),
+        ({"sliding_window": 32768}, True),
+    ],
+)
+def test_sliding_window_honors_explicit_enable_switch(
+    tmp_path, config, expected
+):
+    model = _write_model(
+        tmp_path, _gqa_config(**config), _gqa_keys())
+
+    manifest = inspect_model(model)
+
+    assert manifest["features"]["sliding_window"] is expected
