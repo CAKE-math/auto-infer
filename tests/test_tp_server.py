@@ -41,10 +41,13 @@ def test_tp_config_rejects_invalid_devices(devices, message):
         TpServingConfig(tp_size=2, devices=devices)
 
 
-@pytest.mark.parametrize("mode", ["graph", "graph_mtp"])
-def test_tp_config_rejects_graph_modes_until_numerically_gated(mode):
-    with pytest.raises(ValueError, match=mode):
-        TpServingConfig(tp_size=2, mode=mode)
+def test_tp_config_accepts_graph_mode():
+    assert TpServingConfig(tp_size=2, mode="graph").mode == "graph"
+
+
+def test_tp_config_rejects_graph_mtp_until_numerically_gated():
+    with pytest.raises(ValueError, match="graph_mtp"):
+        TpServingConfig(tp_size=2, mode="graph_mtp")
 
 
 def test_tp_config_rejects_unknown_mode():
@@ -72,6 +75,15 @@ def test_worker_environment_maps_rank_to_selected_device():
     assert environment["ASCEND_RT_VISIBLE_DEVICES"] == "4,6"
     assert environment["HCCL_ASYNC_ERROR_HANDLING"] == "1"
     assert environment["PYTORCH_NPU_ALLOC_CONF"] == "expandable_segments:True"
+    assert "HCCL_OP_EXPANSION_MODE" not in environment
+
+
+def test_graph_worker_environment_enables_aiv_expansion():
+    environment = _worker_environment(
+        0, TpServingConfig(tp_size=2, mode="graph")
+    )
+
+    assert environment["HCCL_OP_EXPANSION_MODE"] == "AIV"
 
 
 def test_validation_rejects_unsupported_model_before_spawn(

@@ -54,6 +54,11 @@ def _select_gear(B, max_gear):
     return next((x for x in GEARS if x >= B and x <= max_gear), None)
 
 
+def _decode_capture_sizes(max_gear):
+    """Static decode graph sizes derived from the shared gear policy."""
+    return [gear for gear in GEARS if gear <= max_gear]
+
+
 def _prefill_capture_sizes(max_gear):
     """vLLM-compatible flattened-token graph sizes, capped by ``max_gear``."""
     sizes = [1, 2, 4]
@@ -206,7 +211,10 @@ class GraphPagedRunner:
             max_workers=async_slots, thread_name_prefix="GraphTaskUpdate")
         self._copy_stream = None
         self._copy_pool = PinnedTokenBufferPool(pin_memory=self.device.type != "cpu")
-        if (self._async_slots == 1 and not self.force_eager
+        if not self.force_eager:
+            self._prewarm_decode_gears()
+        from auto_infer.distributed.parallel_state import tp_size
+        if (tp_size() == 1 and self._async_slots == 1 and not self.force_eager
                 and getattr(self.backend, "supports_prefill_graph", False)):
             self._prewarm_prefill_gears()
 
@@ -281,10 +289,15 @@ class GraphPagedRunner:
         g = _select_gear(B, self.max_gear)
         if g is None:
             return None
-        gears = self._slot_gears[slot_id]
-        if g not in gears:
-            gears[g] = self._capture(g)
-        return gears[g]
+        return self._slot_gears[slot_id].get(g)
+
+    def _prewarm_decode_gears(self):
+        from auto_infer.distributed.parallel_state import tp_barrier
+        for gears in self._slot_gears:
+            for size in _decode_capture_sizes(self.max_gear):
+                tp_barrier()
+                gears[size] = self._capture(size)
+                tp_barrier()
 
     def _get_prefill_gear(self, query_gear):
         """Runtime lookup only: online requests never pay graph capture cost."""
@@ -333,6 +346,7 @@ class GraphPagedRunner:
         selected = hidden.index_select(0, gear.sample_rows)
         self.model.logits(selected, out=gear.logits)
         torch.argmax(gear.logits, dim=-1, out=gear.sampled)
+        torch.npu.synchronize()
 
         graph = torch.npu.NPUGraph()
         self.backend.begin_capture()
@@ -380,6 +394,7 @@ class GraphPagedRunner:
         hidden = self.model.forward(ctx)          # warmup (not captured)
         self.model.logits(hidden, out=gear.logits)
         torch.argmax(gear.logits, dim=-1, out=gear.sampled)
+        torch.npu.synchronize()
         graph = torch.npu.NPUGraph()
         self.backend.begin_capture()
         with torch.npu.graph(graph):

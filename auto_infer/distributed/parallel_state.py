@@ -106,6 +106,14 @@ def tp_all_reduce(x: torch.Tensor) -> torch.Tensor:
     return x
 
 
+def tp_barrier() -> None:
+    """Synchronize the tensor-parallel ranks; a free no-op at TP1."""
+    if _TP_SIZE == 1:
+        return
+    import torch.distributed as dist
+    dist.barrier(group=_TP_GROUP)
+
+
 def _ep_group():
     return _EP_GROUP
 

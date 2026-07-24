@@ -31,6 +31,7 @@ from auto_infer.worker.graph_decode_runner import (
     GraphPagedRunner,
     _PrefillGear,
     _Gear,
+    _decode_capture_sizes,
     _marshal_prefill_batch,
     _gather_sample_hidden,
     _scratch_blocks_for_gears,
@@ -69,6 +70,53 @@ def test_select_gear_respects_max_gear_cap_below_largest_gear():
 
 def test_gears_constant_sorted_ascending():
     assert GEARS == sorted(GEARS)
+
+
+def test_decode_capture_sizes_are_derived_from_max_gear():
+    assert _decode_capture_sizes(1) == [1]
+    assert _decode_capture_sizes(5) == [1, 2, 4]
+    assert _decode_capture_sizes(32) == [1, 2, 4, 8, 16, 32]
+
+
+def test_decode_prewarm_captures_every_slot_in_rank_synchronous_order(
+    monkeypatch,
+):
+    runner = GraphPagedRunner.__new__(GraphPagedRunner)
+    runner.max_gear = 4
+    runner._slot_gears = [{}, {}]
+    events = []
+
+    monkeypatch.setattr(
+        "auto_infer.distributed.parallel_state.tp_barrier",
+        lambda: events.append("barrier"),
+    )
+    runner._capture = lambda gear: events.append(("capture", gear)) or gear
+
+    runner._prewarm_decode_gears()
+
+    assert events == [
+        "barrier", ("capture", 1), "barrier",
+        "barrier", ("capture", 2), "barrier",
+        "barrier", ("capture", 4), "barrier",
+        "barrier", ("capture", 1), "barrier",
+        "barrier", ("capture", 2), "barrier",
+        "barrier", ("capture", 4), "barrier",
+    ]
+    assert runner._slot_gears == [
+        {1: 1, 2: 2, 4: 4},
+        {1: 1, 2: 2, 4: 4},
+    ]
+
+
+def test_runtime_decode_lookup_never_captures():
+    runner = GraphPagedRunner.__new__(GraphPagedRunner)
+    runner.max_gear = 4
+    expected = object()
+    runner._slot_gears = [{4: expected}]
+    runner._capture = lambda gear: pytest.fail("online capture")
+
+    assert runner._get_gear(3) is expected
+    assert runner._get_gear(5) is None
 
 
 def test_prefill_capture_sizes_match_vllm_policy():
