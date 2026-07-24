@@ -81,6 +81,9 @@ def test_load_sharded_reads_only_the_requested_tensor_partition():
     }
     with tempfile.TemporaryDirectory() as directory:
         save_file(tensors, os.path.join(directory, "model.safetensors"))
+        full = load_sharded(
+            directory, lambda _: True, device="cpu",
+            dtype=torch.float32, max_workers=1)
         rank_shards = []
         for rank in range(2):
             plan = TensorParallelPlan.for_qwen(config, rank=rank, size=2)
@@ -94,26 +97,26 @@ def test_load_sharded_reads_only_the_requested_tensor_partition():
             shard["model.layers.0.self_attn.q_proj.weight"]
             for shard in rank_shards
         ], dim=0),
-        tensors["model.layers.0.self_attn.q_proj.weight"],
+        full["model.layers.0.self_attn.q_proj.weight"],
     )
     assert torch.equal(
         torch.cat([
             shard["model.layers.0.self_attn.o_proj.weight"]
             for shard in rank_shards
         ], dim=1),
-        tensors["model.layers.0.self_attn.o_proj.weight"],
+        full["model.layers.0.self_attn.o_proj.weight"],
     )
     assert torch.equal(
         torch.cat([
             shard["model.layers.0.mlp.gate_proj.weight"]
             for shard in rank_shards
         ], dim=0),
-        tensors["model.layers.0.mlp.gate_proj.weight"],
+        full["model.layers.0.mlp.gate_proj.weight"],
     )
     for shard in rank_shards:
         assert torch.equal(
             shard["model.embed_tokens.weight"],
-            tensors["model.embed_tokens.weight"],
+            full["model.embed_tokens.weight"],
         )
 
 
@@ -206,6 +209,39 @@ def test_factory_rejects_model_without_tensor_parallel_capability(monkeypatch):
         _model_directory(directory)
         with pytest.raises(ValueError, match="tensor parallel"):
             load_model(directory, 0, "bfloat16")
+
+
+def test_factory_rejects_model_without_capability_attribute(monkeypatch):
+    from auto_infer.distributed import parallel_state
+    from auto_infer.engine.factory import load_model
+    import auto_infer.models.registry as registry
+    import auto_infer.platform as platform
+
+    class LegacyModel:
+        @classmethod
+        def from_pretrained(cls, *args, **kwargs):
+            raise AssertionError("unsupported loader must not run")
+
+    monkeypatch.setattr(registry, "get_model_class", lambda _: LegacyModel)
+    monkeypatch.setattr(platform, "npu_device", lambda _: torch.device("cpu"))
+    monkeypatch.setattr(platform, "default_dtype", lambda _: torch.bfloat16)
+    monkeypatch.setattr(parallel_state, "tp_rank", lambda: 0)
+    monkeypatch.setattr(parallel_state, "tp_size", lambda: 2)
+    monkeypatch.setattr(parallel_state, "ep_rank", lambda: 0)
+    monkeypatch.setattr(parallel_state, "ep_size", lambda: 1)
+    with tempfile.TemporaryDirectory() as directory:
+        _model_directory(directory)
+        with pytest.raises(ValueError, match="tensor parallel"):
+            load_model(directory, 0, "bfloat16")
+
+
+def test_qwen_rejects_zero_tp_size_before_dividing():
+    with tempfile.TemporaryDirectory() as directory:
+        _write_tp_qwen(directory)
+        with pytest.raises(ValueError, match="size"):
+            Qwen2Model.from_pretrained(
+                directory, torch.device("cpu"), torch.float32,
+                tp_rank=0, tp_size=0)
 
 
 def test_factory_passes_tp_and_ep_coordinates_to_supported_model(monkeypatch):

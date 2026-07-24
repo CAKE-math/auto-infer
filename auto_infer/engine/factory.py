@@ -21,7 +21,7 @@ def load_model(model_path: str, device_index: int, dtype: str):
         "ep_rank": parallel_state.ep_rank(),
     }
     if tp_size > 1:
-        if not model_class.SUPPORTS_TENSOR_PARALLEL:
+        if not getattr(model_class, "SUPPORTS_TENSOR_PARALLEL", False):
             raise ValueError(
                 f"{architecture} does not support tensor parallel execution")
         parallel_kwargs.update(

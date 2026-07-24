@@ -138,15 +138,15 @@ class Qwen2Model(BaseCausalLM):
         (see `tests/test_weight_loader.py::test_qwen2_new_loader_matches_old`).
         """
         from auto_infer.models.loader import load_sharded, start_prefetch
+        from auto_infer.models.parallel import TensorParallelPlan
         cfg = cls._CONFIG_CLS.from_path(path)
+        plan = TensorParallelPlan.for_qwen(cfg, tp_rank, tp_size)
         model = cls(cfg, device, dtype)
         model.tp_rank, model.tp_size = tp_rank, tp_size
         model.quant = quantize
-        model.n_q_local = cfg.num_heads // tp_size
-        model.n_kv_local = cfg.num_kv_heads // tp_size
+        model.n_q_local = plan.q_rows // cfg.head_dim
+        model.n_kv_local = plan.kv_rows // cfg.head_dim
         start_prefetch(path)
-        from auto_infer.models.parallel import TensorParallelPlan
-        plan = TensorParallelPlan.for_qwen(cfg, tp_rank, tp_size)
         w = load_sharded(path, wanted=lambda n: True, device=device, dtype=dtype,
                           max_workers=8,
                           slicer=(plan.slice_spec if tp_size > 1 else None))
