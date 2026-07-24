@@ -17,13 +17,16 @@ class SpmdEngineService(EngineService):
 
     def __init__(self, config, executor, *, rank: int, control,
                  inbox_capacity: int | None = None,
-                 close_timeout_s: float = 5.0):
+                 close_timeout_s: float = 5.0,
+                 admission_wait_s: float = 0.0):
         if rank < 0:
             raise ValueError("rank must be >= 0")
         if rank == 0 and not isinstance(control, QueueControlLeader):
             raise TypeError("rank 0 requires QueueControlLeader")
         if rank != 0 and not isinstance(control, QueueControlFollower):
             raise TypeError("follower rank requires QueueControlFollower")
+        if admission_wait_s < 0:
+            raise ValueError("admission_wait_s must be >= 0")
         self.rank = rank
         self.control = control
         self.engine_epoch = 0
@@ -33,6 +36,7 @@ class SpmdEngineService(EngineService):
         self._published_submission_ids: set[str] = set()
         self._publish_lock = threading.Lock()
         self._fatal_error: BaseException | None = None
+        self._admission_wait_s = admission_wait_s
         super().__init__(
             config,
             executor,
@@ -53,6 +57,15 @@ class SpmdEngineService(EngineService):
 
     def _collect_publishable_control(self):
         submits, aborts = self._collect_control()
+        if (
+            submits
+            and not self.engine.has_unfinished()
+            and self._admission_wait_s
+        ):
+            self._stopping.wait(self._admission_wait_s)
+            more_submits, more_aborts = self._collect_control()
+            submits.extend(more_submits)
+            aborts.update(more_aborts)
         publishable = []
         with self._abort_lock:
             for submit in submits:

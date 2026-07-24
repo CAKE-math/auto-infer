@@ -84,6 +84,8 @@ def test_graph_worker_environment_enables_aiv_expansion():
     )
 
     assert environment["HCCL_OP_EXPANSION_MODE"] == "AIV"
+    assert environment["HCCL_DETERMINISTIC"] == "true"
+    assert environment["LCCL_DETERMINISTIC"] == "1"
 
 
 def test_validation_rejects_unsupported_model_before_spawn(

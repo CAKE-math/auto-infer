@@ -14,6 +14,7 @@ def test_serve_cli_exposes_native_async_limits():
         "--tokenizer-batch-size", "4",
         "--tokenizer-queue-capacity", "20",
         "--tokenizer-wait-ms", "1.5",
+        "--admission-wait-ms", "2.5",
         "--sse-coalesce-ms", "3.0",
         "--sse-coalesce-tokens", "6",
         "--shutdown-grace-s", "9.0",
@@ -28,6 +29,7 @@ def test_serve_cli_exposes_native_async_limits():
     assert config.tokenizer_batch_size == 4
     assert config.tokenizer_queue_capacity == 20
     assert config.tokenizer_wait_ms == 1.5
+    assert config.admission_wait_ms == 2.5
     assert config.sse_coalesce_ms == 3.0
     assert config.sse_coalesce_tokens == 6
     assert config.shutdown_grace_s == 9.0

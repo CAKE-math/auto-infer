@@ -37,6 +37,7 @@ def build_parser() -> argparse.ArgumentParser:
     serve.add_argument("--tokenizer-batch-size", type=int, default=32)
     serve.add_argument("--tokenizer-queue-capacity", type=int, default=1024)
     serve.add_argument("--tokenizer-wait-ms", type=float, default=2.0)
+    serve.add_argument("--admission-wait-ms", type=float, default=10.0)
     serve.add_argument("--sse-coalesce-ms", type=float, default=5.0)
     serve.add_argument("--sse-coalesce-tokens", type=int, default=8)
     serve.add_argument("--shutdown-grace-s", type=float, default=30.0)
@@ -58,6 +59,7 @@ def _serving_config(args):
         tokenizer_batch_size=args.tokenizer_batch_size,
         tokenizer_queue_capacity=args.tokenizer_queue_capacity,
         tokenizer_wait_ms=args.tokenizer_wait_ms,
+        admission_wait_ms=args.admission_wait_ms,
         sse_coalesce_ms=args.sse_coalesce_ms,
         sse_coalesce_tokens=args.sse_coalesce_tokens,
         shutdown_grace_s=args.shutdown_grace_s,

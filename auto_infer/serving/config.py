@@ -12,6 +12,7 @@ class ServingConfig:
     tokenizer_batch_size: int = 32
     tokenizer_queue_capacity: int = 1024
     tokenizer_wait_ms: float = 2.0
+    admission_wait_ms: float = 10.0
     sse_coalesce_ms: float = 5.0
     sse_coalesce_tokens: int = 8
     shutdown_grace_s: float = 30.0
@@ -36,6 +37,7 @@ class ServingConfig:
                 raise ValueError(f"{name} must be > 0")
         non_negative = (
             "tokenizer_wait_ms",
+            "admission_wait_ms",
             "sse_coalesce_ms",
             "shutdown_grace_s",
         )

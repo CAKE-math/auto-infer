@@ -148,22 +148,49 @@ def test_scratch_capacity_covers_every_accepted_prefill_shape(max_gear, expected
     assert _scratch_blocks_for_gears(max_gear) == expected
 
 
-def test_prefill_prewarm_attempts_each_token_gear_once():
+@pytest.mark.parametrize(
+    ("max_prefill_tokens", "max_gear", "world_size", "expected"),
+    [
+        (256, 16, 8, 16),
+        (12, 16, 8, 12),
+        (256, 32, 1, 256),
+    ],
+)
+def test_prefill_graph_limit_bounds_tp_capture_cost(
+    max_prefill_tokens, max_gear, world_size, expected
+):
+    assert graph_runner._prefill_graph_limit(
+        max_prefill_tokens, max_gear, world_size
+    ) == expected
+
+
+def test_prefill_prewarm_attempts_each_token_gear_once(monkeypatch):
     runner = GraphPagedRunner.__new__(GraphPagedRunner)
     runner.max_gear = 32
-    runner.max_prefill_tokens = 256
+    runner.prefill_graph_limit = 32
     runner.prefill_gears = {}
     runner.failed_prefill_gears = set()
     runner.stats = {"prefill_graph_capture_attempts": 0,
                     "prefill_graph_capture_failures": 0}
-    attempted = []
-    runner._capture_prefill = lambda gear: attempted.append(gear) or object()
+    events = []
+    runner._capture_prefill = (
+        lambda gear: events.append(("capture", gear)) or object()
+    )
+    monkeypatch.setattr(
+        "auto_infer.distributed.parallel_state.tp_barrier",
+        lambda: events.append(("barrier",)),
+    )
 
     runner._prewarm_prefill_gears()
 
-    assert attempted == graph_runner._prefill_capture_sizes(256)
+    attempted = graph_runner._prefill_capture_sizes(32)
+    assert events == [
+        event
+        for gear in attempted
+        for event in (("barrier",), ("capture", gear), ("barrier",))
+    ]
     assert sorted(runner.prefill_gears) == attempted
-    assert runner.stats["prefill_graph_capture_attempts"] == 35
+    assert runner.stats["prefill_graph_capture_attempts"] == 7
     assert runner._prefill_prewarm_active is False
 
 
@@ -182,7 +209,7 @@ def test_prefill_capture_counts_runtime_attempts():
 def test_prefill_prewarm_isolates_failed_gear():
     runner = GraphPagedRunner.__new__(GraphPagedRunner)
     runner.max_gear = 4
-    runner.max_prefill_tokens = 4
+    runner.prefill_graph_limit = 4
     runner.prefill_gears = {}
     runner.failed_prefill_gears = set()
     runner.stats = {"prefill_graph_capture_attempts": 0,

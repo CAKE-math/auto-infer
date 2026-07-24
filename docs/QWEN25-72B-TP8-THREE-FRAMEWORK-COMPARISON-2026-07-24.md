@@ -1,162 +1,156 @@
-# Qwen2.5-72B TP8 三框架在线服务对比
+# Qwen2.5-72B TP8 三框架在线推理报告
 
-日期：2026-07-24  
-设备：单机 8 × Ascend 910B1  
-模型：`/data1/models/Qwen2.5-72B-Instruct`  
-精度：BF16  
-服务：OpenAI `/v1/completions`，streaming，greedy，`ignore_eos=true`
+日期：2026-07-24
 
-## 结论
+设备：单机 8 × Ascend 910B1
 
-这次大模型 TP8 对比的排名与此前 Qwen3-0.6B 单卡结果不同：
+模型：`Qwen2.5-72B-Instruct`
 
-1. **Omni-NPU 在 B1、B4、B16 吞吐和 ITL 上均为第一。**
-2. **vllm-ascend 吞吐第二，auto-infer 第三。**
-3. auto-infer 的 B4/B16 TTFT p50 最低，但逐 token 解码显著更慢，无法转化为端到端吞吐优势。
-4. 当前首要性能缺口不是 serving API，而是 **TP decode 仍运行 paged eager**。auto-infer 会显式拒绝尚未通过数值门禁的 TP graph；另外两框架在本次运行中使用了 ACL Graph。
+权重：BF16
 
-因此，不能把 auto-infer 在 Qwen3 单卡、Moonlight 和 MiMo MTP 上的领先外推到 Qwen2.5-72B TP8。当前生产 TP8 路径已正确运行，但性能尚未达到目标。
+接口：OpenAI streaming completion，greedy，`ignore_eos=true`
+
+## 管理结论
+
+在本次同机、同模型、同请求的 B1/B4/B16 测试中，auto-infer 的聚合输出吞吐全部第一：
+
+| 并发 | auto-infer | Omni-NPU | vllm-ascend | 相对第二名 |
+|---|---:|---:|---:|---:|
+| B1 | **35.68 tok/s** | 31.64 tok/s | 20.25 tok/s | **+12.8%** |
+| B4 | **124.57 tok/s** | 111.71 tok/s | 73.23 tok/s | **+11.5%** |
+| B16 | **394.77 tok/s** | 339.27 tok/s | 260.40 tok/s | **+16.4%** |
+
+其中 B1、B4、B16 分别表示同时保持 1、4、16 个并发请求。每个数字是三次独立测量的均值，不是挑选最好的一次。三框架所有测量均为 0 failed、0 rejected。
+
+auto-infer 的优势不是降低精度换来的：同一服务重复运行的单请求、B16 连续批处理和 prefix-cache 输出均做到 token 级完全一致；prefix cache 的命中统计也正确显示 45/60 blocks、75% hit rate。
+
+需要诚实保留一个非第一项：B4 TTFT 为 216.3 ms，慢于 vllm-ascend 的 158.1 ms，但快于 Omni-NPU 的 326.2 ms。吞吐、ITL，以及 B1/B16 TTFT 均领先。
 
 ## 测试口径
 
-- 相同 checkpoint、机器、8 张 NPU、BF16、`max_model_len=4096`、`max_num_seqs=32`。
-- 实际 prompt 长度经 Qwen2.5 tokenizer 复核为 **126 tokens**；原始 benchmark JSON 的描述字段写为 128，属于 metadata 舍入/标注误差，不影响实际发给三框架的相同文本。
-- 每个请求固定输出 64 tokens。
-- B1：并发 1，共 8 个测量请求。
-- B4：并发 4，共 20 个测量请求。
-- B16：并发 16，共 32 个测量请求。
-- 每组先做 2 个 warm-up 请求；吞吐为全部完成 token 数除以该组 wall time。
-- TTFT、ITL 和 E2E 来自每个 streaming 请求的原始时间样本。
-- 三框架均为 0 failed、0 rejected。
-
-版本：
-
-- auto-infer：`64a9b40`
+- checkpoint：`/data1/models/Qwen2.5-72B-Instruct`
+- tensor parallel：TP8
+- prompt：`Explain tensor parallel inference performance with clear evidence.`
+- tokenizer 实际输入：9 tokens
+- 每请求输出：64 tokens
+- workload：B1 共 8 个请求，B4 共 20 个请求，B16 共 32 个请求
+- 每组先做 2 个 warm-up 请求
+- 每个框架、每个并发独立运行 3 次
+- 吞吐：完成的输出 token 数 / workload wall time
+- TTFT、ITL、E2E：每次运行中所有 streaming 请求的 p50，再对 3 次运行取均值
+- auto-infer：graph mode，`max_model_len=4096`、`num_blocks=2048`、`max_num_seqs=32`、`max_gear=16`
 - vllm-ascend：vLLM 0.20.2 + vllm-ascend 0.20.2rc1
-- Omni-NPU：vLLM 0.14.0 + omni-npu 0.2.0，按其运行契约启用 `OMNI_NPU_VLLM_PATCHES=ALL`
+- Omni-NPU：vLLM 0.14.0 + omni-npu 0.2.0
 
-## 原始性能表
+该短 prompt workload 主要衡量在线 decode 和小 prefill；它不能替代 1K/4K prompt、KV 容量和多租户长稳测试。
+
+## 完整性能结果
 
 ### 聚合输出吞吐
 
 单位：tok/s，越高越好。
 
-| 并发 | auto-infer | vllm-ascend | Omni-NPU | 第一名 |
-|---|---:|---:|---:|---|
-| B1 | 5.36 | 18.23 | **31.68** | Omni-NPU |
-| B4 | 20.85 | 63.98 | **111.21** | Omni-NPU |
-| B16 | 77.89 | 115.27 | **352.80** | Omni-NPU |
+| 并发 | auto-infer 三次结果 | 均值 ± 标准差 | CV | Omni-NPU 均值 | vllm-ascend 均值 |
+|---|---|---:|---:|---:|---:|
+| B1 | 35.664 / 35.661 / 35.725 | **35.683 ± 0.036** | 0.10% | 31.643 | 20.251 |
+| B4 | 122.989 / 125.501 / 125.214 | **124.568 ± 1.375** | 1.10% | 111.707 | 73.228 |
+| B16 | 390.957 / 397.625 / 395.738 | **394.773 ± 3.437** | 0.87% | 339.269 | 260.403 |
 
-相对 auto-infer：
+CV 是变异系数，即标准差除以均值。它把波动换算成相对百分比；越低表示重复运行越稳定。auto-infer 三档 CV 均不超过 1.10%。
 
-| 框架 | B1 | B4 | B16 |
-|---|---:|---:|---:|
-| vllm-ascend | 3.40× | 3.07× | 1.48× |
-| Omni-NPU | 5.91× | 5.33× | 4.53× |
-
-auto-infer 要追平当前 Omni-NPU 的 B16 结果，需要把 77.89 tok/s 提升到 352.80 tok/s，即约 **4.53×**。
+相对 vllm-ascend，auto-infer 在 B1/B4/B16 分别领先 76.2%、70.1%、51.6%；相对 Omni-NPU 分别领先 12.8%、11.5%、16.4%。
 
 ### TTFT p50
 
-单位：ms，越低越好。
+单位：ms，越低越好。TTFT 包括本次真实在线链路的 admission、调度、prefill 和首 token 返回。
 
-| 并发 | auto-infer | vllm-ascend | Omni-NPU |
-|---|---:|---:|---:|
-| B1 | 203.28 | 204.68 | **165.93** |
-| B4 | **201.94** | 519.32 | 311.40 |
-| B16 | **249.83** | 584.08 | 436.26 |
+| 并发 | auto-infer | Omni-NPU | vllm-ascend | 第一名 |
+|---|---:|---:|---:|---|
+| B1 | **52.5** | 165.1 | 64.5 | auto-infer |
+| B4 | 216.3 | 326.2 | **158.1** | vllm-ascend |
+| B16 | **255.0** | 421.4 | 336.3 | auto-infer |
 
-auto-infer 的请求进入执行、prefill 和首 token 路径并不慢；B16 TTFT p50 比 Omni-NPU 低 42.7%，比 vllm-ascend 低 57.2%。
+B4 的 10 ms idle admission window 会等待同波请求到齐，稳定了首次 batch shape，但也会放大部分请求的排队时间。这是精度/形状稳定性优先的明确取舍，后续应做自适应 admission，而不是取消确定性门禁。
 
 ### ITL p50
 
-单位：ms，越低越好。
+单位：ms，越低越好。ITL 最直接反映稳态 decode 每 token 的关键路径。
 
-| 并发 | auto-infer | vllm-ascend | Omni-NPU |
-|---|---:|---:|---:|
-| B1 | 190.13 | 50.83 | **29.35** |
-| B4 | 186.90 | 54.03 | **30.74** |
-| B16 | 198.06 | 54.62 | **38.08** |
-
-B16 下 auto-infer 的 ITL 是 vllm-ascend 的 3.63×、Omni-NPU 的 5.20×。这直接解释了吞吐排名：差距集中在稳态 decode，而不是服务接入层。
+| 并发 | auto-infer | Omni-NPU | vllm-ascend | 第一名 |
+|---|---:|---:|---:|---|
+| B1 | **27.50** | 29.27 | 48.88 | auto-infer |
+| B4 | **28.94** | 30.72 | 52.61 | auto-infer |
+| B16 | **36.95** | 38.07 | 53.62 | auto-infer |
 
 ### E2E p50
 
 单位：s，越低越好。
 
-| 并发 | auto-infer | vllm-ascend | Omni-NPU |
+| 并发 | auto-infer | Omni-NPU | vllm-ascend |
 |---|---:|---:|---:|
-| B1 | 12.03 | 3.49 | **2.02** |
-| B4 | 12.08 | 3.98 | **2.27** |
-| B16 | 12.83 | 8.82 | **2.86** |
+| B1 | **1.794** | 2.022 | 3.157 |
+| B4 | **2.044** | 2.280 | 3.487 |
+| B16 | **2.589** | 2.981 | 3.886 |
 
-## 为什么 auto-infer 当前落后
+## 为什么 auto-infer 更快
 
-### 已由代码和运行日志确认
+### 1. TP decode 是整模型 graph replay，不是 80 层逐步 host dispatch
 
-1. `TpServingConfig` 对 `graph` 和 `graph_mtp` TP 模式 fail-fast，当前部署使用 `--mode paged`。也就是说，80 层 Qwen2.5-72B 的每个 decode token 都经过 eager TP 路径。
-2. vllm-ascend 日志明确显示 PIECEWISE ACL Graph、`enable_npugraph_ex`、图编译和七个 graph batch size。
-3. Omni-NPU 使用自己的 NPU attention backend、补丁和 graph/fusion 路径。
-4. auto-infer 的单卡 graph pipeline、zero-host-bubble async、持久 staging 和 captured epilogue 尚未贯通到 TP executor。
-5. auto-infer 已实现 QKV/gate-up 的 TP shard 后打包和 TP all-reduce，但打包权重只能减少算子数量，不能消除 eager launch、80 层逐步 dispatch 和 collective 排序开销。
+Qwen2.5-72B 有 80 层。auto-infer 对常用 batch gear 预捕获完整 decode 图，每一步只更新持久化 metadata 并 replay。lm_head 和稳定 greedy argmax 位于设备路径，避免每 token 重复构图、创建 tensor 或走 softmax/multinomial。
 
-### 从数据推断
+这直接体现在 ITL：B16 为 36.95 ms，低于 Omni-NPU 的 38.07 ms 和 vllm-ascend 的 53.62 ms。
 
-- auto-infer TTFT 不差但 ITL 很差，说明 scheduler、HTTP/SSE 和 admission 不是主瓶颈。
-- B1 ITL 已达 190 ms，负载尚未形成大规模排队，因此 continuous batching 也不是根因。
-- 差距最符合“TP eager device critical path 过长”：kernel launch、HCCL collective、同步边界和未捕获 epilogue 在每个 token 上重复。
+### 2. TP prefill graph 消除了首轮 eager 冷路径
 
-这些因果解释与代码和日志一致，但还需要 TP8 Chrome/Perfetto trace 和逐层 ablation 才能把差距精确拆成 ACL Graph、HCCL、attention、MLP、lm_head 各自占比。
+此前 72B 路径只对 decode 使用 graph，prefill 仍 eager，B1 TTFT 约 200 ms。现在每个 TP rank 在启动时以 barrier → capture → barrier 的顺序预热同一组 prefill gear，避免 rank 间捕获顺序漂移。B1 TTFT 降到 52.5 ms。
 
-## 输出正确性
+TP 模式只捕获到 `max_gear`，不会按默认 `max_prefill_tokens=256` 创建 35 张 72B 全模型图；更大的 prefill 保留正确的 eager fallback。这个边界同时控制启动成本、HBM 和代码复杂度。
 
-相同 21-token parity prompt、64-token greedy 输出：
+### 3. 连续批处理的形状和通信结果可复现
 
-| 对比 | 公共 token 前缀 | 64-token 完全一致 |
-|---|---:|---|
-| auto-infer vs vllm-ascend | 62 | 否 |
-| auto-infer vs Omni-NPU | 56 | 否 |
-| vllm-ascend vs Omni-NPU | 56 | 否 |
+首波并发请求如果被拆成 2+14、3+13 等不同 admission shape，BF16 的 collective 次序和近似并列 logits 可能造成 greedy 分叉。auto-infer 在空闲副本上用 10 ms window 收拢同一波请求，并在 graph TP worker 中固定开启 HCCL/LCCL deterministic。
 
-三者均返回 64 tokens，输出语义连贯。分歧发生在长公共前缀之后，符合 BF16、不同 attention/graph/collective 数值路径在近似并列 logits 上发生 greedy 分叉的现象；但在 reference logits 和长数据集精度门完成前，本报告只声明服务正确完成，不声明 bitwise 精度等价。
+这不是用串行执行规避问题：请求仍进入同一个 continuous batch；B16 吞吐反而达到 394.77 tok/s。
 
-## 内存观察
+### 4. 更窄、更直接的热路径
 
-测量期间每 rank 的 `npu-smi` 进程内存大致为：
+核心执行链保持为：
 
-- auto-infer：25.4–26.5 GiB
-- vllm-ascend：约 49.6 GiB
-- Omni-NPU：约 52.5 GiB
+`Serving → EngineCore/Scheduler → BatchPlan → GraphPagedRunner → Model.forward(ctx) → TP graph/HCCL`
 
-这组内存值**不能作为严格容量排名**：auto-infer 使用固定 `num_blocks=2048`，vllm-ascend/Omni-NPU 使用 `gpu_memory_utilization=0.80` 并预留了更大的 KV cache。它只能说明当前部署配置下 auto-infer 明显更省 HBM；后续必须对齐 usable KV tokens 后再做正式内存比较。
+同一 `model.forward(ctx)` 同时服务 eager、paged 和 graph；attention backend 通过 registry 注入。TP graph 没有复制模型数学，也没有依赖 vLLM plugin/monkeypatch。性能策略集中在 runner、staging 和 collective 边界，模型文件只声明模型能力。
 
-## 下一步性能收敛顺序
+相较之下，vllm-ascend 的优势是模型与生产特性覆盖广、生态成熟，但插件层、vLLM 状态机和多种 graph 模式增加了热路径间接性；Omni-NPU 的专用 NPU patch/fusion 很强，但 patch 契约和上游版本耦合更重。auto-infer 当前用更小的执行面换来了 Qwen2.5 BF16 TP8 的可控性和更低 ITL。
 
-1. 为 BF16 dense Qwen TP2–TP8 建立数值门禁，并让 TP paged executor 进入 ACL Graph。
-2. 采集三个框架相同 B1/B16 的 TP8 trace，拆解每 token 的 model compute、HCCL、host gap 和 sampler/epilogue。
-3. 将单卡的持久 staging、graph 内 lm_head/argmax、event 排序和双缓冲 metadata 复用到每个 TP rank。
-4. 对 TP row-parallel all-reduce 做独立基准，核对 collective 是否与后续计算重叠，以及是否存在每层不必要同步。
-5. 对齐 usable KV capacity 后重跑 B1/B4/B16，并增加 1024/128、4096/128 长上下文场景。
-6. 通过 reference logits、固定 token corpus 和任务精度集后，才发布最终三框架排名。
+## 正确性与稳定性门禁
+
+本轮验证文件记录：
+
+- 单请求两次运行：32/32 token 完全一致
+- B16 continuous batching：16/16 请求、每请求 32/32 token 完全一致
+- prefix cache 重复请求：token 完全一致
+- prefix cache metrics：queried 60 blocks，hit 45 blocks，hit rate 75%
+- 性能测试：三个框架合计 27 个独立 run，全部 0 failed、0 rejected
+- auto-infer 吞吐 CV：0.10% / 1.10% / 0.87%
+- 本地代码回归：591 tests passed
+
+这里的“精度通过”指同 checkpoint、同服务路径的确定性 token parity 和 cache/continuous-batching 一致性。正式生产发布仍应补充 reference logits、长上下文 corpus、任务精度集和 24–72 小时故障注入；本报告不把自一致性夸大为跨框架 bitwise 等价。
+
+## 当前边界与下一步
+
+1. 增加 1K/4K prefill、64/128 output 的矩阵，确认长 prompt 下 TP prefill eager fallback 的吞吐与 TTFT。
+2. 把固定 10 ms admission 演进成“目标 gear + deadline”的自适应窗口，争取收回 B4 TTFT，同时保持 token parity。
+3. 对齐 usable KV tokens 后比较容量、抢占和 prefix-cache 压力；当前内存数不能直接作为容量排名。
+4. 增加 24–72 小时 soak、worker kill、HCCL timeout、请求取消和 cache churn。
+5. 精度门禁继续优先于性能发布：任何 kernel、collective 或 graph gear 变化都必须先过 logits/token parity。
 
 ## 原始证据
 
-本地可审计 JSON：
+所有本轮 JSON 已纳入仓库，可直接审计每次 run 的 samples、p50/p95/p99、失败数和资源信息：
 
-- [`raw/auto-infer-b1.json`](profiling/qwen25-72b-tp8/raw/auto-infer-b1.json)
-- [`raw/auto-infer-b4.json`](profiling/qwen25-72b-tp8/raw/auto-infer-b4.json)
-- [`raw/auto-infer-b16.json`](profiling/qwen25-72b-tp8/raw/auto-infer-b16.json)
-- [`raw/vllm-ascend-b1.json`](profiling/qwen25-72b-tp8/raw/vllm-ascend-b1.json)
-- [`raw/vllm-ascend-b4.json`](profiling/qwen25-72b-tp8/raw/vllm-ascend-b4.json)
-- [`raw/vllm-ascend-b16.json`](profiling/qwen25-72b-tp8/raw/vllm-ascend-b16.json)
-- [`raw/omni-npu-b1.json`](profiling/qwen25-72b-tp8/raw/omni-npu-b1.json)
-- [`raw/omni-npu-b4.json`](profiling/qwen25-72b-tp8/raw/omni-npu-b4.json)
-- [`raw/omni-npu-b16.json`](profiling/qwen25-72b-tp8/raw/omni-npu-b16.json)
-- 三份 `*-parity-response.json`
+- [auto-infer 原始数据](profiling/qwen25-72b-tp8/final-2026-07-24/raw/auto-infer/)
+- [vllm-ascend 原始数据](profiling/qwen25-72b-tp8/final-2026-07-24/raw/vllm-ascend/)
+- [Omni-NPU 原始数据](profiling/qwen25-72b-tp8/final-2026-07-24/raw/omni-npu/)
+- [auto-infer 正确性与 cache 验证](profiling/qwen25-72b-tp8/final-2026-07-24/raw/auto-infer/qwen25-72b-tp-prefill-graph-validation.json)
 
-npu2 原始目录：
-
-- `/data2/auto-infer-tp8-threeway-20260724/results/`
-- `/data2/auto-infer-tp8-threeway-20260724/logs/`
-
-测试结束后，auto-infer Qwen2.5-72B TP8 服务已恢复到容器内 `0.0.0.0:18400`，`/health` 返回 200。
+npu2 完整运行目录：`/data2/auto-infer-tp-graph-20260724/`。测试后 auto-infer Qwen2.5-72B TP8 服务保留在容器内 `0.0.0.0:18400`，便于继续发送真实请求。

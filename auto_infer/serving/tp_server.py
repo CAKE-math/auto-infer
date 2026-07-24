@@ -65,6 +65,8 @@ def _worker_environment(rank: int, config: TpServingConfig) -> dict[str, str]:
     }
     if config.mode == "graph":
         environment["HCCL_OP_EXPANSION_MODE"] = "AIV"
+        environment["HCCL_DETERMINISTIC"] = "true"
+        environment["LCCL_DETERMINISTIC"] = "1"
     return environment
 
 
@@ -284,6 +286,7 @@ def _run_worker(rank: int, launch: TpServingConfig, follower_queues,
             control=control,
             inbox_capacity=serving_config.max_waiting_requests,
             close_timeout_s=launch.watchdog_timeout_s,
+            admission_wait_s=serving_config.admission_wait_ms / 1000.0,
         )
         service_box["service"] = service
         replica_status_queue.put(ReplicaStatus(rank, "ready"))

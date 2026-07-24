@@ -30,7 +30,9 @@ def _cfg():
     )
 
 
-def _services(monkeypatch, *, leader_executor=None):
+def _services(
+    monkeypatch, *, leader_executor=None, admission_wait_s=0.0
+):
     incoming = queue.Queue()
     status = queue.Queue()
     follower_control = QueueControlFollower(1, incoming, status)
@@ -39,12 +41,39 @@ def _services(monkeypatch, *, leader_executor=None):
     follower = SpmdEngineService(
         _cfg(), MockExecutor(vocab_size=1000),
         rank=1, control=follower_control,
+        admission_wait_s=admission_wait_s,
     )
     leader = SpmdEngineService(
         _cfg(), leader_executor or MockExecutor(vocab_size=1000),
         rank=0, control=leader_control,
+        admission_wait_s=admission_wait_s,
     )
     return leader, follower, leader_control, follower_control, status
+
+
+def test_idle_leader_coalesces_submissions_arriving_within_window(monkeypatch):
+    leader, _, _, follower_control, _ = _services(
+        monkeypatch, admission_wait_s=0.002
+    )
+    try:
+        first, _ = leader.submit(
+            [1], SamplingParams(max_tokens=1)
+        )
+        waited = []
+
+        def admit_second(timeout):
+            waited.append(timeout)
+            leader.submit([2], SamplingParams(max_tokens=1))
+
+        monkeypatch.setattr(leader._stopping, "wait", admit_second)
+
+        submits, aborts = leader._collect_publishable_control()
+
+        assert [submit[0] for submit in submits] == [first, "r1"]
+        assert not aborts
+        assert waited == [0.002]
+    finally:
+        follower_control.close()
 
 
 def _state(service):

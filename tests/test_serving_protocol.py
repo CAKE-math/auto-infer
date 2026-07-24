@@ -12,6 +12,7 @@ def test_serving_defaults_and_derived_waiting_limit():
     assert cfg.max_waiting_requests == 16
     assert cfg.tokenizer_batch_size == 32
     assert cfg.tokenizer_wait_ms == 2.0
+    assert cfg.admission_wait_ms == 10.0
     assert cfg.sse_coalesce_ms == 5.0
     assert cfg.shutdown_grace_s == 30.0
 
@@ -26,6 +27,7 @@ def test_serving_defaults_and_derived_waiting_limit():
         ("tokenizer_batch_size", 0),
         ("tokenizer_queue_capacity", 0),
         ("tokenizer_wait_ms", -1),
+        ("admission_wait_ms", -1),
         ("sse_coalesce_ms", -1),
         ("shutdown_grace_s", -1),
     ],

@@ -75,6 +75,17 @@ def _select_prefill_gear(query_tokens, max_gear):
                  if size >= query_tokens), None)
 
 
+def _prefill_graph_limit(max_prefill_tokens, max_gear, tp_world_size):
+    """Bound TP startup capture to the serving batch gears.
+
+    Capturing hundreds of full-model prefill shapes is useful on one device,
+    but multiplies startup cost across every tensor-parallel rank. Larger TP
+    prefills keep the eager fallback while common online shapes stay graphed.
+    """
+    return (max_prefill_tokens if tp_world_size == 1
+            else min(max_prefill_tokens, max_gear))
+
+
 def _scratch_blocks_for_gears(max_gear):
     """Cover the largest decode gear and every accepted exact prefill shape."""
     return max_gear
@@ -168,9 +179,12 @@ class GraphPagedRunner:
         # the paged KVCacheManager (in EngineCore) only ever hands out 0..num_blocks-1,
         # so scratch (num_blocks..) can never overlap a live request's KV — regardless
         # of the allocator's fill order (it pops the free list from the tail).
+        from auto_infer.distributed.parallel_state import tp_size
         from auto_infer.layers.attention.registry import build_attention_backend
+        self.prefill_graph_limit = _prefill_graph_limit(
+            max_prefill_tokens, max_gear, tp_size())
         self.scratch_blocks = _scratch_blocks_for_gears(
-            max(max_gear, max_prefill_tokens))
+            max(max_gear, self.prefill_graph_limit))
         self.backend, self.caches = build_attention_backend(
             model, "graph", num_blocks + self.scratch_blocks, block_size)
         self.max_blocks = (max_model_len + block_size - 1) // block_size
@@ -213,8 +227,7 @@ class GraphPagedRunner:
         self._copy_pool = PinnedTokenBufferPool(pin_memory=self.device.type != "cpu")
         if not self.force_eager:
             self._prewarm_decode_gears()
-        from auto_infer.distributed.parallel_state import tp_size
-        if (tp_size() == 1 and self._async_slots == 1 and not self.force_eager
+        if (self._async_slots == 1 and not self.force_eager
                 and getattr(self.backend, "supports_prefill_graph", False)):
             self._prewarm_prefill_gears()
 
@@ -314,15 +327,26 @@ class GraphPagedRunner:
         return self.prefill_gears.get(query_gear)
 
     def _prewarm_prefill_gears(self):
+        from auto_infer.distributed.parallel_state import tp_barrier, tp_size
         self._prefill_prewarm_active = True
         try:
-            for query_gear in _prefill_capture_sizes(self.max_prefill_tokens):
+            for query_gear in _prefill_capture_sizes(self.prefill_graph_limit):
                 self.stats["prefill_graph_capture_attempts"] += 1
+                error = None
+                tp_barrier()
                 try:
                     self.prefill_gears[query_gear] = self._capture_prefill(query_gear)
-                except Exception:
+                except Exception as capture_error:
+                    error = capture_error
+                finally:
+                    tp_barrier()
+                if error is not None:
                     self.failed_prefill_gears.add(query_gear)
                     self.stats["prefill_graph_capture_failures"] += 1
+                    if tp_size() > 1:
+                        raise RuntimeError(
+                            f"prefill graph capture failed for {query_gear}"
+                        ) from error
         finally:
             self._prefill_prewarm_active = False
 
@@ -593,7 +617,7 @@ class GraphPagedRunner:
                     self.backend, "supports_prefill_graph", False)):
             key = _select_prefill_gear(
                 sum(item.num_tokens_to_compute for item in plan.scheduled),
-                self.max_prefill_tokens)
+                self.prefill_graph_limit)
             if key is not None:
                 gear = self._get_prefill_gear(key)
                 if gear is not None:
