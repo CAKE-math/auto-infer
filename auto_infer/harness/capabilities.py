@@ -86,6 +86,25 @@ def match_capabilities(manifest: dict) -> dict:
     missing = sorted(set(missing))
     if missing:
         entrypoint = None
+    if attention in {"mha", "mqa", "gqa"} and not features["moe"]:
+        parallel = {
+            "tensor": {
+                "status": "supported",
+                "dtype": "bfloat16",
+                "max_size": 8,
+            },
+            "expert": {"status": "unsupported"},
+        }
+    elif attention == "mla" and features["moe"]:
+        parallel = {
+            "tensor": {"status": "unsupported"},
+            "expert": {"status": "supported", "dtype": "bfloat16"},
+        }
+    else:
+        parallel = {
+            "tensor": {"status": "unsupported"},
+            "expert": {"status": "unsupported"},
+        }
     return {
         "status": "supported" if not missing else "partial",
         "template": template,
@@ -97,4 +116,5 @@ def match_capabilities(manifest: dict) -> dict:
         }),
         "missing": missing,
         "features": dict(features),
+        "parallel": parallel,
     }

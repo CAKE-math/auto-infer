@@ -59,6 +59,7 @@ def generate_package(manifest: dict, output_dir: Path) -> dict:
         "execution": {
             "attention": manifest["architecture"]["attention"],
             "dtype": "bfloat16",
+            "parallel": capability["parallel"],
             "quantization": {
                 "enabled": False,
                 "interface": "reserved",
@@ -163,4 +164,3 @@ def load_entrypoint(package_dir: Path, entrypoint: str):
         raise PackageValidationError(
             f"entrypoint lacks ATTENTION_FAMILY: {entrypoint}")
     return model_class
-

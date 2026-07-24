@@ -116,6 +116,22 @@ class BaseCausalLM:
             return torch.mm(hidden, weight.t(), out=out)
         return hidden @ weight.t()
 
+    def logits_partition(
+        self,
+        hidden: torch.Tensor,
+        out: torch.Tensor | None = None,
+        precision: str | None = None,
+    ) -> tuple[torch.Tensor, tuple[int, int]]:
+        """Return resident logits and their global vocabulary interval.
+
+        The initial TP implementation replicates the head, so every rank owns
+        the full interval. This seam lets a future vocab-parallel head replace
+        that layout without changing schedulers or Serving.
+        """
+
+        logits = self.logits(hidden, out=out, precision=precision)
+        return logits, (0, self.w["lm_head.weight"].shape[0])
+
     def _dense_ctx(self, token_ids, positions):
         """Single-sequence full-softmax (no-paging) ForwardContext for bring-up /
         parity / MTP drafting."""
