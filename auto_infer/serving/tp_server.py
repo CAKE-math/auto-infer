@@ -110,15 +110,16 @@ def supervise_replica(
 ) -> None:
     """Block until clean replica shutdown or fail the whole replica."""
 
+    startup_started = time.monotonic()
     last_seen: dict[int, float] = {}
     ready: set[int] = set()
     stopped: set[int] = set()
     while True:
-        now = time.monotonic()
         try:
             status = status_queue.get(timeout=poll_interval_s)
         except queue.Empty:
             status = None
+        now = time.monotonic()
         if status is not None:
             if not isinstance(status, ReplicaStatus):
                 _terminate_processes(processes)
@@ -160,6 +161,14 @@ def supervise_replica(
                 raise RuntimeError(
                     f"rank {rank} exited before replica shutdown"
                 )
+
+        if (len(ready) < len(processes)
+                and now - startup_started > watchdog_timeout_s):
+            missing = sorted(set(range(len(processes))) - ready)
+            _terminate_processes(processes)
+            raise RuntimeError(
+                f"replica startup timed out waiting for ranks {missing}"
+            )
 
         expired = [
             rank

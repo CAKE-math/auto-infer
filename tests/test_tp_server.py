@@ -1,6 +1,7 @@
 import queue
 import threading
 import json
+import time
 
 import pytest
 
@@ -170,6 +171,27 @@ def test_supervisor_watchdog_terminates_unresponsive_replica():
     with pytest.raises(RuntimeError, match="watchdog"):
         supervise_replica(
             processes, statuses, watchdog_timeout_s=0.001,
+            poll_interval_s=0.001)
+
+    assert all(process.terminated for process in processes)
+
+
+def test_supervisor_bounds_startup_even_if_process_heartbeats():
+    class Heartbeats:
+        def __init__(self):
+            self.rank = 0
+
+        def get(self, timeout):
+            time.sleep(0.001)
+            status = ReplicaStatus(self.rank, "heartbeat")
+            self.rank = 1 - self.rank
+            return status
+
+    processes = [_Process(), _Process()]
+
+    with pytest.raises(RuntimeError, match="startup"):
+        supervise_replica(
+            processes, Heartbeats(), watchdog_timeout_s=0.003,
             poll_interval_s=0.001)
 
     assert all(process.terminated for process in processes)

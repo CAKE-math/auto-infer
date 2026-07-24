@@ -83,6 +83,33 @@ def test_apply_control_preserves_cancellation_and_timing(monkeypatch):
     assert admitted_at >= submitted_at
 
 
+def test_queued_cancellation_between_collect_and_apply_is_not_admitted(
+    monkeypatch,
+):
+    service = _paused_service(monkeypatch)
+    request_id, stream = service.submit([10], _sp(1))
+    submits, aborts = service._collect_control()
+
+    service.release(request_id)
+    service._apply_control(submits, aborts)
+
+    assert service.engine.scheduler.get_request_or_none(request_id) is None
+    assert _drain(stream) == []
+
+
+def test_active_cancellation_after_collect_is_caught_by_second_drain(
+    monkeypatch,
+):
+    service = _paused_service(monkeypatch)
+    service.engine.add_request(Request("active", [4, 5], _sp(2)))
+    _, aborts = service._collect_control()
+
+    service.release("active")
+    service._apply_control((), aborts)
+
+    assert service.engine.scheduler.get_request_or_none("active") is None
+
+
 def test_async_engine_from_service_uses_exact_service():
     service = SimpleNamespace(engine=object())
 
