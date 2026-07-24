@@ -1,6 +1,7 @@
 """Replicated EngineService driven by epoch-tagged change-only control."""
 
 import threading
+import time
 
 from auto_infer.serving.service import EngineService
 from auto_infer.serving.tp_control import (
@@ -168,13 +169,20 @@ class SpmdEngineService(EngineService):
         failures = []
         if self.rank == 0 and self._fatal_error is None:
             try:
-                self._publish(shutdown=True)
+                submits, aborts = self._collect_publishable_control()
+                self._publish(submits, aborts, shutdown=True)
             except Exception as error:
                 failures.append(f"control shutdown failed: {error}")
-        self._stopping.set()
+                self._stopping.set()
+        else:
+            self._stopping.set()
         self.broker.close()
         if self.thread.ident is not None:
             self.thread.join(timeout=self._close_timeout_s)
+        elif not self._stopping.is_set():
+            deadline = time.monotonic() + self._close_timeout_s
+            while not self._stopping.is_set() and time.monotonic() < deadline:
+                self._run_once()
         close_error = self._close_executor_bounded()
         if isinstance(self.control, QueueControlFollower):
             self.control.close()
