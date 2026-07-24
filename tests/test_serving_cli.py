@@ -1,4 +1,7 @@
-from auto_infer.entrypoints.cli import _serving_config, build_parser
+import sys
+from types import SimpleNamespace
+
+from auto_infer.entrypoints.cli import _serving_config, build_parser, main
 
 
 def test_serve_cli_exposes_native_async_limits():
@@ -53,3 +56,42 @@ def test_serve_cli_accepts_explicit_model_package():
     ])
 
     assert args.model_package == "/packages/example"
+
+
+def test_serve_cli_exposes_tensor_parallel_replica_options():
+    args = build_parser().parse_args([
+        "serve", "/model",
+        "--tp-size", "8",
+        "--devices", "0,1,2,3,4,5,6,7",
+        "--master-port", "29600",
+        "--tp-watchdog-timeout", "90",
+    ])
+
+    assert args.tp_size == 8
+    assert args.devices == "0,1,2,3,4,5,6,7"
+    assert args.master_port == 29600
+    assert args.tp_watchdog_timeout == 90
+
+
+def test_serve_cli_dispatches_multi_rank_to_tp_server(monkeypatch):
+    calls = []
+    monkeypatch.setitem(
+        sys.modules,
+        "auto_infer.serving.tp_server",
+        SimpleNamespace(serve_tp=lambda **kwargs: calls.append(kwargs)),
+    )
+
+    assert main([
+        "serve", "/model",
+        "--tp-size", "2",
+        "--devices", "3,5",
+        "--master-port", "29600",
+        "--tp-watchdog-timeout", "45",
+    ]) == 0
+
+    assert len(calls) == 1
+    assert calls[0]["model_path"] == "/model"
+    assert calls[0]["tp_size"] == 2
+    assert calls[0]["devices"] == (3, 5)
+    assert calls[0]["master_port"] == 29600
+    assert calls[0]["watchdog_timeout_s"] == 45

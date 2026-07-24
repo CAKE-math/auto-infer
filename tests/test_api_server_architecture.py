@@ -4,6 +4,7 @@ from types import SimpleNamespace
 
 from auto_infer.serving import api_server
 from auto_infer.serving.config import ServingConfig
+from auto_infer.config import ParallelConfig
 
 
 def test_api_server_is_native_async_and_has_no_process_global_runtime():
@@ -60,3 +61,29 @@ def test_run_runtime_builds_app_and_delegates_to_uvicorn(monkeypatch):
             "access_log": True,
         }),
     ]
+
+
+def test_build_engine_config_accepts_parallel_topology():
+    parallel = ParallelConfig(tp_size=2)
+
+    config = api_server.build_engine_config(
+        model_path="/model",
+        model_package="/package",
+        device_index=1,
+        mode="graph",
+        max_model_len=8192,
+        num_blocks=2048,
+        block_size=16,
+        max_num_seqs=64,
+        max_num_batched_tokens=4096,
+        max_gear=32,
+        max_prefill_tokens=256,
+        num_speculative_tokens=1,
+        parallel=parallel,
+    )
+
+    assert config.parallel is parallel
+    assert config.model.model_path == "/model"
+    assert config.model.model_package == "/package"
+    assert config.execution.device_index == 1
+    assert config.execution.mode == "graph"

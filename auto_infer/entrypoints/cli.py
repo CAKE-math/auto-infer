@@ -12,6 +12,13 @@ def build_parser() -> argparse.ArgumentParser:
     serve.add_argument("--host", default="0.0.0.0")
     serve.add_argument("--port", type=int, default=8000)
     serve.add_argument("--device", type=int, default=0)
+    serve.add_argument("--tp-size", type=int, default=1)
+    serve.add_argument(
+        "--devices",
+        help="comma-separated physical NPU ids for tensor-parallel ranks",
+    )
+    serve.add_argument("--master-port", type=int, default=29500)
+    serve.add_argument("--tp-watchdog-timeout", type=float, default=120.0)
     serve.add_argument(
         "--mode", choices=("recompute", "paged", "graph", "graph_mtp"),
         default="paged")
@@ -61,18 +68,37 @@ def _serving_config(args):
 def main(argv=None) -> int:
     args = build_parser().parse_args(argv)
     if args.command == "serve":
-        from auto_infer.serving.api_server import serve
-        serve(model_path=args.model, host=args.host, port=args.port,
-              model_package=args.model_package,
-              device_index=args.device, mode=args.mode,
-              max_model_len=args.max_model_len, num_blocks=args.num_blocks,
-              block_size=args.block_size, max_num_seqs=args.max_num_seqs,
-              max_num_batched_tokens=args.max_num_batched_tokens,
-              max_gear=args.max_gear,
-              max_prefill_tokens=args.max_prefill_tokens,
-              num_speculative_tokens=args.num_speculative_tokens,
-              access_log=args.access_log,
-              serving_config=_serving_config(args))
+        common = {
+            "model_path": args.model,
+            "host": args.host,
+            "port": args.port,
+            "model_package": args.model_package,
+            "mode": args.mode,
+            "max_model_len": args.max_model_len,
+            "num_blocks": args.num_blocks,
+            "block_size": args.block_size,
+            "max_num_seqs": args.max_num_seqs,
+            "max_num_batched_tokens": args.max_num_batched_tokens,
+            "max_gear": args.max_gear,
+            "max_prefill_tokens": args.max_prefill_tokens,
+            "num_speculative_tokens": args.num_speculative_tokens,
+            "access_log": args.access_log,
+            "serving_config": _serving_config(args),
+        }
+        if args.tp_size > 1:
+            from auto_infer.serving.tp_server import serve_tp
+            devices = (tuple(int(item) for item in args.devices.split(","))
+                       if args.devices else None)
+            serve_tp(
+                tp_size=args.tp_size,
+                devices=devices,
+                master_port=args.master_port,
+                watchdog_timeout_s=args.tp_watchdog_timeout,
+                **common,
+            )
+        else:
+            from auto_infer.serving.api_server import serve
+            serve(device_index=args.device, **common)
     return 0
 
 

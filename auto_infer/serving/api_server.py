@@ -643,28 +643,37 @@ def run_runtime(runtime: ApiRuntime, host: str = "0.0.0.0", port: int = 8000,
     )
 
 
-def serve(model_path: str, host: str = "0.0.0.0", port: int = 8000,
-          model_package: str | None = None,
-          device_index: int = 0, mode: str = "paged", max_model_len: int = 4096,
-          num_blocks: int = 4096, block_size: int = 16, max_num_seqs: int = 256,
-          max_num_batched_tokens: int = 8192, max_gear: int = 32,
-          max_prefill_tokens: int = 256,
-          num_speculative_tokens: int = 1,
-          access_log: bool = False,
-          serving_config: ServingConfig | None = None) -> None:
-    from transformers import AutoTokenizer
+def build_engine_config(
+    *,
+    model_path: str,
+    model_package: str | None,
+    device_index: int,
+    mode: str,
+    max_model_len: int,
+    num_blocks: int,
+    block_size: int,
+    max_num_seqs: int,
+    max_num_batched_tokens: int,
+    max_gear: int,
+    max_prefill_tokens: int,
+    num_speculative_tokens: int,
+    parallel=None,
+):
+    from auto_infer.config import (
+        CacheConfig,
+        EngineConfig,
+        ExecutionConfig,
+        ModelConfig,
+        ParallelConfig,
+        SchedulerConfig,
+        SpecDecodeConfig,
+    )
 
-    from auto_infer.config import (CacheConfig, EngineConfig, ExecutionConfig,
-                                   ModelConfig, SchedulerConfig,
-                                   SpecDecodeConfig)
-    from auto_infer.engine.factory import build_executor
-    from auto_infer.serving.async_engine import AsyncEngine
-
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-    engine_config = EngineConfig(
+    return EngineConfig(
         model=ModelConfig(
             model_path=model_path, max_model_len=max_model_len,
             model_package=model_package),
+        parallel=parallel or ParallelConfig(),
         cache=CacheConfig(block_size=block_size, num_blocks=num_blocks),
         scheduler=SchedulerConfig(
             max_num_seqs=max_num_seqs,
@@ -676,6 +685,37 @@ def serve(model_path: str, host: str = "0.0.0.0", port: int = 8000,
         ),
         spec_decode=(SpecDecodeConfig(num_speculative_tokens)
                      if mode == "graph_mtp" else None),
+    )
+
+
+def serve(model_path: str, host: str = "0.0.0.0", port: int = 8000,
+          model_package: str | None = None,
+          device_index: int = 0, mode: str = "paged", max_model_len: int = 4096,
+          num_blocks: int = 4096, block_size: int = 16, max_num_seqs: int = 256,
+          max_num_batched_tokens: int = 8192, max_gear: int = 32,
+          max_prefill_tokens: int = 256,
+          num_speculative_tokens: int = 1,
+          access_log: bool = False,
+          serving_config: ServingConfig | None = None) -> None:
+    from transformers import AutoTokenizer
+
+    from auto_infer.engine.factory import build_executor
+    from auto_infer.serving.async_engine import AsyncEngine
+
+    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
+    engine_config = build_engine_config(
+        model_path=model_path,
+        model_package=model_package,
+        device_index=device_index,
+        mode=mode,
+        max_model_len=max_model_len,
+        num_blocks=num_blocks,
+        block_size=block_size,
+        max_num_seqs=max_num_seqs,
+        max_num_batched_tokens=max_num_batched_tokens,
+        max_gear=max_gear,
+        max_prefill_tokens=max_prefill_tokens,
+        num_speculative_tokens=num_speculative_tokens,
     )
     resolved_serving_config = serving_config or ServingConfig(
         max_num_seqs=max_num_seqs
