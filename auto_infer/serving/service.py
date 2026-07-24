@@ -139,29 +139,44 @@ class EngineService:
             kv.prefix_queried_blocks, kv.prefix_hit_blocks
         )
 
-    def _drain_control(self) -> None:
-        self._drain_aborts()
+    def _collect_control(self):
+        with self._abort_lock:
+            aborts = self._pending_aborts
+            self._pending_aborts = set()
+        submits = []
         try:
             for _ in range(self._inbox.maxsize):
-                rid, ids, sampling, submitted_at = self._inbox.get_nowait()
-                with self._abort_lock:
-                    self._queued_ids.discard(rid)
-                    cancelled = rid in self._cancelled_queued
-                    self._cancelled_queued.discard(rid)
-                if cancelled:
-                    continue
-                try:
-                    self.engine.add_request(Request(rid, list(ids), sampling))
-                except Exception as error:
-                    self.broker.fail(rid, error)
-                else:
-                    self._emitted[rid] = 0
-                    with self._timing_lock:
-                        self._stage_started[rid] = (
-                            submitted_at, time.monotonic()
-                        )
+                submits.append(self._inbox.get_nowait())
         except queue.Empty:
             pass
+        return submits, aborts
+
+    def _apply_control(self, submits, aborts) -> None:
+        for rid in aborts:
+            self.engine.abort(rid)
+            self._emitted.pop(rid, None)
+            with self._timing_lock:
+                self._stage_started.pop(rid, None)
+                self._first_stage.pop(rid, None)
+                self._decode_stages.pop(rid, None)
+                self._last_emission_at.pop(rid, None)
+        for rid, ids, sampling, submitted_at in submits:
+            with self._abort_lock:
+                self._queued_ids.discard(rid)
+                cancelled = rid in self._cancelled_queued
+                self._cancelled_queued.discard(rid)
+            if cancelled:
+                continue
+            try:
+                self.engine.add_request(Request(rid, list(ids), sampling))
+            except Exception as error:
+                self.broker.fail(rid, error)
+            else:
+                self._emitted[rid] = 0
+                with self._timing_lock:
+                    self._stage_started[rid] = (
+                        submitted_at, time.monotonic()
+                    )
         self._drain_aborts()
         self._refresh_load_snapshot()
 
@@ -179,53 +194,61 @@ class EngineService:
             return
         self.engine = EngineCore(self.config, self.executor)
 
+    def _handle_step_error(self, error: BaseException) -> None:
+        self._recover(error)
+
+    def _emit_outputs(self, finished) -> None:
+        finished_by_id = {req.request_id: req for req in finished}
+        for rid in list(self._emitted):
+            req = (self.engine.scheduler.get_request_or_none(rid)
+                   or finished_by_id.get(rid))
+            if req is None:
+                continue
+            start = self._emitted[rid]
+            finalized = (len(req.output_token_ids)
+                         if rid in finished_by_id
+                         else self.engine.finalized_output_count(rid))
+            tokens = tuple(req.output_token_ids[start:finalized])
+            if tokens:
+                emitted_at = time.monotonic()
+                if start == 0:
+                    with self._timing_lock:
+                        timing = self._stage_started.pop(rid, None)
+                        if timing is not None:
+                            submitted_at, admitted_at = timing
+                            self._first_stage[rid] = (
+                                admitted_at - submitted_at,
+                                time.monotonic() - admitted_at,
+                            )
+                        self._last_emission_at[rid] = emitted_at
+                else:
+                    with self._timing_lock:
+                        previous = self._last_emission_at.get(rid)
+                        if previous is not None:
+                            self._decode_stages.setdefault(rid, []).append(
+                                emitted_at - previous
+                            )
+                        self._last_emission_at[rid] = emitted_at
+                self.broker.emit(rid, tokens)
+            self._emitted[rid] = finalized
+            if rid in finished_by_id:
+                self.broker.finish(rid)
+                self._emitted.pop(rid, None)
+        self._refresh_load_snapshot()
+
     def _run(self) -> None:
         while not self._stopping.is_set():
-            self._drain_control()
+            submits, aborts = self._collect_control()
+            self._apply_control(submits, aborts)
             if not self.engine.has_unfinished():
                 self._stopping.wait(0.0005)
                 continue
             try:
                 finished = self.engine.step()
             except Exception as error:
-                self._recover(error)
-                continue
-            finished_by_id = {req.request_id: req for req in finished}
-            for rid in list(self._emitted):
-                req = self.engine.scheduler.get_request_or_none(rid) or finished_by_id.get(rid)
-                if req is None:
-                    continue
-                start = self._emitted[rid]
-                finalized = (len(req.output_token_ids)
-                             if rid in finished_by_id
-                             else self.engine.finalized_output_count(rid))
-                tokens = tuple(req.output_token_ids[start:finalized])
-                if tokens:
-                    emitted_at = time.monotonic()
-                    if start == 0:
-                        with self._timing_lock:
-                            timing = self._stage_started.pop(rid, None)
-                            if timing is not None:
-                                submitted_at, admitted_at = timing
-                                self._first_stage[rid] = (
-                                    admitted_at - submitted_at,
-                                    time.monotonic() - admitted_at,
-                                )
-                            self._last_emission_at[rid] = emitted_at
-                    else:
-                        with self._timing_lock:
-                            previous = self._last_emission_at.get(rid)
-                            if previous is not None:
-                                self._decode_stages.setdefault(rid, []).append(
-                                    emitted_at - previous
-                                )
-                            self._last_emission_at[rid] = emitted_at
-                    self.broker.emit(rid, tokens)
-                self._emitted[rid] = finalized
-                if rid in finished_by_id:
-                    self.broker.finish(rid)
-                    self._emitted.pop(rid, None)
-            self._refresh_load_snapshot()
+                self._handle_step_error(error)
+            else:
+                self._emit_outputs(finished)
 
     def close(self) -> None:
         with self._close_lock:

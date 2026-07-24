@@ -623,6 +623,26 @@ def _request_id(chat: bool) -> str:
     return f"{prefix}-{uuid.uuid4().hex}"
 
 
+def build_runtime(*, tokenizer, engine, model: str, max_model_len: int,
+                  serving_config: ServingConfig) -> ApiRuntime:
+    return ApiRuntime(
+        tokenizer=tokenizer,
+        engine=engine,
+        model=model,
+        max_model_len=max_model_len,
+        serving_config=serving_config,
+    )
+
+
+def run_runtime(runtime: ApiRuntime, host: str = "0.0.0.0", port: int = 8000,
+                access_log: bool = False) -> None:
+    import uvicorn
+
+    uvicorn.run(
+        create_app(runtime), host=host, port=port, access_log=access_log
+    )
+
+
 def serve(model_path: str, host: str = "0.0.0.0", port: int = 8000,
           model_package: str | None = None,
           device_index: int = 0, mode: str = "paged", max_model_len: int = 4096,
@@ -632,7 +652,6 @@ def serve(model_path: str, host: str = "0.0.0.0", port: int = 8000,
           num_speculative_tokens: int = 1,
           access_log: bool = False,
           serving_config: ServingConfig | None = None) -> None:
-    import uvicorn
     from transformers import AutoTokenizer
 
     from auto_infer.config import (CacheConfig, EngineConfig, ExecutionConfig,
@@ -661,16 +680,17 @@ def serve(model_path: str, host: str = "0.0.0.0", port: int = 8000,
     resolved_serving_config = serving_config or ServingConfig(
         max_num_seqs=max_num_seqs
     )
-    runtime = ApiRuntime(
+    engine = AsyncEngine(
+        engine_config, build_executor(engine_config),
+        inbox_capacity=resolved_serving_config.max_waiting_requests,
+    )
+    runtime = build_runtime(
         tokenizer=tokenizer,
-        engine=AsyncEngine(
-            engine_config, build_executor(engine_config),
-            inbox_capacity=resolved_serving_config.max_waiting_requests,
-        ),
+        engine=engine,
         model=model_path.rstrip("/").split("/")[-1],
         max_model_len=max_model_len,
         serving_config=resolved_serving_config,
     )
-    uvicorn.run(
-        create_app(runtime), host=host, port=port, access_log=access_log
+    run_runtime(
+        runtime, host=host, port=port, access_log=access_log
     )

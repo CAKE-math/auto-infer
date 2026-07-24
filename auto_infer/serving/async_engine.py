@@ -34,6 +34,15 @@ class AsyncEngine:
         self._active: dict[str, AsyncOutputCollector] = {}
         self._closed = False
 
+    @classmethod
+    def from_service(cls, service):
+        instance = cls.__new__(cls)
+        instance.service = service
+        instance.engine = service.engine
+        instance._active = {}
+        instance._closed = False
+        return instance
+
     @property
     def pending_output_slots(self) -> int:
         return max(

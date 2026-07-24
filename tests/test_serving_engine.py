@@ -4,12 +4,14 @@ hanging clients, and EngineCore.abort frees an in-flight request. Uses
 MockExecutor (deterministic: next = (last + 1) % vocab)."""
 import time
 import threading
+from types import SimpleNamespace
 import pytest
 
 from auto_infer.config import CacheConfig, EngineConfig, ModelConfig, SchedulerConfig
 from auto_infer.engine.engine_core import EngineCore
 from auto_infer.engine.executor import Executor, MockExecutor
 from auto_infer.engine.request import Request, SamplingParams
+from auto_infer.serving.async_engine import AsyncEngine
 from auto_infer.serving.service import EngineService
 
 
@@ -35,6 +37,61 @@ def _drain(q, timeout=5.0):
         if t is None:
             return out
         out.append(t)
+
+
+def _paused_service(monkeypatch):
+    monkeypatch.setattr(threading.Thread, "start", lambda self: None)
+    return EngineService(_cfg(), MockExecutor(vocab_size=1000))
+
+
+def test_collect_control_does_not_mutate_engine_core(monkeypatch):
+    service = _paused_service(monkeypatch)
+    rid, _ = service.submit([1, 2, 3], _sp(3))
+    service.engine.add_request(Request("active", [4, 5], _sp(2)))
+    with service._abort_lock:
+        service._pending_aborts.add("active")
+
+    submits, aborts = service._collect_control()
+
+    assert [item[0] for item in submits] == [rid]
+    assert aborts == {"active"}
+    assert service.engine.scheduler.get_request_or_none("active") is not None
+    assert service.engine.scheduler.get_request_or_none(rid) is None
+
+
+def test_apply_control_preserves_cancellation_and_timing(monkeypatch):
+    service = _paused_service(monkeypatch)
+    service.engine.add_request(Request("active", [4, 5], _sp(2)))
+    service._emitted["active"] = 1
+    service._stage_started["active"] = (1.0, 2.0)
+    with service._abort_lock:
+        service._pending_aborts.add("active")
+
+    cancelled, _ = service.submit([10], _sp(1))
+    service.release(cancelled)
+    live, _ = service.submit([20], _sp(1))
+    submits, aborts = service._collect_control()
+
+    service._apply_control(submits, aborts)
+
+    assert service.engine.scheduler.get_request_or_none("active") is None
+    assert service.engine.scheduler.get_request_or_none(cancelled) is None
+    assert service.engine.scheduler.get_request_or_none(live) is not None
+    assert "active" not in service._emitted
+    assert "active" not in service._stage_started
+    submitted_at, admitted_at = service._stage_started[live]
+    assert admitted_at >= submitted_at
+
+
+def test_async_engine_from_service_uses_exact_service():
+    service = SimpleNamespace(engine=object())
+
+    engine = AsyncEngine.from_service(service)
+
+    assert engine.service is service
+    assert engine.engine is service.engine
+    assert engine._active == {}
+    assert engine._closed is False
 
 
 def test_serving_engine_single_request():
